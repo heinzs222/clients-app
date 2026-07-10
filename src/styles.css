@@ -1,0 +1,2212 @@
+:root {
+  --ink: #0b1c30;
+  --muted: #424754;
+  --subtle: #727786;
+  --line: #c2c6d6;
+  --panel: #ffffff;
+  --page: #f8f9ff;
+  --charcoal: #161a22;
+  --green: #00a98f;
+  --green-dark: #006a6f;
+  --yellow: #f4c542;
+  --blue: #0064e0;
+  --blue-dark: #004db0;
+  --cyan: #00dce6;
+  --secondary-container: #00f1fd;
+  --primary-fixed: #d9e2ff;
+  --primary-fixed-dim: #afc6ff;
+  --surface-container-lowest: #ffffff;
+  --surface-low: #eff4ff;
+  --surface-mid: #e5eeff;
+  --surface-high: #dce9ff;
+  --surface-variant: #d3e4fe;
+  --inverse-surface: #213145;
+  --inverse-on-surface: #eaf1ff;
+  --tertiary-fixed-dim: #b9c9d3;
+  --error-container: #ffdad6;
+  --rose: #ba1a1a;
+  --radius: 8px;
+  --shadow: 0 2px 10px rgba(11, 28, 48, 0.07);
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  color: var(--ink);
+  background: var(--page);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--page);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.appShell {
+  display: grid;
+  grid-template-columns: 264px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.authShell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background:
+    linear-gradient(135deg, rgba(244, 197, 66, 0.12), transparent 32%),
+    linear-gradient(220deg, rgba(19, 185, 129, 0.12), transparent 38%),
+    #11151d;
+}
+
+.authPanel {
+  width: min(100%, 520px);
+  display: grid;
+  gap: 22px;
+  padding: 28px;
+  border-radius: var(--radius);
+  color: #ffffff;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.08), transparent 150px),
+    #161a22;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
+}
+
+.authBrand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.authBrand h1,
+.authCopy h2 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.authBrand h1 {
+  font-size: 1.12rem;
+}
+
+.authCopy h2 {
+  font-size: 2.25rem;
+  line-height: 1.05;
+}
+
+.authCopy p:not(.eyebrow) {
+  margin: 10px 0 0;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.5;
+}
+
+.authForm {
+  display: grid;
+  gap: 10px;
+}
+
+.authForm .field {
+  margin: 0;
+}
+
+.authForm .field span {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.authForm .inputShell {
+  background: #eaf1ff;
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #0b1c30;
+}
+
+.authForm .inputShell:focus-within {
+  border-color: rgba(19, 185, 129, 0.62);
+  box-shadow: 0 0 0 3px rgba(19, 185, 129, 0.12);
+  background: #ffffff;
+}
+
+.authForm .inputShell input {
+  color: #0b1c30;
+}
+
+.authForm .inputShell input::placeholder {
+  color: rgba(11, 28, 48, 0.5);
+}
+
+.authAlert {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px 12px;
+  border-radius: var(--radius);
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
+.authAlert.error {
+  color: #ffd7df;
+  background: rgba(232, 93, 117, 0.15);
+  border: 1px solid rgba(232, 93, 117, 0.28);
+}
+
+.authAlert.success {
+  color: #bdf8df;
+  background: rgba(19, 185, 129, 0.14);
+  border: 1px solid rgba(19, 185, 129, 0.28);
+}
+
+.authLinks {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.authLinks button {
+  border: 0;
+  padding: 0;
+  color: rgba(255, 255, 255, 0.72);
+  background: transparent;
+  font-weight: 800;
+  font-size: 0.85rem;
+}
+
+.authLinks button:hover {
+  color: #ffffff;
+}
+
+.sidebar {
+  background: #ffffff;
+  color: var(--ink);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border-right: 1px solid var(--line);
+}
+
+.brandBlock {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: var(--charcoal);
+  background: linear-gradient(135deg, var(--yellow), #45db77);
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--subtle);
+}
+
+.brandBlock h1,
+.topbar h2,
+.panel h3,
+.scoreWrap h4 {
+  margin: 0;
+  letter-spacing: 0;
+}
+
+.brandBlock h1 {
+  font-size: 1.2rem;
+}
+
+.sidebarCta {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: var(--radius);
+  color: #ffffff;
+  background: var(--blue);
+  font-weight: 900;
+  box-shadow: var(--shadow);
+}
+
+.sidebarCta:hover {
+  background: var(--blue-dark);
+}
+
+.navStack {
+  display: grid;
+  gap: 6px;
+}
+
+.navItem {
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius);
+  color: var(--muted);
+  background: transparent;
+  font-weight: 850;
+  text-align: left;
+}
+
+.navItem:hover {
+  color: var(--ink);
+  background: var(--surface-low);
+}
+
+.navItem.active {
+  color: var(--blue-dark);
+  background: var(--surface-mid);
+}
+
+.savedBlock {
+  min-height: 0;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.savedList {
+  display: grid;
+  gap: 8px;
+  max-height: 42vh;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.savedClient {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  gap: 8px;
+}
+
+.savedClient button:first-child {
+  text-align: left;
+  padding: 11px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.055);
+  color: #ffffff;
+  border-radius: var(--radius);
+}
+
+.savedClient button:first-child:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.savedClient strong,
+.savedClient span {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.savedClient strong {
+  font-size: 0.9rem;
+}
+
+.savedClient span {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.74rem;
+  margin-top: 3px;
+}
+
+.trashButton,
+.miniButton,
+.iconButton,
+.ghostIcon,
+.tabs button,
+.toggle {
+  border: 0;
+}
+
+.trashButton {
+  color: rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius);
+  display: grid;
+  place-items: center;
+}
+
+.trashButton:hover {
+  color: #ffffff;
+  background: rgba(232, 93, 117, 0.18);
+}
+
+.miniButton,
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: var(--radius);
+  font-weight: 800;
+  font-size: 0.82rem;
+}
+
+.miniButton {
+  color: var(--charcoal);
+  background: var(--yellow);
+}
+
+.iconButton {
+  color: var(--ink);
+  background: #ffffff;
+  border: 1px solid var(--line);
+}
+
+.iconButton.primary {
+  color: #ffffff;
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.iconButton:hover,
+.miniButton:hover {
+  filter: brightness(0.98);
+}
+
+.emptyState {
+  margin: 0;
+  padding: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  background: rgba(255, 255, 255, 0.045);
+  border-radius: var(--radius);
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.setupList {
+  display: grid;
+  gap: 8px;
+}
+
+.setupList div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  background: var(--surface-low);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.setupList svg {
+  color: var(--green);
+  flex: 0 0 auto;
+}
+
+.guardrail {
+  margin-top: auto;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: var(--radius);
+  color: var(--green-dark);
+  background: rgba(0, 220, 230, 0.13);
+  border: 1px solid rgba(0, 105, 111, 0.24);
+}
+
+.guardrail p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.workspace {
+  min-width: 0;
+  padding: 32px 40px;
+  max-width: 1280px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 24px;
+}
+
+.topbar h2 {
+  font-size: 2rem;
+  line-height: 1.25;
+}
+
+.topbarSub {
+  margin: 6px 0 0;
+  color: var(--muted);
+  line-height: 1.5;
+  max-width: 680px;
+}
+
+.topActions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-weight: 900;
+  font-size: 0.83rem;
+  border: 1px solid var(--line);
+  background: #ffffff;
+}
+
+.userPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  max-width: 260px;
+  padding: 0 12px;
+  border-radius: 999px;
+  color: var(--muted);
+  background: #ffffff;
+  border: 1px solid var(--line);
+  font-size: 0.82rem;
+  font-weight: 850;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.statCard {
+  min-height: 116px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 20px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: #ffffff;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.statCard p {
+  margin: 0 0 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.statCard strong {
+  display: block;
+  color: var(--ink);
+  font-size: 1.8rem;
+  line-height: 1.12;
+}
+
+.statCard svg {
+  color: var(--blue);
+}
+
+.progressRail {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.progressStep {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  background: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.progressStep span {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 28px;
+  border-radius: 999px;
+  color: var(--muted);
+  background: var(--surface-high);
+  border: 1px solid var(--line);
+}
+
+.progressStep.active {
+  color: var(--blue-dark);
+  background: var(--surface-mid);
+  border-color: rgba(0, 100, 224, 0.26);
+}
+
+.progressStep.active span {
+  color: #ffffff;
+  background: var(--blue);
+  border-color: var(--blue);
+}
+
+.statusPill.excellent {
+  color: var(--green-dark);
+  border-color: rgba(19, 185, 129, 0.34);
+  background: rgba(19, 185, 129, 0.1);
+}
+
+.statusPill.strong {
+  color: #2657c8;
+  border-color: rgba(50, 103, 255, 0.28);
+  background: rgba(50, 103, 255, 0.08);
+}
+
+.statusPill.medium {
+  color: #926500;
+  border-color: rgba(244, 197, 66, 0.45);
+  background: rgba(244, 197, 66, 0.16);
+}
+
+.statusPill.low {
+  color: #b4233f;
+  border-color: rgba(232, 93, 117, 0.32);
+  background: rgba(232, 93, 117, 0.1);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: minmax(380px, 0.86fr) minmax(340px, 0.64fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.clientPortal {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.78fr) minmax(420px, 1.22fr);
+  gap: 24px;
+  align-items: start;
+  margin-bottom: 18px;
+  border-color: var(--line);
+  background: #ffffff;
+}
+
+.portalCopy {
+  min-height: 100%;
+  padding: 20px;
+  border-radius: var(--radius);
+  color: #eaf1ff;
+  background: #213145;
+}
+
+.portalCopy h3 {
+  margin: 0 0 10px;
+  color: #ffffff;
+  font-size: 2rem;
+  line-height: 1.05;
+  letter-spacing: 0;
+}
+
+.portalCopy p:not(.eyebrow) {
+  margin: 0;
+  color: #b9c9d3;
+  line-height: 1.55;
+  max-width: 52ch;
+}
+
+.portalCopy .eyebrow {
+  color: #afc6ff;
+}
+
+.guideList {
+  display: grid;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.guideList div {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #f8f9ff;
+  font-size: 0.9rem;
+}
+
+.guideList svg {
+  color: var(--cyan);
+}
+
+.portalForm {
+  display: grid;
+  gap: 14px;
+  padding: 4px 0;
+}
+
+.portalForm .field {
+  margin-bottom: 0;
+}
+
+.portalActions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  padding-top: 8px;
+}
+
+.createButton {
+  min-height: 46px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--blue);
+  color: #ffffff;
+  font-weight: 950;
+}
+
+.createButton:hover:not(:disabled) {
+  background: var(--blue-dark);
+}
+
+.createButton:disabled {
+  cursor: not-allowed;
+  color: rgba(255, 255, 255, 0.55);
+  background: #9aa4b2;
+}
+
+.resultBox {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 140px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px;
+  border-radius: var(--radius);
+}
+
+.resultBox span {
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.resultBox code {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 10px;
+  border-radius: 7px;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.76);
+}
+
+.resultBox.success {
+  color: var(--green-dark);
+  background: rgba(19, 185, 129, 0.1);
+  border: 1px solid rgba(19, 185, 129, 0.24);
+}
+
+.resultBox.success p {
+  grid-column: 2 / -1;
+  margin: 0;
+  color: var(--green-dark);
+  line-height: 1.4;
+}
+
+.resultBox.notice {
+  color: #926500;
+  background: rgba(244, 197, 66, 0.16);
+  border: 1px solid rgba(244, 197, 66, 0.45);
+  grid-template-columns: 180px minmax(0, 1fr);
+}
+
+.resultBox.error {
+  color: #b4233f;
+  background: rgba(232, 93, 117, 0.1);
+  border: 1px solid rgba(232, 93, 117, 0.24);
+  grid-template-columns: 180px minmax(0, 1fr);
+}
+
+.resultBox.error p,
+.resultBox.notice p {
+  margin: 0;
+  color: #7f1d32;
+  line-height: 1.4;
+}
+
+.resultBox.notice p {
+  color: #6b4b00;
+}
+
+.launchResults {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 12px;
+}
+
+.copyPanel {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: start;
+  padding: 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: #ffffff;
+  box-shadow: var(--shadow);
+}
+
+.copyPanel p:not(.eyebrow) {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+  font-size: 0.86rem;
+}
+
+.copyPanel pre {
+  grid-column: 1 / -1;
+  margin: 0;
+  max-height: 280px;
+  overflow: auto;
+  border-radius: 7px;
+  padding: 12px;
+  color: #ffffff;
+  background: #1c2b33;
+  border: 1px solid #31434c;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.copyPanel code {
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.panelHead h3 {
+  font-size: 1.05rem;
+}
+
+.configPanel {
+  grid-column: 1;
+}
+
+.qualityPanel {
+  grid-column: 2;
+}
+
+.artifactPanel {
+  grid-column: 1 / -1;
+}
+
+.launchPanel {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  box-shadow: none;
+}
+
+.fieldGrid {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.fieldGrid.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.fieldGrid.four {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.field {
+  display: grid;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.field span {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.inputShell {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
+  color: var(--muted);
+}
+
+.inputShell:focus-within {
+  border-color: rgba(0, 100, 224, 0.68);
+  box-shadow: 0 0 0 3px rgba(0, 100, 224, 0.12);
+  background: #ffffff;
+}
+
+.inputShell input {
+  min-width: 0;
+  flex: 1;
+  height: 42px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+}
+
+.ghostIcon {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+}
+
+.ghostIcon:hover {
+  background: rgba(17, 19, 24, 0.06);
+}
+
+.toggleGrid,
+.coverageList {
+  display: grid;
+  gap: 10px;
+}
+
+.toggleGrid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.toggle {
+  width: 100%;
+  min-height: 54px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px;
+  border-radius: var(--radius);
+  background: #f6f8fc;
+  color: var(--ink);
+  border: 1px solid transparent;
+}
+
+.toggle:hover {
+  border-color: var(--line);
+  background: #ffffff;
+}
+
+.toggle.on {
+  background: rgba(19, 185, 129, 0.1);
+  border-color: rgba(19, 185, 129, 0.22);
+}
+
+.toggleBox {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 22px;
+  color: #ffffff;
+  background: #d7dee9;
+}
+
+.toggle.on .toggleBox {
+  background: var(--green);
+}
+
+.toggle strong {
+  display: block;
+  font-size: 0.86rem;
+  margin-bottom: 2px;
+}
+
+.toggle small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.73rem;
+  line-height: 1.25;
+}
+
+.scoreWrap {
+  display: grid;
+  grid-template-columns: 104px 1fr;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.scoreRing {
+  --score: 0;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at center, #ffffff 0 58%, transparent 59%),
+    conic-gradient(var(--ring) var(--score), #e8edf5 0);
+}
+
+.scoreRing span {
+  font-size: 1.55rem;
+  font-weight: 950;
+}
+
+.scoreRing.excellent,
+.scoreRing.strong {
+  --ring: var(--green);
+}
+
+.scoreRing.medium {
+  --ring: var(--yellow);
+}
+
+.scoreRing.low {
+  --ring: var(--rose);
+}
+
+.scoreWrap h4 {
+  font-size: 1.05rem;
+  margin-bottom: 6px;
+}
+
+.scoreWrap p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+  font-size: 0.88rem;
+}
+
+.artifactHead {
+  margin-bottom: 12px;
+}
+
+.tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.tabs button {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 11px;
+  border-radius: var(--radius);
+  color: var(--muted);
+  background: #f2f5fa;
+  font-weight: 850;
+  font-size: 0.8rem;
+}
+
+.tabs button.active {
+  color: #ffffff;
+  background: var(--charcoal);
+}
+
+.codeBlock {
+  margin: 0;
+  min-height: 430px;
+  max-height: 640px;
+  overflow: auto;
+  border-radius: var(--radius);
+  padding: 16px;
+  color: #dbe7ff;
+  background:
+    linear-gradient(180deg, rgba(50, 103, 255, 0.08), transparent 180px),
+    #10141d;
+  border: 1px solid #242b39;
+  font-size: 0.79rem;
+  line-height: 1.55;
+  tab-size: 2;
+}
+
+.codeBlock code {
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+.launchItem {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  background: #f7f9fd;
+  border-radius: var(--radius);
+}
+
+.launchItem svg {
+  color: var(--blue);
+  flex: 0 0 auto;
+}
+
+.launchItem strong,
+.launchItem span {
+  display: block;
+}
+
+.launchItem strong {
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.launchItem span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  line-height: 1.35;
+}
+
+@media (max-width: 1180px) {
+  .appShell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+
+  .navStack {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .guardrail {
+    display: none;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .clientPortal {
+    grid-template-columns: 1fr;
+  }
+
+  .portalCopy {
+    min-height: auto;
+  }
+
+  .configPanel,
+  .qualityPanel,
+  .artifactPanel,
+  .launchPanel {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 760px) {
+  .workspace,
+  .sidebar {
+    padding: 14px;
+  }
+
+  .authPanel {
+    padding: 20px;
+  }
+
+  .authCopy h2 {
+    font-size: 1.75rem;
+  }
+
+  .sidebar,
+  .launchPanel,
+  .statsGrid,
+  .progressRail,
+  .fieldGrid.two,
+  .fieldGrid.four,
+  .toggleGrid,
+  .navStack {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .topActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .topbar h2 {
+    font-size: 1.55rem;
+  }
+
+  .statusPill,
+  .userPill,
+  .sidebarCta,
+  .iconButton,
+  .createButton {
+    width: 100%;
+  }
+
+  .portalActions,
+  .resultBox,
+  .resultBox.error,
+  .copyPanel {
+    grid-template-columns: 1fr;
+  }
+
+  .scoreWrap {
+    grid-template-columns: 1fr;
+  }
+
+  .scoreRing {
+    width: 86px;
+    height: 86px;
+  }
+
+  .artifactHead {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .codeBlock {
+    min-height: 360px;
+    font-size: 0.74rem;
+  }
+}
+
+/* Stitch implementation */
+.stitchAuthPage {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--page);
+  color: var(--ink);
+}
+
+.stitchTopNav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  width: 100%;
+  background: var(--page);
+  border-bottom: 1px solid var(--line);
+  box-shadow: 0 1px 4px rgba(11, 28, 48, 0.05);
+}
+
+.stitchTopInner {
+  max-width: 1280px;
+  height: 64px;
+  margin: 0 auto;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.stitchLogoText {
+  color: var(--blue-dark);
+  font-size: 1.5rem;
+  line-height: 2rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.stitchTopNav nav,
+.stitchTopActions,
+.stitchFooter nav {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.stitchTopNav a,
+.stitchTopActions button,
+.stitchFooter a,
+.stitchAuthFineprint button {
+  border: 0;
+  padding: 0;
+  color: var(--muted);
+  background: transparent;
+  text-decoration: none;
+  font-weight: 650;
+}
+
+.stitchTopActions button:first-child,
+.stitchAuthFineprint a,
+.stitchAuthFineprint button {
+  color: var(--blue-dark);
+}
+
+.stitchTopActions button:last-child {
+  height: 40px;
+  padding: 0 16px;
+  border-radius: 8px;
+  color: #ffffff;
+  background: var(--blue);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.stitchLoginMain {
+  flex: 1;
+  min-height: calc(100vh - 112px);
+  display: grid;
+  place-items: center;
+  padding: 40px 16px;
+}
+
+.stitchLoginCard {
+  width: min(100%, 448px);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--page);
+  box-shadow: var(--shadow);
+}
+
+.stitchLoginHeader {
+  padding: 32px 24px 24px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+  background: #ffffff;
+}
+
+.stitchIconBox,
+.stitchSideMark {
+  display: grid;
+  place-items: center;
+  color: #ffffff;
+  background: var(--blue);
+  border-radius: 12px;
+}
+
+.stitchIconBox {
+  width: 48px;
+  height: 48px;
+  margin: 0 auto 16px;
+}
+
+.stitchLoginHeader h1,
+.stitchAuthTitle h1,
+.stitchPageHeader h2 {
+  margin: 0 0 8px;
+  color: var(--ink);
+  font-size: 2rem;
+  line-height: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.stitchLoginHeader p,
+.stitchAuthTitle p,
+.stitchPageHeader p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.stitchLoginBody {
+  padding: 24px;
+  background: var(--page);
+}
+
+.stitchFormStack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.stitchField {
+  display: grid;
+  gap: 8px;
+  position: relative;
+}
+
+.stitchField span {
+  color: var(--muted);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.stitchField small {
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.fieldLink {
+  position: absolute;
+  top: 0;
+  right: 0;
+  border: 0;
+  padding: 0;
+  color: var(--blue-dark);
+  background: transparent;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  font-weight: 650;
+}
+
+.stitchInput {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 12px;
+  background: #ffffff;
+  color: var(--subtle);
+}
+
+.stitchInput.hasIcon input {
+  padding-left: 0;
+}
+
+.stitchInput:focus-within {
+  border-color: transparent;
+  box-shadow: 0 0 0 2px var(--blue);
+}
+
+.stitchInput input {
+  min-width: 0;
+  width: 100%;
+  height: 38px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+}
+
+.stitchInput.code input,
+.stitchTrackingCard pre,
+.stitchTrackingCard code {
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+.stitchInputAction {
+  width: 30px;
+  height: 30px;
+  border: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  color: var(--muted);
+  background: transparent;
+}
+
+.stitchPrimaryBtn {
+  min-height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 18px;
+  color: #ffffff;
+  background: var(--blue);
+  font-weight: 800;
+  box-shadow: var(--shadow);
+}
+
+.stitchPrimaryBtn:hover:not(:disabled) {
+  background: var(--blue-dark);
+}
+
+.stitchPrimaryBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.stitchGhostBtn {
+  min-height: 40px;
+  border: 0;
+  border-radius: 8px;
+  padding: 0 18px;
+  color: var(--muted);
+  background: transparent;
+  font-weight: 800;
+}
+
+.stitchGhostBtn:hover {
+  background: var(--surface-low);
+}
+
+.stitchAlert {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 11px 12px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.stitchAlert.error {
+  color: var(--error, #ba1a1a);
+  background: var(--error-container);
+  border: 1px solid rgba(186, 26, 26, 0.24);
+}
+
+.stitchAlert.success {
+  color: var(--green-dark);
+  background: rgba(0, 241, 253, 0.12);
+  border: 1px solid rgba(0, 105, 111, 0.24);
+}
+
+.stitchAlert.notice {
+  color: #755100;
+  background: #fff4d6;
+  border: 1px solid #f1d17b;
+}
+
+.stitchDivider {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  margin: 32px 0 24px;
+  border-top: 1px solid var(--line);
+}
+
+.stitchDivider span {
+  position: relative;
+  top: -10px;
+  padding: 0 16px;
+  color: var(--muted);
+  background: var(--page);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.stitchDisabledSocials {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.stitchDisabledSocials button,
+.stitchPreviewBtn {
+  height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--muted);
+  background: #ffffff;
+  font-weight: 650;
+}
+
+.stitchPreviewBtn {
+  width: 100%;
+  margin-top: 16px;
+  color: var(--blue-dark);
+}
+
+.stitchAuthFineprint {
+  margin-top: 24px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.stitchRegisterMain {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 48px 40px;
+}
+
+.stitchRegisterGrid {
+  width: min(100%, 1280px);
+  min-height: 600px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(420px, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.stitchRegisterForm {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 72px;
+}
+
+.stitchAuthTitle {
+  margin-bottom: 32px;
+}
+
+.stitchValuePanel {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  min-height: 600px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background:
+    linear-gradient(135deg, rgba(0, 100, 224, 0.24), transparent 42%),
+    linear-gradient(225deg, rgba(0, 241, 253, 0.16), transparent 48%),
+    var(--surface-low);
+}
+
+.stitchGlass {
+  margin: 48px;
+  padding: 28px;
+  border: 1px solid rgba(194, 198, 214, 0.65);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.stitchBadge {
+  width: max-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  color: var(--green-dark);
+  background: var(--secondary-container);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.stitchGlass h2 {
+  margin: 0 0 12px;
+  color: var(--ink);
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+.stitchGlass p {
+  margin: 0 0 22px;
+  color: var(--muted);
+  line-height: 1.5rem;
+}
+
+.stitchGlass ul {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.stitchGlass li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--ink);
+}
+
+.stitchFooter {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 32px 40px;
+  border-top: 1px solid var(--line);
+  background: #ffffff;
+}
+
+.stitchFooter div {
+  display: grid;
+  gap: 8px;
+}
+
+.stitchFooter span {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.stitchAppShell {
+  min-height: 100vh;
+  display: flex;
+  background: var(--page);
+  color: var(--ink);
+}
+
+.stitchSideNav {
+  width: 256px;
+  min-height: 100vh;
+  flex: 0 0 256px;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  border-right: 1px solid var(--line);
+  background: #ffffff;
+}
+
+.stitchSideHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 8px;
+}
+
+.stitchSideMark {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+}
+
+.stitchSideHeader h1 {
+  margin: 0;
+  color: var(--blue-dark);
+  font-size: 1.05rem;
+  line-height: 1.4rem;
+  font-weight: 900;
+}
+
+.stitchSideHeader p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.stitchSideCta {
+  min-height: 44px;
+  border: 0;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #ffffff;
+  background: var(--blue);
+  font-weight: 850;
+}
+
+.stitchNavLinks,
+.stitchSideFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stitchNavLinks {
+  flex: 1;
+}
+
+.stitchNavLinks button,
+.stitchSideFooter button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 12px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--muted);
+  background: transparent;
+  font-size: 0.75rem;
+  font-weight: 850;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.stitchNavLinks button:hover,
+.stitchSideFooter button:hover {
+  color: var(--ink);
+  background: var(--surface-low);
+}
+
+.stitchNavLinks button.active {
+  color: var(--blue-dark);
+  background: var(--surface-mid);
+}
+
+.stitchSideFooter {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.stitchUserBlock {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--page);
+}
+
+.stitchUserBlock div {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 32px;
+  border-radius: 999px;
+  color: #ffffff;
+  background: var(--blue);
+  font-size: 0.75rem;
+  font-weight: 900;
+}
+
+.stitchUserBlock span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.stitchMain {
+  flex: 1;
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 40px;
+}
+
+.stitchPageHeader {
+  max-width: 760px;
+  margin-bottom: 32px;
+}
+
+.stitchProgress {
+  max-width: 760px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+  align-items: start;
+  gap: 0;
+  margin-bottom: 48px;
+}
+
+.stitchProgress > i {
+  height: 2px;
+  margin-top: 16px;
+  background: var(--line);
+}
+
+.stitchProgressStep {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  text-align: center;
+  color: var(--muted);
+}
+
+.stitchProgressStep span {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--muted);
+  background: var(--surface-high);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.stitchProgressStep strong {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.stitchProgressStep.active {
+  color: var(--blue-dark);
+}
+
+.stitchProgressStep.active span {
+  color: #ffffff;
+  border-color: var(--blue);
+  background: var(--blue);
+}
+
+.stitchWizardGrid {
+  max-width: 1024px;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  gap: 24px;
+}
+
+.stitchWizardCard,
+.stitchGuideCard,
+.stitchTrackingCard,
+.stitchDeployBanner {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: var(--shadow);
+}
+
+.stitchWizardCard {
+  padding: 32px;
+}
+
+.stitchWizardCard h3 {
+  margin: 0 0 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+.stitchWizardActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 16px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.stitchGuideCard {
+  height: max-content;
+  padding: 24px;
+  color: #eaf1ff;
+  background: var(--inverse-surface);
+}
+
+.stitchGuideCard > div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.stitchGuideCard svg {
+  color: var(--secondary-container);
+}
+
+.stitchGuideCard h4 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.1rem;
+}
+
+.stitchGuideCard p,
+.stitchGuideCard li {
+  color: var(--tertiary-fixed-dim);
+  font-size: 0.875rem;
+  line-height: 1.35rem;
+}
+
+.stitchGuideCard ol {
+  display: grid;
+  gap: 8px;
+  margin: 16px 0 0;
+  padding-left: 20px;
+}
+
+.stitchDeployBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 24px;
+  padding: 24px;
+  background: var(--surface-low);
+}
+
+.stitchDeployBanner > div {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stitchDeployBanner span {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #2e7d32;
+  background: #e8f5e9;
+}
+
+.stitchDeployBanner h3 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.35rem;
+}
+
+.stitchDeployBanner p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.stitchDeployBanner > p {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.stitchDeployBanner i {
+  width: 12px;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--secondary-container);
+  box-shadow: 0 0 0 6px rgba(0, 241, 253, 0.18);
+}
+
+.stitchTrackingGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.stitchTrackingCard {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+.stitchTrackingCard header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.stitchTrackingCard h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--ink);
+  font-size: 1.35rem;
+}
+
+.stitchTrackingCard h3 svg:first-child {
+  color: var(--blue-dark);
+}
+
+.stitchTrackingCard p {
+  margin: 0 0 18px;
+  color: var(--muted);
+  line-height: 1.5rem;
+}
+
+.stitchTrackingCard pre {
+  flex: 1;
+  min-height: 190px;
+  max-height: 430px;
+  overflow: auto;
+  margin: 0;
+  padding: 40px 16px 16px;
+  border-radius: 8px;
+  color: #ffffff;
+  background: #1c2b33;
+  font-size: 0.8rem;
+  line-height: 1.45rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.stitchCopyBtn {
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 10px;
+  color: var(--muted);
+  background: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 750;
+}
+
+.stitchInput.code {
+  margin-bottom: 18px;
+  padding-right: 4px;
+}
+
+@media (max-width: 1020px) {
+  .stitchAppShell {
+    flex-direction: column;
+  }
+
+  .stitchSideNav {
+    width: 100%;
+    min-height: auto;
+    position: static;
+    flex-basis: auto;
+  }
+
+  .stitchNavLinks {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .stitchSideFooter {
+    display: none;
+  }
+
+  .stitchWizardGrid,
+  .stitchTrackingGrid,
+  .stitchRegisterGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .stitchValuePanel {
+    display: none;
+  }
+
+  .stitchRegisterForm {
+    padding: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  .stitchTopInner,
+  .stitchRegisterMain,
+  .stitchMain,
+  .stitchFooter {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  .stitchTopNav nav,
+  .stitchTopActions {
+    display: none;
+  }
+
+  .stitchFooter,
+  .stitchDeployBanner,
+  .stitchWizardActions,
+  .stitchTrackingCard header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .stitchNavLinks,
+  .stitchProgress {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .stitchProgress > i {
+    display: none;
+  }
+
+  .stitchProgressStep {
+    justify-items: start;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    text-align: left;
+  }
+
+  .stitchWizardCard,
+  .stitchGuideCard,
+  .stitchTrackingCard {
+    padding: 18px;
+  }
+
+  .stitchDisabledSocials {
+    grid-template-columns: 1fr;
+  }
+}

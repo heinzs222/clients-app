@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Tracking Configuration - CAPI Launcher</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                            "primary-fixed-dim": "#afc6ff",
+                            "secondary-container": "#00f1fd",
+                            "on-secondary-fixed-variant": "#004f53",
+                            "on-primary-fixed": "#001944",
+                            "error": "#ba1a1a",
+                            "tertiary-fixed": "#d5e5f0",
+                            "on-surface": "#0b1c30",
+                            "outline": "#727786",
+                            "surface-container-lowest": "#ffffff",
+                            "secondary-fixed-dim": "#00dce6",
+                            "on-primary-fixed-variant": "#004299",
+                            "on-background": "#0b1c30",
+                            "inverse-on-surface": "#eaf1ff",
+                            "inverse-surface": "#213145",
+                            "secondary": "#00696f",
+                            "surface-bright": "#f8f9ff",
+                            "on-tertiary-fixed-variant": "#3a4951",
+                            "tertiary": "#45555d",
+                            "surface-container-low": "#eff4ff",
+                            "surface-container-high": "#dce9ff",
+                            "surface-variant": "#d3e4fe",
+                            "on-error-container": "#93000a",
+                            "on-surface-variant": "#424754",
+                            "on-tertiary-fixed": "#0e1d25",
+                            "on-tertiary-container": "#deeffa",
+                            "primary": "#004db0",
+                            "outline-variant": "#c2c6d6",
+                            "on-tertiary": "#ffffff",
+                            "error-container": "#ffdad6",
+                            "on-error": "#ffffff",
+                            "inverse-primary": "#afc6ff",
+                            "surface-container": "#e5eeff",
+                            "primary-fixed": "#d9e2ff",
+                            "tertiary-fixed-dim": "#b9c9d3",
+                            "surface-tint": "#0059c8",
+                            "surface": "#f8f9ff",
+                            "on-primary": "#ffffff",
+                            "secondary-fixed": "#6ff6ff",
+                            "tertiary-container": "#5d6d76",
+                            "surface-container-highest": "#d3e4fe",
+                            "primary-container": "#0064e0",
+                            "on-secondary-fixed": "#002022",
+                            "surface-dim": "#cbdbf5",
+                            "background": "#f8f9ff",
+                            "on-secondary": "#ffffff",
+                            "on-secondary-container": "#006a6f",
+                            "on-primary-container": "#e6ebff"
+                    },
+                    "borderRadius": {
+                            "DEFAULT": "0.125rem",
+                            "lg": "0.25rem",
+                            "xl": "0.5rem",
+                            "full": "0.75rem"
+                    },
+                    "spacing": {
+                            "margin-mobile": "16px",
+                            "unit": "4px",
+                            "stack-gap": "16px",
+                            "gutter": "24px",
+                            "margin-desktop": "40px",
+                            "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                            "body-lg": ["Inter"],
+                            "body-sm": ["Inter"],
+                            "body-md": ["Inter"],
+                            "display": ["Inter"],
+                            "headline-lg": ["Inter"],
+                            "headline-md": ["Inter"],
+                            "headline-lg-mobile": ["Inter"],
+                            "code-snippet": ["JetBrains Mono"],
+                            "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                            "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                            "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                            "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                            "display": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                            "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                            "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                            "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                            "code-snippet": ["13px", {"lineHeight": "20px", "fontWeight": "450"}],
+                            "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .code-block-bg { background-color: #1C2B33; }
+        .electric-cyan-pulse { animation: pulse 2s infinite; }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 241, 253, 0.4); }
+            70% { box-shadow: 0 0 0 6px rgba(0, 241, 253, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 241, 253, 0); }
+        }
+        .lift-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 24px -8px rgba(0,0,0,0.08);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface flex min-h-screen">
+<!-- SideNavBar Component -->
+<nav class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface border-r border-outline-variant p-4 gap-stack-gap">
+<div class="flex flex-col mb-8">
+<span class="font-headline-sm text-headline-sm font-bold text-primary mb-6">CAPI Launcher</span>
+<div class="flex items-center gap-3 p-2 border border-outline-variant rounded-lg">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-sm">UP</div>
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm font-semibold text-on-surface">User Profile</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant text-xs">Pro Plan</span>
+</div>
+</div>
+</div>
+<button class="w-full bg-primary-container text-on-primary-container font-label-caps text-label-caps py-3 rounded-lg font-bold mb-4 flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined" style="font-size: 16px;">add</span>
+            New Endpoint
+        </button>
+<div class="flex-1 flex flex-col gap-2">
+<a class="flex items-center gap-3 p-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-all font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 p-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-all font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">settings_input_component</span>
+                Endpoints
+            </a>
+<a class="flex items-center gap-3 p-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-all font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">magic_button</span>
+                Setup Wizard
+            </a>
+<!-- Active State -->
+<a class="flex items-center gap-3 p-3 rounded-xl bg-primary-container text-on-primary-container font-label-caps text-label-caps scale-95 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">webhook</span>
+                Tracking
+            </a>
+</div>
+<div class="mt-auto border-t border-outline-variant pt-4 flex flex-col gap-2">
+<a class="flex items-center gap-3 p-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-all font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">menu_book</span>
+                Documentation
+            </a>
+<a class="flex items-center gap-3 p-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-all font-label-caps text-label-caps" href="#">
+<span class="material-symbols-outlined">help</span>
+                Support
+            </a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 md:ml-64 p-margin-mobile md:p-margin-desktop max-w-container-max mx-auto w-full flex flex-col gap-stack-gap h-full">
+<!-- Header -->
+<header class="mb-4">
+<h1 class="font-headline-lg text-headline-lg md:font-display md:text-display text-on-surface mb-2">Tracking Configuration</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Complete your integration by adding the tracking script to your site and verifying your webhook mappings.</p>
+</header>
+<!-- Deployment Status Banner -->
+<div class="bg-surface-container-low border border-outline-variant rounded-xl p-6 flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-[#E8F5E9] flex items-center justify-center">
+<span class="material-symbols-outlined text-[#2E7D32]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<h3 class="font-headline-md text-headline-md text-on-surface m-0">Successfully Deployed to Netlify</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant m-0 mt-1">Your endpoint is live and ready to receive events.</p>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-secondary-container electric-cyan-pulse"></span>
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">System Active</span>
+</div>
+</div>
+<!-- Two Column Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-gutter flex-1">
+<!-- Left Col: Tracking Script -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm lift-hover flex flex-col">
+<div class="flex items-center justify-between mb-4 border-b border-outline-variant pb-4">
+<h2 class="font-headline-md text-headline-md text-on-surface m-0 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">code</span>
+                        Your Tracking Script
+                    </h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-6">Paste this code snippet into the <code>&lt;head&gt;</code> section of your website, before the closing <code>&lt;/head&gt;</code> tag.</p>
+<div class="relative code-block-bg rounded-lg p-4 pt-10 flex-1 min-h-[200px]">
+<button class="absolute top-2 right-2 text-outline-variant hover:text-white flex items-center gap-1 font-body-sm text-body-sm bg-inverse-surface/50 px-2 py-1 rounded transition-colors" onclick="this.innerHTML='&lt;span class=\'material-symbols-outlined\' style=\'font-size:16px\'&gt;check&lt;/span&gt; Copied!'; setTimeout(() =&gt; this.innerHTML='&lt;span class=\'material-symbols-outlined\' style=\'font-size:16px\'&gt;content_copy&lt;/span&gt; Copy', 2000);">
+<span class="material-symbols-outlined" style="font-size:16px">content_copy</span>
+                        Copy
+                    </button>
+<pre class="font-code-snippet text-code-snippet text-white overflow-x-auto whitespace-pre-wrap break-all m-0"><code>&lt;!-- CAPI Launcher Tracking Code --&gt;
+&lt;script&gt;
+  !function(e,t,n,a,c){e.CAPI=e.CAPI||function(){(e.CAPI.q=e.CAPI.q||[]).push(arguments)},
+  e.CAPI.l=1*new Date;var r=t.createElement(n),s=t.getElementsByTagName(n)[0];
+  r.async=1,r.src=a,s.parentNode.insertBefore(r,s)}(window,document,"script",
+  "https://cdn.capilauncher.com/track.js");
+  
+  CAPI('init', 'evt_98f2a1b3c4d5e6f7');
+  CAPI('track', 'PageView');
+&lt;/script&gt;
+&lt;!-- End CAPI Launcher Tracking Code --&gt;</code></pre>
+</div>
+</div>
+<!-- Right Col: Webhook Mapping -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm lift-hover flex flex-col">
+<div class="flex items-center justify-between mb-4 border-b border-outline-variant pb-4">
+<h2 class="font-headline-md text-headline-md text-on-surface m-0 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">alt_route</span>
+                        GHL Webhook Mapping
+                    </h2>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mb-4">Send server-side events directly from GoHighLevel to this endpoint.</p>
+<div class="mb-6">
+<label class="font-label-caps text-label-caps text-on-surface-variant block mb-2">Endpoint URL</label>
+<div class="flex items-center gap-2">
+<input class="flex-1 h-10 border border-outline-variant rounded px-3 bg-surface text-on-surface font-code-snippet text-code-snippet focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none" readonly="" type="text" value="https://api.capilauncher.com/v1/wh/evt_98f2a1"/>
+<button class="h-10 px-3 border border-outline-variant rounded hover:bg-surface-container-low flex items-center justify-center text-on-surface-variant transition-colors" title="Copy URL">
+<span class="material-symbols-outlined">content_copy</span>
+</button>
+</div>
+</div>
+<h3 class="font-body-md text-body-md font-semibold text-on-surface mb-3 border-b border-surface-variant pb-2">Required Payload Fields</h3>
+<div class="flex-1 overflow-y-auto pr-2">
+<ul class="flex flex-col gap-3 m-0 p-0 list-none">
+<li class="flex items-center justify-between py-2 border-b border-surface-variant border-dashed">
+<span class="font-code-snippet text-code-snippet text-on-surface bg-surface-container px-2 py-1 rounded">event_id</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Unique string identifier</span>
+</li>
+<li class="flex items-center justify-between py-2 border-b border-surface-variant border-dashed">
+<span class="font-code-snippet text-code-snippet text-on-surface bg-surface-container px-2 py-1 rounded">fbp</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Browser ID (_fbp cookie)</span>
+</li>
+<li class="flex items-center justify-between py-2 border-b border-surface-variant border-dashed">
+<span class="font-code-snippet text-code-snippet text-on-surface bg-surface-container px-2 py-1 rounded">fbc</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Click ID (_fbc cookie)</span>
+</li>
+<li class="flex items-center justify-between py-2 border-b border-surface-variant border-dashed">
+<span class="font-code-snippet text-code-snippet text-on-surface bg-surface-container px-2 py-1 rounded">user_data.em</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Hashed Email (SHA256)</span>
+</li>
+<li class="flex items-center justify-between py-2 border-b border-surface-variant border-dashed">
+<span class="font-code-snippet text-code-snippet text-on-surface bg-surface-container px-2 py-1 rounded">user_data.ph</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Hashed Phone (SHA256)</span>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="mt-8 flex justify-end items-center gap-4 pt-6 border-t border-outline-variant">
+<button class="px-6 py-3 border border-outline-variant text-on-surface rounded font-body-md text-body-md font-semibold hover:bg-surface-container-low transition-colors">
+                Back to Setup
+            </button>
+<button class="px-6 py-3 bg-primary-container text-on-primary-container rounded font-body-md text-body-md font-semibold hover:opacity-90 transition-opacity flex items-center gap-2 shadow-sm">
+                Finish &amp; Go to Dashboard
+                <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+</div>
+</main>
+</body></html>

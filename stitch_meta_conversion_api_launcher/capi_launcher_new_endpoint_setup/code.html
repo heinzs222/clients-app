@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Setup Wizard - CAPI Launcher</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@450&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#afc6ff",
+                    "secondary-container": "#00f1fd",
+                    "on-secondary-fixed-variant": "#004f53",
+                    "on-primary-fixed": "#001944",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed": "#d5e5f0",
+                    "on-surface": "#0b1c30",
+                    "outline": "#727786",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed-dim": "#00dce6",
+                    "on-primary-fixed-variant": "#004299",
+                    "on-background": "#0b1c30",
+                    "inverse-on-surface": "#eaf1ff",
+                    "inverse-surface": "#213145",
+                    "secondary": "#00696f",
+                    "surface-bright": "#f8f9ff",
+                    "on-tertiary-fixed-variant": "#3a4951",
+                    "tertiary": "#45555d",
+                    "surface-container-low": "#eff4ff",
+                    "surface-container-high": "#dce9ff",
+                    "surface-variant": "#d3e4fe",
+                    "on-error-container": "#93000a",
+                    "on-surface-variant": "#424754",
+                    "on-tertiary-fixed": "#0e1d25",
+                    "on-tertiary-container": "#deeffa",
+                    "primary": "#004db0",
+                    "outline-variant": "#c2c6d6",
+                    "on-tertiary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#afc6ff",
+                    "surface-container": "#e5eeff",
+                    "primary-fixed": "#d9e2ff",
+                    "tertiary-fixed-dim": "#b9c9d3",
+                    "surface-tint": "#0059c8",
+                    "surface": "#f8f9ff",
+                    "on-primary": "#ffffff",
+                    "secondary-fixed": "#6ff6ff",
+                    "tertiary-container": "#5d6d76",
+                    "surface-container-highest": "#d3e4fe",
+                    "primary-container": "#0064e0",
+                    "on-secondary-fixed": "#002022",
+                    "surface-dim": "#cbdbf5",
+                    "background": "#f8f9ff",
+                    "on-secondary": "#ffffff",
+                    "on-secondary-container": "#006a6f",
+                    "on-primary-container": "#e6ebff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "margin-mobile": "16px",
+                    "unit": "4px",
+                    "stack-gap": "16px",
+                    "gutter": "24px",
+                    "margin-desktop": "40px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "body-lg": ["Inter"],
+                    "body-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "display": ["Inter"],
+                    "headline-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "headline-lg-mobile": ["Inter"],
+                    "code-snippet": ["JetBrains Mono"],
+                    "label-caps": ["Inter"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "body-sm": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                    "display": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "code-snippet": ["13px", {"lineHeight": "20px", "fontWeight": "450"}],
+                    "label-caps": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+    </style>
+</head>
+<body class="flex min-h-screen">
+<!-- SideNavBar Component -->
+<nav class="hidden md:flex flex-col h-screen w-64 fixed left-0 top-0 bg-surface border-r border-outline-variant p-4 gap-stack-gap z-40">
+<!-- Header -->
+<div class="flex items-center gap-3 px-2 py-4">
+<div class="w-10 h-10 rounded-full bg-primary-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary-container" data-icon="rocket_launch" data-weight="fill">rocket_launch</span>
+</div>
+<div>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">CAPI Launcher</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Pro Plan</p>
+</div>
+</div>
+<!-- Primary CTA -->
+<button class="w-full bg-primary-container text-on-primary font-label-caps text-label-caps py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-on-primary-fixed-variant transition-colors shadow-sm mb-4">
+<span class="material-symbols-outlined" data-icon="add">add</span>
+            New Endpoint
+        </button>
+<!-- Navigation Links -->
+<div class="flex-1 flex flex-col gap-1 overflow-y-auto">
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-caps text-label-caps">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="settings_input_component">settings_input_component</span>
+<span class="font-label-caps text-label-caps">Endpoints</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl bg-primary-container text-on-primary-container scale-95 transition-transform shadow-sm" href="#">
+<span class="material-symbols-outlined" data-icon="magic_button">magic_button</span>
+<span class="font-label-caps text-label-caps">Setup Wizard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-xl text-on-surface-variant hover:bg-surface-container-low transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="webhook">webhook</span>
+<span class="font-label-caps text-label-caps">Tracking</span>
+</a>
+</div>
+<!-- Footer Links -->
+<div class="flex flex-col gap-1 border-t border-outline-variant pt-4 mt-auto">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="menu_book">menu_book</span>
+<span class="font-label-caps text-label-caps">Documentation</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:text-primary transition-colors" href="#">
+<span class="material-symbols-outlined text-[20px]" data-icon="help">help</span>
+<span class="font-label-caps text-label-caps">Support</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 md:ml-64 p-margin-mobile md:p-margin-desktop w-full max-w-container-max mx-auto">
+<!-- Header Section -->
+<div class="mb-stack-gap md:mb-8">
+<h2 class="font-headline-lg-mobile md:font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">Create New Endpoint</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">Configure your new Conversions API endpoint. We'll guide you through connecting your Meta Pixel and provisioning the server infrastructure.</p>
+</div>
+<!-- Progress Indicator -->
+<div class="mb-stack-gap md:mb-12">
+<div class="flex items-center max-w-3xl">
+<!-- Step 1 (Active) -->
+<div class="flex flex-col items-center relative z-10 w-1/3">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-label-caps text-label-caps shadow-sm mb-2 ring-4 ring-surface">1</div>
+<span class="font-label-caps text-label-caps text-primary text-center">Client Configuration</span>
+</div>
+<!-- Connector 1-2 -->
+<div class="flex-1 h-[2px] bg-outline-variant -ml-[16.66%] -mr-[16.66%] z-0 relative top-[-14px]"></div>
+<!-- Step 2 (Pending) -->
+<div class="flex flex-col items-center relative z-10 w-1/3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant border border-outline-variant flex items-center justify-center font-label-caps text-label-caps mb-2 ring-4 ring-surface">2</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant text-center">Provision Server</span>
+</div>
+<!-- Connector 2-3 -->
+<div class="flex-1 h-[2px] bg-outline-variant -ml-[16.66%] -mr-[16.66%] z-0 relative top-[-14px]"></div>
+<!-- Step 3 (Pending) -->
+<div class="flex flex-col items-center relative z-10 w-1/3">
+<div class="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant border border-outline-variant flex items-center justify-center font-label-caps text-label-caps mb-2 ring-4 ring-surface">3</div>
+<span class="font-label-caps text-label-caps text-on-surface-variant text-center">Verify Connection</span>
+</div>
+</div>
+</div>
+<!-- Form Canvas (Bento Grid approach for form + help) -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter max-w-5xl">
+<!-- Left Col: Form -->
+<div class="lg:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 md:p-8 shadow-sm">
+<h3 class="font-headline-md text-headline-md text-on-surface mb-6 border-b border-outline-variant pb-4">Client Details</h3>
+<form class="flex flex-col gap-stack-gap">
+<!-- Client Name -->
+<div class="flex flex-col gap-2">
+<label class="font-label-caps text-label-caps text-on-surface" for="clientName">Client / Project Name</label>
+<input class="h-10 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-md font-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-shadow" id="clientName" placeholder="e.g. Acme Corp Web Store" type="text"/>
+<p class="font-body-sm text-body-sm text-on-surface-variant">A recognizable name to identify this endpoint in your dashboard.</p>
+</div>
+<!-- Meta Dataset ID -->
+<div class="flex flex-col gap-2 mt-4">
+<div class="flex justify-between items-center">
+<label class="font-label-caps text-label-caps text-on-surface" for="datasetId">Meta Dataset ID (Pixel ID)</label>
+<button class="text-primary hover:underline font-body-sm text-body-sm flex items-center gap-1" type="button">
+<span class="material-symbols-outlined text-[16px]" data-icon="help_outline">help_outline</span>
+                                Where to find this
+                            </button>
+</div>
+<input class="h-10 px-3 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-md font-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-shadow" id="datasetId" placeholder="e.g. 123456789012345" type="text"/>
+</div>
+<!-- Meta Access Token -->
+<div class="flex flex-col gap-2 mt-4">
+<div class="flex justify-between items-center">
+<label class="font-label-caps text-label-caps text-on-surface" for="accessToken">Conversions API Access Token</label>
+</div>
+<div class="relative">
+<input class="h-10 w-full px-3 pr-10 rounded-lg border border-outline-variant bg-surface-container-lowest text-body-md font-body-md text-on-surface focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent transition-shadow font-code-snippet" id="accessToken" placeholder="Paste your long-lived access token here" type="password"/>
+<button class="absolute right-2 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface" type="button">
+<span class="material-symbols-outlined text-[20px]" data-icon="visibility">visibility</span>
+</button>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Generate this token in Meta Events Manager under Settings &gt; Conversions API.</p>
+</div>
+<!-- Actions -->
+<div class="flex items-center justify-end gap-4 mt-8 pt-6 border-t border-outline-variant">
+<button class="px-6 py-2 rounded-lg font-label-caps text-label-caps text-on-surface-variant hover:bg-surface-container-low transition-colors" type="button">Cancel</button>
+<button class="px-6 py-2 rounded-lg bg-primary-container text-on-primary font-label-caps text-label-caps hover:bg-on-primary-fixed-variant transition-colors shadow-sm flex items-center gap-2" type="button">
+                            Next: Provision Endpoint
+                            <span class="material-symbols-outlined text-[18px]" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</form>
+</div>
+<!-- Right Col: Contextual Help Card -->
+<div class="hidden lg:flex flex-col gap-gutter">
+<div class="bg-inverse-surface text-on-tertiary border border-outline-variant rounded-xl p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-secondary-container" data-icon="lightbulb">lightbulb</span>
+<h4 class="font-headline-sm text-headline-sm text-surface-bright">Setup Guide</h4>
+</div>
+<div class="font-body-sm text-body-sm text-tertiary-fixed-dim space-y-4">
+<p>To configure your endpoint, you need two pieces of information from your Meta Business Manager:</p>
+<ol class="list-decimal pl-5 space-y-2 text-surface-container-highest">
+<li>Go to Data Sources in Events Manager.</li>
+<li>Select your Pixel (Dataset).</li>
+<li>Go to the <strong class="text-surface-bright font-semibold">Settings</strong> tab.</li>
+<li>Scroll down to find the Dataset ID.</li>
+<li>Further down, under Conversions API, click <strong class="text-surface-bright font-semibold">Generate access token</strong>.</li>
+</ol>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>
