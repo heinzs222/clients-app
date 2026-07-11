@@ -1,7 +1,7 @@
 {
-  "name": "CAPI Tracker",
-  "short_name": "CAPI Tracker",
-  "description": "Meta Conversions API endpoint provisioning and event deduplication software.",
+  "name": "Simple CAPI",
+  "short_name": "Simple CAPI",
+  "description": "Coming-soon Meta Conversions API endpoint provisioning and event deduplication software.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f4f7fd",

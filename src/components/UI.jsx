@@ -35,7 +35,8 @@ function RouteLink({ route, navigate, className = "", children, ariaLabel }) {
 export function Brand({ compact = false }) {
   return (
     <span className={`brand ${compact ? "compact" : ""}`}>
-      <img className="brandLogo" src="/capi-tracker-logo.png" alt="CAPI Tracker" width="1241" height="239" />
+      <img className="brandMark" src="/capi-tracker-mark.png" alt="" width="254" height="236" />
+      <strong className="brandName">Simple CAPI</strong>
     </span>
   );
 }
@@ -44,11 +45,11 @@ export function PublicHeader({ route, navigate, user }) {
   return (
     <header className="publicHeader">
       <div className="publicHeaderInner">
-        <RouteLink className="brandButton" route="home" navigate={navigate} ariaLabel="CAPI Tracker home">
+        <RouteLink className="brandButton" route="home" navigate={navigate} ariaLabel="Simple CAPI home">
           <Brand compact />
         </RouteLink>
         <nav className="publicNav" aria-label="Main navigation">
-          <RouteLink className={route === "home" ? "active" : ""} route="home" navigate={navigate}>Product</RouteLink>
+          <RouteLink className={route === "home" ? "active" : ""} route="home" navigate={navigate}>Home</RouteLink>
           <RouteLink className={route === "docs" ? "active" : ""} route="docs" navigate={navigate}>Docs</RouteLink>
           <RouteLink className={route === "status" ? "active" : ""} route="status" navigate={navigate}>Status</RouteLink>
         </nav>
@@ -56,10 +57,7 @@ export function PublicHeader({ route, navigate, user }) {
           {user ? (
             <button className="button primary small" type="button" onClick={() => navigate("dashboard")}>Open dashboard</button>
           ) : (
-            <>
-              <RouteLink className="button ghost small" route="login" navigate={navigate}>Log in</RouteLink>
-              <RouteLink className="button primary small" route="register" navigate={navigate}>Get started</RouteLink>
-            </>
+            <RouteLink className="button ghost small" route="login" navigate={navigate}>Log in</RouteLink>
           )}
         </div>
       </div>
@@ -73,7 +71,7 @@ export function PublicFooter({ navigate }) {
       <div className="publicFooterInner">
         <div>
           <Brand compact />
-          <p>&copy; 2026 CAPI Tracker. All rights reserved.</p>
+          <p>&copy; 2026 Simple CAPI. All rights reserved.</p>
         </div>
         <nav aria-label="Legal navigation">
           <RouteLink route="privacy" navigate={navigate}>Privacy Policy</RouteLink>

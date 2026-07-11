@@ -1,12 +1,12 @@
-# CAPI Tracker
+# Simple CAPI
 
-CAPI Tracker is an authenticated React application that provisions one isolated Netlify Meta Conversions API endpoint per client.
+Simple CAPI is an authenticated React application that provisions one isolated Netlify Meta Conversions API endpoint per client.
 
 ## What it creates
 
 For every client, the app:
 
-1. Creates a separate Netlify site owned by the signed-in CAPI Tracker user.
+1. Creates a separate Netlify site owned by the signed-in Simple CAPI user.
 2. Stores `META_DATASET_ID`, `META_ACCESS_TOKEN`, and `META_GRAPH_API_VERSION` in that site's environment.
 3. Deploys `/.netlify/functions/meta-capi-lead`.
 4. Deploys a stable `/tracker.js` loader and a content-hashed, minified tracker core for same-document HTML forms.
@@ -18,7 +18,7 @@ The browser tracker is intentionally minified and split for smaller delivery and
 
 ## App host environment
 
-Set these variables on the Netlify project hosting the authenticated CAPI Tracker backend:
+Set these variables on the Netlify project hosting the authenticated Simple CAPI backend:
 
 ```text
 NETLIFY_AUTH_TOKEN=your_netlify_personal_access_token
@@ -60,7 +60,7 @@ The app uses Netlify Identity for registration, email confirmation, login, logou
 
 After deploying the app:
 
-1. Open the CAPI Tracker backend project in Netlify.
+1. Open the Simple CAPI backend project in Netlify.
 2. Go to **Project configuration > Access & security > Visitor access > Identity**.
 3. Enable Identity.
 4. Use **Invite only** registration for a private agency workspace, or configure `CAPI_ALLOWED_EMAILS` before allowing open registration.
@@ -82,8 +82,6 @@ Open:
 ```text
 http://localhost:8888
 ```
-
-Use **Preview the local workspace** on the login screen. Local preview bypasses Identity only on `localhost` and `127.0.0.1`; deployed requests still require a valid Identity session.
 
 For the native Netlify runtime, use:
 

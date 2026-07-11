@@ -212,7 +212,7 @@ async function netlifyFetch(path, options = {}) {
       signal: controller.signal,
       headers: {
         "Authorization": `Bearer ${token}`,
-        "User-Agent": "CAPI Tracker",
+        "User-Agent": "Simple CAPI",
         ...(options.headers || {})
       }
     });
@@ -298,7 +298,7 @@ async function createLemonCheckout(request, user) {
         attributes: {
           custom_price: price,
           product_options: {
-            name: "CAPI Tracker endpoint credit",
+            name: "Simple CAPI endpoint credit",
             description: "Creates one isolated Meta Conversions API endpoint.",
             redirect_url: `${origin}/?view=setup&checkout=success&order_id=[order_id]`,
             receipt_button_text: "Create your endpoint",
@@ -1136,7 +1136,7 @@ function trackerScriptSource() {
       window.dispatchEvent(new CustomEvent("capi-launcher:event", { detail: detail }));
       window.dispatchEvent(new CustomEvent("capi-launcher:lead", { detail: detail }));
     } catch (error) {}
-    if (CFG.debug && window.console) window.console.info("CAPI Tracker tracked " + payload.event_name, detail);
+    if (CFG.debug && window.console) window.console.info("Simple CAPI tracked " + payload.event_name, detail);
   }
 
   function trackForm(form, options) {

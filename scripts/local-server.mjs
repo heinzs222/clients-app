@@ -103,5 +103,5 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(port, "127.0.0.1", () => {
-  process.stdout.write(`CAPI Tracker local server: http://localhost:${port}\n`);
+  process.stdout.write(`Simple CAPI local server: http://localhost:${port}\n`);
 });

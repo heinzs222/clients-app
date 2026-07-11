@@ -163,115 +163,27 @@ try {
   await customFormPage.close();
 
   await page.goto(`${baseUrl}/`, { waitUntil: "networkidle" });
-  assert(await page.getByRole("heading", { name: /Meta Conversions API tracking/ }).isVisible(), "Home page did not render.");
+  assert(await page.getByRole("heading", { name: /Simple CAPI is coming soon/ }).isVisible(), "Coming-soon home page did not render.");
   await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-home.png"), fullPage: true });
 
-  await page.goto(`${baseUrl}/?preview=1&view=dashboard`, { waitUntil: "networkidle" });
-  assert(await page.getByRole("heading", { name: "Dashboard" }).isVisible(), "Dashboard did not render in local preview.");
-  const dashboardHasEndpoints = await page.locator(".endpointTable").count() > 0;
-  const dashboardIsEmpty = await page.getByText("No endpoints yet").isVisible().catch(() => false);
-  assert(dashboardHasEndpoints || dashboardIsEmpty, "Dashboard endpoint state did not render.");
-
-  await page.route("**/.netlify/functions/create-client-capi?action=list", async (route) => {
-    await route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify({
-        success: true,
-        count: 1,
-        endpoints: [{
-          id: "11111111-1111-4111-8111-111111111111",
-          client_name: "Example Home Services",
-          dataset_id: "123456789012345",
-          graph_version: "v23.0",
-          site_name: "dhc-example-home-services",
-          site_url: "https://example-client.netlify.app",
-          endpoint: "https://example-client.netlify.app/.netlify/functions/meta-capi-lead",
-          tracker_url: "https://example-client.netlify.app/tracker.js",
-          admin_url: "https://app.netlify.com/projects/example-client",
-          state: "ready",
-          created_at: "2026-07-10T12:00:00.000Z",
-          updated_at: "2026-07-11T12:00:00.000Z"
-        }]
-      })
-    });
-  });
-  await page.goto(`${baseUrl}/?preview=1&view=endpoints`, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Example Home Services", exact: true }).click();
-  assert(await page.getByRole("heading", { name: "Example Home Services" }).isVisible(), "Tracking detail did not open.");
-  assert(await page.getByText("Lead form script", { exact: true }).isVisible(), "Tracker install panel did not render.");
-  await page.getByRole("button", { name: /Schedule confirmation/ }).click();
-  assert(await page.getByText("Schedule confirmation script", { exact: true }).isVisible(), "Schedule installer did not render.");
-  assert(await page.getByText("Confirmation page only", { exact: true }).isVisible(), "Schedule placement warning did not render.");
-  const scheduleInstallCode = await page.locator(".codePanel pre").first().innerText();
-  assert(scheduleInstallCode.includes('data-event-name="Schedule"'), "Schedule installer generated the wrong event name.");
-  assert(scheduleInstallCode.includes('data-trigger="page-load"'), "Schedule installer omitted the page-load trigger.");
-  assert(!scheduleInstallCode.includes("data-form-selector"), "Schedule installer included an irrelevant form selector.");
-  await page.getByRole("button", { name: /GHL mapping/ }).click();
-  assert(await page.getByText("GHL JSON body", { exact: true }).isVisible(), "GHL mapping panel did not render.");
-  await page.getByRole("button", { name: /Match data/ }).click();
-  assert(await page.getByText("8 signal groups supported").isVisible(), "Match-data panel did not render.");
-
-  await page.goto(`${baseUrl}/?preview=1&view=setup`, { waitUntil: "networkidle" });
-  assert(await page.getByRole("heading", { name: "Create new endpoint" }).isVisible(), "Setup wizard did not render.");
-  assert(await page.getByLabel("Client or project name").isVisible(), "Setup form fields are not accessible by label.");
-
-  async function mockPaidAppPage(availableCredits) {
-    const billingPage = await context.newPage();
-    await billingPage.route("**/.netlify/functions/create-client-capi?**", (route) => {
-      const action = new URL(route.request().url()).searchParams.get("action");
-      if (action === "status") {
-        return route.fulfill({ contentType: "application/json", body: JSON.stringify({ success: true, ready: true, user_limit: 25, billing: { required: true, configured: true, provider: "lemonsqueezy", price_cents: 500, currency: "USD", mode: "test" } }) });
-      }
-      if (action === "billing") {
-        return route.fulfill({ contentType: "application/json", body: JSON.stringify({ success: true, billing: { required: true, configured: true, exempt: false, provider: "lemonsqueezy", price_cents: 500, currency: "USD", mode: "test", available_credits: availableCredits, available_order_id: availableCredits ? "42001" : "", payments: [] } }) });
-      }
-      if (action === "list") {
-        return route.fulfill({ contentType: "application/json", body: JSON.stringify({ success: true, endpoints: [], count: 0 }) });
-      }
-      return route.continue();
-    });
-    await billingPage.goto(`${baseUrl}/?preview=1&view=setup`, { waitUntil: "networkidle" });
-    return billingPage;
-  }
-
-  const unpaidPage = await mockPaidAppPage(0);
-  assert(await unpaidPage.getByRole("heading", { name: "Endpoint credit" }).isVisible(), "Lemon Squeezy payment gate did not render.");
-  assert(await unpaidPage.getByRole("button", { name: /Pay \$5\.00 securely/ }).isVisible(), "Lemon Squeezy Checkout command did not render.");
-  await unpaidPage.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-payment.png"), fullPage: true });
-  await unpaidPage.goto(`${baseUrl}/?preview=1&view=billing`, { waitUntil: "networkidle" });
-  assert(await unpaidPage.getByRole("heading", { name: "Billing" }).isVisible(), "Billing page did not render.");
-  await unpaidPage.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-billing.png"), fullPage: true });
-  await unpaidPage.setViewportSize({ width: 390, height: 844 });
-  await unpaidPage.goto(`${baseUrl}/?preview=1&view=setup`, { waitUntil: "networkidle" });
-  const paymentOverflow = await unpaidPage.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-  assert(paymentOverflow <= 1, `Mobile payment page has ${paymentOverflow}px horizontal overflow.`);
-  await unpaidPage.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-payment-mobile.png"), fullPage: true });
-  await unpaidPage.close();
-
-  const creditedPage = await mockPaidAppPage(1);
-  assert(await creditedPage.getByLabel("Client or project name").isVisible(), "Paid endpoint credit did not unlock provisioning.");
-  assert(await creditedPage.getByText("Payment confirmed", { exact: true }).isVisible(), "Paid credit confirmation did not render.");
-  await creditedPage.close();
-
   await page.setViewportSize({ width: 390, height: 844 });
-  await page.reload({ waitUntil: "networkidle" });
+  await page.goto(`${baseUrl}/`, { waitUntil: "networkidle" });
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-  assert(overflow <= 1, `Mobile page has ${overflow}px horizontal overflow.`);
-  await page.getByRole("button", { name: "Open navigation" }).click();
-  assert(await page.locator(".sideNav.open").isVisible(), "Mobile navigation did not open.");
-  await page.waitForTimeout(250);
-  await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-mobile.png"), fullPage: true });
+  assert(overflow <= 1, `Mobile home page has ${overflow}px horizontal overflow.`);
+  await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-home-mobile.png"), fullPage: true });
 
   await page.goto(`${baseUrl}/?view=login`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Welcome back" }).isVisible(), "Login page did not render.");
+  assert(await page.getByText("Preview the local workspace").count() === 0, "Local preview control should not render.");
   await page.getByRole("button", { name: "Create one" }).click();
   assert(await page.getByRole("heading", { name: "Create your account" }).isVisible(), "Registration page did not render.");
+  assert(await page.getByText("Preview the local workspace").count() === 0, "Local preview control should not render on registration.");
 
   await page.goto(`${baseUrl}/?view=status`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Provisioning service" }).isVisible(), "Status page did not render.");
 
   assert(runtimeErrors.length === 0, runtimeErrors.join("\n"));
-  process.stdout.write("Smoke test passed: tracker, Lemon Squeezy gate, paid credit, dashboard, GHL mapping, mobile, auth, and status.\n");
+  process.stdout.write("Smoke test passed: tracker, coming-soon home, mobile layout, auth, and status.\n");
 } finally {
   await browser.close();
 }

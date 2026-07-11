@@ -21,7 +21,6 @@ export default function AuthScreen({
   onRegister,
   onForgot,
   onReset,
-  onPreview,
   busy,
   error,
   message,
@@ -32,7 +31,6 @@ export default function AuthScreen({
   const isRegister = mode === "register";
   const isForgot = mode === "forgot";
   const isReset = mode === "reset";
-  const canPreview = ["localhost", "127.0.0.1"].includes(window.location.hostname);
 
   function submit(event) {
     event.preventDefault();
@@ -169,7 +167,6 @@ export default function AuthScreen({
             {isLogin ? <p>Need an account? <button type="button" onClick={() => navigate("register")}>Create one</button></p> : null}
             {isForgot || isReset ? <p><button type="button" onClick={() => navigate("login")}>Back to login</button></p> : null}
           </div>
-          {canPreview && isLogin ? <button className="previewButton" type="button" onClick={onPreview}>Preview the local workspace</button> : null}
         </section>
       </main>
       <PublicFooter navigate={navigate} />

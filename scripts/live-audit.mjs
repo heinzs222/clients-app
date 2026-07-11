@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { chromium } from "playwright-core";
 
-const baseUrl = (process.env.APP_URL || "https://capi-tracker.vercel.app").replace(/\/$/, "");
+const baseUrl = (process.env.APP_URL || "https://simplecapi.com").replace(/\/$/, "");
 const executablePath = process.env.CHROME_PATH || [
   "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
   "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe"
@@ -39,7 +39,7 @@ try {
     await page.locator("h1").waitFor({ state: "visible" });
 
     const pageState = await page.evaluate(() => {
-      const logo = document.querySelector('img[src="/capi-tracker-logo.png"]');
+      const logo = document.querySelector('img[src="/capi-tracker-mark.png"]');
       const canonical = document.querySelector('link[rel="canonical"]');
       return {
         title: document.title,
@@ -51,8 +51,8 @@ try {
       };
     });
 
-    assert(pageState.title.includes("CAPI Tracker"), `${viewport.name} title is incorrect.`);
-    assert(pageState.h1.includes("Meta Conversions API"), `${viewport.name} H1 is missing the primary topic.`);
+    assert(pageState.title.includes("Simple CAPI"), `${viewport.name} title is incorrect.`);
+    assert(pageState.h1.includes("coming soon"), `${viewport.name} H1 is missing the coming-soon message.`);
     assert(pageState.logoReady, `${viewport.name} brand logo did not load.`);
     assert(pageState.canonical === `${baseUrl}/`, `${viewport.name} canonical URL is incorrect.`);
     assert(pageState.horizontalOverflow <= 1, `${viewport.name} layout has horizontal overflow.`);
@@ -75,7 +75,7 @@ try {
   for (const route of ["docs", "privacy", "terms", "status", "login", "register", "forgot-password"]) {
     const response = await page.goto(`${baseUrl}/${route}`, { waitUntil: "networkidle" });
     assert(response?.status() === 200, `/${route} did not return 200.`);
-    assert((await page.title()).includes("CAPI Tracker"), `/${route} has an incorrect title.`);
+    assert((await page.title()).includes("Simple CAPI"), `/${route} has an incorrect title.`);
   }
 
   const status = await context.request.get(`${baseUrl}/.netlify/functions/create-client-capi?action=status`);

@@ -109,18 +109,31 @@ pre,
 }
 
 .brand {
-  line-height: 0;
+  gap: 10px;
+  line-height: 1;
   white-space: nowrap;
 }
 
-.brandLogo {
-  width: 186px;
-  height: auto;
+.brandMark {
+  width: 34px;
+  height: 34px;
   display: block;
+  object-fit: contain;
 }
 
-.brand.compact .brandLogo {
-  width: 156px;
+.brandName {
+  color: var(--ink);
+  font-size: 22px;
+  font-weight: 820;
+}
+
+.brand.compact .brandMark {
+  width: 30px;
+  height: 30px;
+}
+
+.brand.compact .brandName {
+  font-size: 18px;
 }
 
 .brandButton {
@@ -428,6 +441,170 @@ button:disabled {
 
 .publicFooter nav a:hover {
   color: var(--blue-dark);
+}
+
+.comingSoonPage {
+  background: #f4f7fd;
+}
+
+.comingSoonHero {
+  width: min(1180px, calc(100% - 48px));
+  min-height: calc(100vh - 216px);
+  margin: 0 auto;
+  padding: 84px 0;
+  display: grid;
+  grid-template-columns: minmax(0, 0.96fr) minmax(420px, 0.78fr);
+  align-items: center;
+  gap: 72px;
+}
+
+.comingSoonCopy h1 {
+  max-width: 720px;
+  margin: 20px 0 22px;
+  color: var(--ink);
+  font-size: 58px;
+  line-height: 1.05;
+  font-weight: 820;
+}
+
+.comingSoonCopy > p {
+  max-width: 680px;
+  margin-bottom: 30px;
+  color: #3d4b62;
+  font-size: 19px;
+  line-height: 1.68;
+}
+
+.comingSoonActions,
+.comingSoonStatus {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.comingSoonStatus {
+  margin-top: 28px;
+  gap: 18px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.comingSoonStatus span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.comingSoonStatus svg {
+  color: var(--green);
+}
+
+.comingSoonPanel {
+  overflow: hidden;
+  color: #d8e7ff;
+  background: var(--navy);
+  border: 1px solid #263c55;
+  border-radius: 8px;
+  box-shadow: 0 24px 60px rgba(11, 28, 48, 0.16);
+}
+
+.comingSoonPanel > header {
+  min-height: 92px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px;
+  background: #f8faff;
+  border-bottom: 1px solid #d8e1ee;
+}
+
+.comingSoonPanel > header img {
+  width: 48px;
+  height: 48px;
+  display: block;
+  object-fit: contain;
+}
+
+.comingSoonPanel > header span,
+.comingSoonPanel > header strong {
+  display: block;
+}
+
+.comingSoonPanel > header span {
+  margin-bottom: 4px;
+  color: #506075;
+  font-size: 12px;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.comingSoonPanel > header strong {
+  color: var(--ink);
+  font-size: 22px;
+}
+
+.comingSoonChecklist {
+  padding: 26px;
+  display: grid;
+  gap: 12px;
+}
+
+.comingSoonChecklist p {
+  min-height: 54px;
+  margin: 0;
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  align-items: center;
+  gap: 13px;
+  padding: 12px 14px;
+  color: #b8cbe0;
+  background: #172e46;
+  border: 1px solid #37516c;
+  border-radius: 5px;
+  font-weight: 700;
+}
+
+.comingSoonChecklist svg {
+  color: #84a1bf;
+}
+
+.comingSoonChecklist p.done svg {
+  color: #48d6a8;
+}
+
+.comingSoonChecklist p.active {
+  color: #fff;
+  border-color: var(--cyan);
+}
+
+.comingSoonChecklist p.active svg {
+  color: var(--cyan);
+}
+
+.comingSoonPanel > footer {
+  min-height: 62px;
+  padding: 16px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: #0d1d2e;
+  border-top: 1px solid #263c55;
+}
+
+.comingSoonPanel > footer span {
+  color: #91a8c3;
+  font-size: 13px;
+}
+
+.comingSoonPanel > footer strong {
+  color: #8de7c9;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .homeHero {
@@ -1027,18 +1204,6 @@ button:disabled {
   color: var(--blue-dark);
   background: transparent;
   border: 0;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.previewButton {
-  width: calc(100% - 68px);
-  min-height: 40px;
-  margin: 0 34px 30px;
-  color: var(--blue-dark);
-  background: var(--blue-soft);
-  border: 1px dashed #9ebcf3;
-  border-radius: 4px;
   font-weight: 700;
   cursor: pointer;
 }
@@ -2760,6 +2925,15 @@ button:disabled {
 }
 
 @media (max-width: 1180px) {
+  .comingSoonHero {
+    grid-template-columns: 1fr 0.8fr;
+    gap: 42px;
+  }
+
+  .comingSoonCopy h1 {
+    font-size: 48px;
+  }
+
   .homeHero {
     grid-template-columns: 1fr 1fr;
     gap: 34px;
@@ -2815,12 +2989,19 @@ button:disabled {
 @media (max-width: 960px) {
   .publicHeaderInner,
   .publicFooterInner,
+  .comingSoonHero,
   .homeHero,
   .principleBand,
   .registerMain,
   .contentPage,
   .statusPage {
     width: min(calc(100% - 32px), 1280px);
+  }
+
+  .comingSoonHero {
+    min-height: auto;
+    padding: 64px 0;
+    grid-template-columns: 1fr;
   }
 
   .publicNav {
@@ -2947,8 +3128,13 @@ button:disabled {
     gap: 10px;
   }
 
-  .publicHeader .brandLogo {
-    width: 132px;
+  .publicHeader .brandMark {
+    width: 28px;
+    height: 28px;
+  }
+
+  .publicHeader .brandName {
+    font-size: 16px;
   }
 
   .publicActions .button.ghost {
@@ -2967,6 +3153,29 @@ button:disabled {
 
   .publicFooter nav {
     grid-template-columns: 1fr;
+  }
+
+  .comingSoonCopy h1 {
+    font-size: 40px;
+  }
+
+  .comingSoonCopy > p {
+    font-size: 16px;
+  }
+
+  .comingSoonActions .button {
+    width: 100%;
+  }
+
+  .comingSoonStatus {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .comingSoonPanel > footer {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .homeHeroCopy h1 {
@@ -3053,12 +3262,6 @@ button:disabled {
   .authFineprint {
     padding-left: 22px;
     padding-right: 22px;
-  }
-
-  .previewButton {
-    width: calc(100% - 44px);
-    margin-left: 22px;
-    margin-right: 22px;
   }
 
   .registerMain {

@@ -34,4 +34,4 @@ Allow: /
 User-agent: Amazonbot
 Allow: /
 
-Sitemap: https://capi-tracker.vercel.app/sitemap.xml
+Sitemap: https://simplecapi.com/sitemap.xml

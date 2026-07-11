@@ -270,7 +270,7 @@ function PaymentStep({ billing, onCheckout, refreshBilling, onCancel }) {
       <Progress stage={1} />
       <div className="wizardLayout paymentLayout">
         <section className="wizardCard paymentCard">
-          <header><span className="paymentIcon"><CreditCard size={23} /></span><div><h2>Endpoint credit</h2><p>Lemon Squeezy securely processes the payment as merchant of record. Card details never pass through CAPI Tracker.</p></div></header>
+          <header><span className="paymentIcon"><CreditCard size={23} /></span><div><h2>Endpoint credit</h2><p>Lemon Squeezy securely processes the payment as merchant of record. Card details never pass through Simple CAPI.</p></div></header>
           <div className="priceLine"><strong>{money(billing.price_cents, billing.currency)}</strong><span>one-time</span></div>
           <ul className="paymentIncludes">
             <li><CheckCircle2 size={18} /><span>One dedicated Netlify CAPI endpoint</span></li>

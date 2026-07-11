@@ -1,6 +1,6 @@
-# CAPI Tracker
+# Simple CAPI
 
-CAPI Tracker is a web application for agencies and operators managing Meta Conversions API tracking across multiple client accounts.
+Simple CAPI is a web application for agencies and operators managing Meta Conversions API tracking across multiple client accounts.
 
 ## Product model
 
@@ -28,12 +28,12 @@ One endpoint credit costs $5 USD as a one-time purchase. There is no recurring s
 
 ## Important limitations
 
-CAPI Tracker cannot inspect cross-origin iframe contents from an outer page. It does not guarantee a particular Event Match Quality score, attribution result, advertising outcome, or revenue result. Users are responsible for consent, notices, lawful processing, and authorization to manage every connected dataset.
+Simple CAPI cannot inspect cross-origin iframe contents from an outer page. It does not guarantee a particular Event Match Quality score, attribution result, advertising outcome, or revenue result. Users are responsible for consent, notices, lawful processing, and authorization to manage every connected dataset.
 
 ## Key pages
 
-- [Homepage](https://capi-tracker.vercel.app/)
-- [Documentation](https://capi-tracker.vercel.app/docs)
-- [Privacy Policy](https://capi-tracker.vercel.app/privacy)
-- [Terms of Service](https://capi-tracker.vercel.app/terms)
-- [System Status](https://capi-tracker.vercel.app/status)
+- [Homepage](https://simplecapi.com/)
+- [Documentation](https://simplecapi.com/docs)
+- [Privacy Policy](https://simplecapi.com/privacy)
+- [Terms of Service](https://simplecapi.com/terms)
+- [System Status](https://simplecapi.com/status)
