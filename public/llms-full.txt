@@ -1,39 +1,7 @@
 # Simple CAPI
 
-Simple CAPI is a web application for agencies and operators managing Meta Conversions API tracking across multiple client accounts.
+Coming soon.
 
-## Product model
-
-Each endpoint credit provisions one client-isolated Netlify site. That site contains a hosted browser tracker and a serverless function that sends normalized Meta conversion events. Every generated site receives its own Meta Dataset ID and access token environment variables.
-
-## Security model
-
-Meta access tokens are submitted over HTTPS to the authenticated server-side provisioner. They are stored in the generated client's Netlify environment and are never embedded in the browser tracker, saved to browser storage, logged intentionally, or returned by the provisioning API.
-
-## Browser and server tracking
-
-The tracker captures supported form fields, attribution parameters, `_fbp`, `_fbc`, user agent, landing page, and referrer. It generates one event ID and uses it for both the browser Pixel event and the server event so Meta can deduplicate them.
-
-## Supported conversion flows
-
-- Lead form tracking on standard or custom same-document forms.
-- Direct browser-to-Netlify delivery with no GoHighLevel workflow.
-- Optional GoHighLevel inbound webhook and custom webhook relay.
-- Schedule tracking on the post-booking confirmation page.
-- Server-side normalization and SHA-256 hashing of customer match fields.
-
-## Pricing
-
-One endpoint credit costs $5 USD as a one-time purchase. There is no recurring subscription for an endpoint credit.
-
-## Important limitations
-
-Simple CAPI cannot inspect cross-origin iframe contents from an outer page. It does not guarantee a particular Event Match Quality score, attribution result, advertising outcome, or revenue result. Users are responsible for consent, notices, lawful processing, and authorization to manage every connected dataset.
-
-## Key pages
+## Key page
 
 - [Homepage](https://simplecapi.com/)
-- [Documentation](https://simplecapi.com/docs)
-- [Privacy Policy](https://simplecapi.com/privacy)
-- [Terms of Service](https://simplecapi.com/terms)
-- [System Status](https://simplecapi.com/status)

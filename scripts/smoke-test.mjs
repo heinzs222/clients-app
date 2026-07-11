@@ -163,7 +163,10 @@ try {
   await customFormPage.close();
 
   await page.goto(`${baseUrl}/`, { waitUntil: "networkidle" });
-  assert(await page.getByRole("heading", { name: /Simple CAPI is coming soon/ }).isVisible(), "Coming-soon home page did not render.");
+  assert(await page.getByRole("heading", { name: "Simple CAPI" }).isVisible(), "Coming-soon home page did not render.");
+  assert(await page.getByText("Coming soon.", { exact: true }).isVisible(), "Coming-soon teaser line did not render.");
+  assert(await page.locator(".publicHeader, .publicFooter").count() === 0, "Home page should not render public header or footer.");
+  assert(await page.locator("a, button").count() === 0, "Home page should not render links or buttons.");
   await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-home.png"), fullPage: true });
 
   await page.setViewportSize({ width: 390, height: 844 });

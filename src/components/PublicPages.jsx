@@ -1,12 +1,9 @@
 import React from "react";
 import {
-  Activity,
   ArrowRight,
   CreditCard,
   Database,
-  Server,
-  ShieldCheck,
-  Webhook
+  Server
 } from "lucide-react";
 import { Notice, PublicFooter, PublicHeader, StatusPill } from "./UI.jsx";
 
@@ -20,50 +17,16 @@ function PageFrame({ route, navigate, user, children }) {
   );
 }
 
-export function HomePage({ navigate, user }) {
+export function HomePage() {
   return (
-    <PageFrame route="home" navigate={navigate} user={user}>
-      <main className="comingSoonPage">
-        <section className="comingSoonHero">
-          <div className="comingSoonCopy">
-            <span className="eyebrow"><i /> simplecapi.com</span>
-            <h1>Simple CAPI is coming soon.</h1>
-            <p>We are preparing a secure workspace for launching server-side Meta CAPI endpoints, keeping client tokens out of browser code, and preserving event IDs through form and webhook flows.</p>
-            <div className="comingSoonActions">
-              {user ? (
-                <button className="button primary" type="button" onClick={() => navigate("dashboard")}>Open dashboard</button>
-              ) : (
-                <button className="button secondary" type="button" onClick={() => navigate("login")}>Log in</button>
-              )}
-            </div>
-            <div className="comingSoonStatus">
-              <span><Activity size={17} /> Private build in progress</span>
-              <span><ShieldCheck size={17} /> Server-side credential storage</span>
-            </div>
-          </div>
-
-          <div className="comingSoonPanel" aria-label="Simple CAPI launch status">
-            <header>
-              <img src="/capi-tracker-mark.png" alt="" width="254" height="236" />
-              <div>
-                <span>Simple CAPI</span>
-                <strong>Launch status</strong>
-              </div>
-            </header>
-            <div className="comingSoonChecklist">
-              <p className="done"><ShieldCheck size={19} /><span>Core tracker secured</span></p>
-              <p className="done"><Server size={19} /><span>Provisioner connected</span></p>
-              <p className="active"><Webhook size={19} /><span>Final launch polish</span></p>
-              <p><Database size={19} /><span>Production domain ready</span></p>
-            </div>
-            <footer>
-              <span>simplecapi.com</span>
-              <strong>Opening soon</strong>
-            </footer>
-          </div>
-        </section>
-      </main>
-    </PageFrame>
+    <main className="comingSoonPage" aria-label="Simple CAPI coming soon">
+      <section className="comingSoonHero">
+        <img className="comingSoonMark" src="/capi-tracker-mark.png" alt="" width="254" height="236" />
+        <p className="comingSoonKicker">simplecapi.com</p>
+        <h1>Simple CAPI</h1>
+        <p className="comingSoonLine">Coming soon.</p>
+      </section>
+    </main>
   );
 }
 

@@ -444,167 +444,51 @@ button:disabled {
 }
 
 .comingSoonPage {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 32px;
   background: #f4f7fd;
 }
 
 .comingSoonHero {
-  width: min(1180px, calc(100% - 48px));
-  min-height: calc(100vh - 216px);
-  margin: 0 auto;
-  padding: 84px 0;
+  width: min(560px, 100%);
   display: grid;
-  grid-template-columns: minmax(0, 0.96fr) minmax(420px, 0.78fr);
-  align-items: center;
-  gap: 72px;
+  justify-items: center;
+  text-align: center;
 }
 
-.comingSoonCopy h1 {
-  max-width: 720px;
-  margin: 20px 0 22px;
-  color: var(--ink);
-  font-size: 58px;
-  line-height: 1.05;
-  font-weight: 820;
-}
-
-.comingSoonCopy > p {
-  max-width: 680px;
-  margin-bottom: 30px;
-  color: #3d4b62;
-  font-size: 19px;
-  line-height: 1.68;
-}
-
-.comingSoonActions,
-.comingSoonStatus {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.comingSoonStatus {
-  margin-top: 28px;
-  gap: 18px;
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 650;
-}
-
-.comingSoonStatus span {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.comingSoonStatus svg {
-  color: var(--green);
-}
-
-.comingSoonPanel {
-  overflow: hidden;
-  color: #d8e7ff;
-  background: var(--navy);
-  border: 1px solid #263c55;
-  border-radius: 8px;
-  box-shadow: 0 24px 60px rgba(11, 28, 48, 0.16);
-}
-
-.comingSoonPanel > header {
-  min-height: 92px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 22px;
-  background: #f8faff;
-  border-bottom: 1px solid #d8e1ee;
-}
-
-.comingSoonPanel > header img {
-  width: 48px;
-  height: 48px;
+.comingSoonMark {
+  width: 66px;
+  height: 62px;
   display: block;
   object-fit: contain;
+  margin-bottom: 24px;
 }
 
-.comingSoonPanel > header span,
-.comingSoonPanel > header strong {
-  display: block;
-}
-
-.comingSoonPanel > header span {
-  margin-bottom: 4px;
-  color: #506075;
+.comingSoonKicker {
+  margin: 0 0 18px;
+  color: var(--muted);
   font-size: 12px;
-  font-weight: 750;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
 
-.comingSoonPanel > header strong {
-  color: var(--ink);
-  font-size: 22px;
-}
-
-.comingSoonChecklist {
-  padding: 26px;
-  display: grid;
-  gap: 12px;
-}
-
-.comingSoonChecklist p {
-  min-height: 54px;
+.comingSoonHero h1 {
   margin: 0;
-  display: grid;
-  grid-template-columns: 36px 1fr;
-  align-items: center;
-  gap: 13px;
-  padding: 12px 14px;
-  color: #b8cbe0;
-  background: #172e46;
-  border: 1px solid #37516c;
-  border-radius: 5px;
-  font-weight: 700;
+  color: var(--ink);
+  font-size: 64px;
+  line-height: 1;
+  font-weight: 830;
 }
 
-.comingSoonChecklist svg {
-  color: #84a1bf;
-}
-
-.comingSoonChecklist p.done svg {
-  color: #48d6a8;
-}
-
-.comingSoonChecklist p.active {
-  color: #fff;
-  border-color: var(--cyan);
-}
-
-.comingSoonChecklist p.active svg {
-  color: var(--cyan);
-}
-
-.comingSoonPanel > footer {
-  min-height: 62px;
-  padding: 16px 22px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  background: #0d1d2e;
-  border-top: 1px solid #263c55;
-}
-
-.comingSoonPanel > footer span {
-  color: #91a8c3;
-  font-size: 13px;
-}
-
-.comingSoonPanel > footer strong {
-  color: #8de7c9;
-  font-size: 13px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+.comingSoonLine {
+  margin: 20px 0 0;
+  color: #3d4b62;
+  font-size: 22px;
+  line-height: 1.35;
+  font-weight: 650;
 }
 
 .homeHero {
@@ -2925,15 +2809,6 @@ button:disabled {
 }
 
 @media (max-width: 1180px) {
-  .comingSoonHero {
-    grid-template-columns: 1fr 0.8fr;
-    gap: 42px;
-  }
-
-  .comingSoonCopy h1 {
-    font-size: 48px;
-  }
-
   .homeHero {
     grid-template-columns: 1fr 1fr;
     gap: 34px;
@@ -2989,19 +2864,12 @@ button:disabled {
 @media (max-width: 960px) {
   .publicHeaderInner,
   .publicFooterInner,
-  .comingSoonHero,
   .homeHero,
   .principleBand,
   .registerMain,
   .contentPage,
   .statusPage {
     width: min(calc(100% - 32px), 1280px);
-  }
-
-  .comingSoonHero {
-    min-height: auto;
-    padding: 64px 0;
-    grid-template-columns: 1fr;
   }
 
   .publicNav {
@@ -3155,27 +3023,12 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
-  .comingSoonCopy h1 {
-    font-size: 40px;
+  .comingSoonHero h1 {
+    font-size: 44px;
   }
 
-  .comingSoonCopy > p {
-    font-size: 16px;
-  }
-
-  .comingSoonActions .button {
-    width: 100%;
-  }
-
-  .comingSoonStatus {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .comingSoonPanel > footer {
-    align-items: flex-start;
-    flex-direction: column;
+  .comingSoonLine {
+    font-size: 18px;
   }
 
   .homeHeroCopy h1 {
