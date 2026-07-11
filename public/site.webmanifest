@@ -1,0 +1,17 @@
+{
+  "name": "CAPI Tracker",
+  "short_name": "CAPI Tracker",
+  "description": "Meta Conversions API endpoint provisioning and event deduplication software.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f7fd",
+  "theme_color": "#0b5ee8",
+  "icons": [
+    {
+      "src": "/capi-tracker-mark.png",
+      "sizes": "254x236",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

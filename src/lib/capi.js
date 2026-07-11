@@ -1,0 +1,186 @@
+export const DEFAULT_TRACKING = Object.freeze({
+  ghlWebhookUrl: "",
+  eventName: "Lead",
+  trigger: "form",
+  formSelector: "form",
+  country: "US",
+  currency: "USD",
+  leadValue: "1.00",
+  source: "Estimate Form",
+  tags: "estimate-lead,website-form",
+  projectType: "",
+  projectTimeline: "",
+  testEventCode: "",
+  onlyMetaTraffic: false,
+  firePixel: true
+});
+
+const SETTINGS_KEY = "capi-launcher:tracking:v2";
+
+export function cleanDatasetId(value) {
+  return String(value || "").replace(/\D/g, "").slice(0, 30);
+}
+
+export function cleanAccessToken(value) {
+  const compact = String(value || "").replace(/\s+/g, "");
+  const match = compact.match(/EAA[A-Za-z0-9_-]+/);
+  return (match ? match[0] : compact).slice(0, 2000);
+}
+
+export function isValidDatasetId(value) {
+  return /^\d{6,30}$/.test(cleanDatasetId(value));
+}
+
+export function isValidAccessToken(value) {
+  return /^EAA[A-Za-z0-9_-]{20,}$/.test(cleanAccessToken(value));
+}
+
+export function escapeAttribute(value) {
+  return String(value || "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+export function trackerTag(endpoint, settings = DEFAULT_TRACKING) {
+  const config = { ...DEFAULT_TRACKING, ...settings };
+  const attributes = [
+    ["src", endpoint.tracker_url],
+    ["data-capi-endpoint", endpoint.endpoint],
+    ["data-ghl-webhook-url", config.ghlWebhookUrl],
+    ["data-event-name", config.eventName || "Lead"],
+    ["data-trigger", config.trigger || "form"],
+    ["data-form-selector", config.trigger === "page-load" ? "" : (config.formSelector || "form")],
+    ["data-country", config.country || "US"],
+    ["data-currency", config.currency || "USD"],
+    ["data-value", config.leadValue || "1.00"],
+    ["data-source", config.source || "Estimate Form"],
+    ["data-tags", config.tags || "estimate-lead,website-form"],
+    ["data-project-type", config.projectType],
+    ["data-project-timeline", config.projectTimeline],
+    ["data-test-event-code", config.testEventCode],
+    ["data-only-meta-traffic", String(Boolean(config.onlyMetaTraffic))],
+    ["data-fire-pixel", String(Boolean(config.firePixel))]
+  ]
+    .filter(([, value]) => value !== "" && value !== null && value !== undefined)
+    .map(([name, value]) => `${name}="${escapeAttribute(value)}"`)
+    .join(" ");
+
+  return `<script ${attributes} defer></script>`;
+}
+
+export function ghlWebhookBody() {
+  return JSON.stringify({
+    event_name: "{{inboundWebhookRequest.event_name}}",
+    event_id: "{{inboundWebhookRequest.event_id}}",
+    test_event_code: "{{inboundWebhookRequest.test_event_code}}",
+    full_name: "{{inboundWebhookRequest.full_name}}",
+    first_name: "{{inboundWebhookRequest.first_name}}",
+    last_name: "{{inboundWebhookRequest.last_name}}",
+    email: "{{inboundWebhookRequest.email}}",
+    phone: "{{inboundWebhookRequest.phone}}",
+    external_id: "{{inboundWebhookRequest.external_id}}",
+    client_ip_address: "{{inboundWebhookRequest.headers.cf-connecting-ip}}",
+    address1: "{{inboundWebhookRequest.address1}}",
+    city: "{{inboundWebhookRequest.city}}",
+    state: "{{inboundWebhookRequest.state}}",
+    postal_code: "{{inboundWebhookRequest.postal_code}}",
+    country: "{{inboundWebhookRequest.country}}",
+    business_name: "{{inboundWebhookRequest.business_name}}",
+    source: "{{inboundWebhookRequest.source}}",
+    tags: "{{inboundWebhookRequest.tags}}",
+    project_type: "{{inboundWebhookRequest.project_type}}",
+    project_timeline: "{{inboundWebhookRequest.project_timeline}}",
+    landing_page: "{{inboundWebhookRequest.landing_page}}",
+    page_url: "{{inboundWebhookRequest.page_url}}",
+    referrer: "{{inboundWebhookRequest.referrer}}",
+    client_user_agent: "{{inboundWebhookRequest.client_user_agent}}",
+    fbclid: "{{inboundWebhookRequest.fbclid}}",
+    fbp: "{{inboundWebhookRequest.fbp}}",
+    fbc: "{{inboundWebhookRequest.fbc}}",
+    utm_source: "{{inboundWebhookRequest.utm_source}}",
+    utm_medium: "{{inboundWebhookRequest.utm_medium}}",
+    utm_campaign: "{{inboundWebhookRequest.utm_campaign}}",
+    utm_content: "{{inboundWebhookRequest.utm_content}}",
+    utm_term: "{{inboundWebhookRequest.utm_term}}",
+    utm_adset: "{{inboundWebhookRequest.utm_adset}}",
+    utm_ad: "{{inboundWebhookRequest.utm_ad}}",
+    utm_id: "{{inboundWebhookRequest.utm_id}}",
+    hsa_acc: "{{inboundWebhookRequest.hsa_acc}}",
+    hsa_cam: "{{inboundWebhookRequest.hsa_cam}}",
+    hsa_grp: "{{inboundWebhookRequest.hsa_grp}}",
+    hsa_ad: "{{inboundWebhookRequest.hsa_ad}}",
+    hsa_src: "{{inboundWebhookRequest.hsa_src}}",
+    hsa_net: "{{inboundWebhookRequest.hsa_net}}",
+    hsa_ver: "{{inboundWebhookRequest.hsa_ver}}",
+    currency: "{{inboundWebhookRequest.currency}}",
+    value: "{{inboundWebhookRequest.value}}",
+    submitted_at: "{{inboundWebhookRequest.submitted_at}}"
+  }, null, 2);
+}
+
+function storageNamespace(userId) {
+  return `${SETTINGS_KEY}:${userId || "local"}`;
+}
+
+export function loadTrackingSettings(userId) {
+  try {
+    const value = JSON.parse(window.localStorage.getItem(storageNamespace(userId)) || "{}");
+    return value && typeof value === "object" ? value : {};
+  } catch {
+    return {};
+  }
+}
+
+export function saveTrackingSettings(userId, endpointId, settings) {
+  try {
+    const current = loadTrackingSettings(userId);
+    current[endpointId] = { ...DEFAULT_TRACKING, ...settings };
+    window.localStorage.setItem(storageNamespace(userId), JSON.stringify(current));
+  } catch {
+    // Tracking preferences are a convenience; endpoint operation does not depend on local storage.
+  }
+}
+
+export function removeTrackingSettings(userId, endpointId) {
+  try {
+    const current = loadTrackingSettings(userId);
+    delete current[endpointId];
+    window.localStorage.setItem(storageNamespace(userId), JSON.stringify(current));
+  } catch {
+    // Ignore browsers where storage is unavailable.
+  }
+}
+
+export function formatDate(value) {
+  if (!value) return "Not available";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Not available";
+  return new Intl.DateTimeFormat(undefined, {
+    month: "short",
+    day: "numeric",
+    year: "numeric"
+  }).format(date);
+}
+
+export function endpointState(endpoint) {
+  if (["ready", "current"].includes(endpoint?.state)) return "active";
+  if (["building", "uploading", "processing"].includes(endpoint?.state)) return "pending";
+  return "error";
+}
+
+export async function copyText(value) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+  const input = document.createElement("textarea");
+  input.value = value;
+  input.style.position = "fixed";
+  input.style.opacity = "0";
+  document.body.appendChild(input);
+  input.select();
+  document.execCommand("copy");
+  input.remove();
+}

@@ -1,69 +1,126 @@
-# CAPI Launcher
+# CAPI Tracker
 
-Client-facing app flow:
+CAPI Tracker is an authenticated React application that provisions one isolated Netlify Meta Conversions API endpoint per client.
 
-1. Client enters:
-   - business name
-   - Meta dataset ID
-   - Meta access token
-2. The app calls `/.netlify/functions/create-client-capi`.
-3. The function creates a separate Netlify site for that client.
-4. The function stores the Meta values as Netlify environment variables.
-5. The function deploys `meta-capi-lead`.
-6. The function also deploys a hosted `tracker.js` file.
-7. The app returns the live endpoint and the install tag:
+## What it creates
 
-```text
-https://client-site.netlify.app/.netlify/functions/meta-capi-lead
-```
+For every client, the app:
 
-```html
-<script src="https://client-site.netlify.app/tracker.js" data-ghl-webhook-url="PASTE_GHL_INBOUND_WEBHOOK_URL" defer></script>
-```
+1. Creates a separate Netlify site owned by the signed-in CAPI Tracker user.
+2. Stores `META_DATASET_ID`, `META_ACCESS_TOKEN`, and `META_GRAPH_API_VERSION` in that site's environment.
+3. Deploys `/.netlify/functions/meta-capi-lead`.
+4. Deploys a stable `/tracker.js` loader and a content-hashed, minified tracker core for same-document HTML forms.
+5. Returns the endpoint URL, tracker tag, and GHL Custom Webhook JSON mapping.
 
-## Required env vars for this app
+The Meta access token is never embedded in the tracker, saved to browser storage, logged by application code, or returned by the provisioning API.
 
-Set these on the Netlify site that hosts this app:
+The browser tracker is intentionally minified and split for smaller delivery and reliable caching. Like all browser JavaScript, it remains inspectable by a determined visitor; security comes from keeping credentials and Meta requests in the server-side function.
+
+## App host environment
+
+Set these variables on the Netlify project hosting the authenticated CAPI Tracker backend:
 
 ```text
 NETLIFY_AUTH_TOKEN=your_netlify_personal_access_token
 NETLIFY_ACCOUNT_SLUG=your_netlify_team_slug
+LEMONSQUEEZY_API_KEY=your_lemonsqueezy_api_key
+LEMONSQUEEZY_STORE_ID=your_numeric_store_id
+LEMONSQUEEZY_VARIANT_ID=your_numeric_one_time_product_variant_id
 ```
 
-Do not expose `NETLIFY_AUTH_TOKEN` in browser code.
-
-For local testing, create `.env` in this folder with the same variables and run:
+Optional safeguards:
 
 ```text
-npx netlify dev
+CAPI_ALLOWED_EMAILS=owner@example.com,operator@example.com
+CAPI_MAX_ENDPOINTS_PER_USER=25
+CAPI_REQUIRE_PAYMENT=true
+CAPI_ENDPOINT_PRICE_CENTS=500
+CAPI_BILLING_EXEMPT_EMAILS=owner@example.com
+LEMONSQUEEZY_TEST_MODE=true
 ```
 
-Open the Netlify Dev URL, usually:
+`CAPI_ALLOWED_EMAILS` limits endpoint management to an explicit comma-separated allowlist. Without it, any confirmed Identity user can use the provisioner, subject to the per-user endpoint limit.
+
+## Lemon Squeezy billing
+
+New endpoints cost `$5 USD` each. Pricing is enforced by the server; changing browser code cannot bypass checkout.
+
+1. Create a Lemon Squeezy store, complete identity verification, and connect a supported payout account.
+2. Create a one-time software product with a `$5 USD` variant.
+3. Create an API key and add it with the numeric store and variant IDs to the backend environment.
+4. Keep `CAPI_REQUIRE_PAYMENT=true`, `CAPI_ENDPOINT_PRICE_CENTS=500`, and `LEMONSQUEEZY_TEST_MODE=true` while testing.
+5. Add the owner's login email to `CAPI_BILLING_EXEMPT_EMAILS` if internal endpoints should not require payment.
+6. Complete a test checkout, then set `LEMONSQUEEZY_TEST_MODE=false` after the live store and product are approved.
+
+The app creates Lemon Squeezy-hosted one-time checkouts. Before provisioning, it retrieves the order server-side and verifies the authenticated email, store, variant, amount, currency, test/live mode, payment status, and refund state. Redemption is tied to a deterministic endpoint name and recorded in the generated endpoint manifest so one order cannot create multiple endpoints.
+
+## Authentication setup
+
+The app uses Netlify Identity for registration, email confirmation, login, logout, invitations, and password recovery.
+
+After deploying the app:
+
+1. Open the CAPI Tracker backend project in Netlify.
+2. Go to **Project configuration > Access & security > Visitor access > Identity**.
+3. Enable Identity.
+4. Use **Invite only** registration for a private agency workspace, or configure `CAPI_ALLOWED_EMAILS` before allowing open registration.
+5. Keep HTTPS enabled on the production domain.
+
+The management function uses Netlify's modern function runtime so authenticated sessions are checked server-side. State-changing requests also require a same-origin browser request.
+
+## Local development
+
+Create `.env` from `.env.example`, then run:
+
+```text
+npm install
+npm run dev:local
+```
+
+Open:
 
 ```text
 http://localhost:8888
 ```
 
-Do not use the plain Vite URL for endpoint creation. Vite serves the React UI only and does not run Netlify functions.
+Use **Preview the local workspace** on the login screen. Local preview bypasses Identity only on `localhost` and `127.0.0.1`; deployed requests still require a valid Identity session.
 
-## Important
+For the native Netlify runtime, use:
 
-## Authentication
+```text
+npm run dev:netlify
+```
+## Client installation
 
-The app uses Netlify Identity for registration, login, email confirmation, logout, and password recovery.
+After creating an endpoint:
 
-Before using auth in production:
+1. Open the endpoint's **Install tracker** tab.
+2. Add the GHL inbound webhook URL if GHL should receive the form first.
+3. Select the correct country and currency.
+4. Paste the generated script into the actual page containing the form.
+5. Submit one real test form so GHL exposes the inbound fields.
+6. Add a GHL Custom Webhook action after contact creation.
+7. Use the generated Netlify function URL and paste the generated JSON body.
 
-1. Deploy this app to Netlify.
-2. In the Netlify project, go to Project configuration > Identity.
-3. Enable Identity.
-4. Set registration to Open or Invite only.
-5. Keep HTTPS enabled on the production domain.
+If no GHL inbound URL is configured, the tracker posts directly to the generated CAPI endpoint.
 
-The provisioning function requires a logged-in Identity user for `POST` requests, so the login screen is not cosmetic.
+For Meta Test Events, paste the temporary `TEST...` value into **Meta test event code** before copying the tracker tag. Submit the real form while Test Events is open, then clear the code and replace the temporary tag so production events are no longer marked as tests.
 
-The generated endpoint is the backend. The generated `tracker.js` is the page-side capture layer.
+## Tracker limits
 
-Use the install tag inside the actual custom form page. If `data-ghl-webhook-url` is set, the tracker posts the captured fields to the GHL inbound webhook as a hidden POST form. If it is not set, the tracker falls back to posting directly to the generated Netlify CAPI endpoint.
+The tracker handles standard and dynamically inserted same-document forms, plus programmatic `form.submit()` calls. It cannot inspect a form inside a cross-origin iframe. For an iframe form, install the tracker inside the iframe document or map the form platform's own webhook into the generated endpoint.
 
-The client does not need to see the function code.
+For appointment conversions, select **Schedule confirmation** in the endpoint's Install Tracker screen. The generated tag includes `data-trigger="page-load"` and must be installed only on the page reached after a successful booking. The Lead tag stores matching identity data in session storage so the confirmation-page Schedule event can reuse it. Both browser and server Schedule events share one event ID, and confirmation-page reloads are suppressed for five minutes.
+
+The tracker improves match-data coverage and browser/server deduplication. It cannot guarantee a specific Meta Event Match Quality score or attribution outcome.
+
+## Commands
+
+```text
+npm run build
+npm run check
+npm run test:generated
+npm run test:smoke
+npm run dev:local
+npm run dev:netlify
+```

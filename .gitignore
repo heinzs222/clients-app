@@ -1,5 +1,6 @@
 # Local Netlify folder
 .netlify
+.vercel
 
 # Local secrets
 .env
@@ -8,3 +9,8 @@
 # Dependencies and build output
 node_modules
 dist
+
+# Local runtime logs
+*.log
+
+.vercel

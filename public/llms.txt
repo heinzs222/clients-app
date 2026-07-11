@@ -1,0 +1,19 @@
+# CAPI Tracker
+
+> CAPI Tracker is software for agencies and operators who need isolated Meta Conversions API endpoints for multiple clients.
+
+## Core capabilities
+
+- Provision a separate Netlify serverless endpoint for each client.
+- Keep Meta Dataset access tokens in server-side environment variables.
+- Capture browser attribution and supported customer match fields.
+- Deduplicate browser and server Lead and Schedule events with a shared event ID.
+- Generate direct-install tracker tags and optional GoHighLevel webhook mappings.
+
+## Canonical site
+
+- [CAPI Tracker](https://capi-tracker.vercel.app/): Product overview and endpoint pricing.
+- [Documentation](https://capi-tracker.vercel.app/docs): Installation, deduplication, matching, and testing guidance.
+- [Privacy Policy](https://capi-tracker.vercel.app/privacy): Account, credential, event, and payment data handling.
+- [Terms of Service](https://capi-tracker.vercel.app/terms): Authorized use and endpoint credit terms.
+- [System Status](https://capi-tracker.vercel.app/status): Provisioner and checkout configuration status.
