@@ -43,6 +43,8 @@ LEMONSQUEEZY_TEST_MODE=true
 
 `CAPI_ALLOWED_EMAILS` limits endpoint management to an explicit comma-separated allowlist. Without it, any confirmed Identity user can use the provisioner, subject to the per-user endpoint limit.
 
+Leave `CAPI_BILLING_EXEMPT_EMAILS` empty when every production endpoint must consume a paid credit. Local Netlify development requests bypass payment so the checkout flow can be developed without creating test orders; the workspace labels this state as development access.
+
 ## Lemon Squeezy billing
 
 New endpoints cost `$5 USD` each. Pricing is enforced by the server; changing browser code cannot bypass checkout.
@@ -52,7 +54,7 @@ New endpoints cost `$5 USD` each. Pricing is enforced by the server; changing br
 3. Create and publish a one-time software product with a `$5 USD` variant.
 4. Create an API key and add it with the numeric store and variant IDs to the backend environment.
 5. Keep `CAPI_REQUIRE_PAYMENT=true`, `CAPI_ENDPOINT_PRICE_CENTS=500`, and `LEMONSQUEEZY_TEST_MODE=true` while testing.
-6. Add the owner's login email to `CAPI_BILLING_EXEMPT_EMAILS` if internal endpoints should not require payment.
+6. Keep `CAPI_BILLING_EXEMPT_EMAILS` empty unless a deliberate internal billing bypass is required.
 7. Complete a test checkout, then replace the test key and IDs and set `LEMONSQUEEZY_TEST_MODE=false` after the live store and product are approved.
 
 The app creates Lemon Squeezy-hosted one-time checkouts. Before provisioning, it retrieves the order server-side and verifies the authenticated email, store, variant, amount, currency, test/live mode, payment status, and refund state. Redemption is tied to a deterministic endpoint name and recorded in the generated endpoint manifest so one order cannot create multiple endpoints.
@@ -72,6 +74,8 @@ After deploying the app:
 The management function uses Netlify's modern function runtime so authenticated sessions are checked server-side. State-changing requests also require a same-origin browser request.
 
 ## Local development
+
+The deployed Vercel frontend currently shows a link-free coming-soon screen and redirects product, documentation, and authentication routes to `/`. The full product remains available only on localhost while private development continues. The Netlify management API still enforces authentication, origin checks, and the configured email allowlist.
 
 Create `.env` from `.env.example`, then run:
 

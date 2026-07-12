@@ -25,6 +25,19 @@ function PageFrame({ route, navigate, user, children }) {
   );
 }
 
+export function ComingSoonPage() {
+  return (
+    <main className="comingSoonPage" aria-label="Simple CAPI coming soon">
+      <section className="comingSoonHero">
+        <img className="comingSoonMark" src="/capi-tracker-mark.png" alt="" width="254" height="236" />
+        <p className="comingSoonKicker">simplecapi.com</p>
+        <h1>Simple CAPI</h1>
+        <p className="comingSoonLine">Coming soon.</p>
+      </section>
+    </main>
+  );
+}
+
 export function HomePage({ navigate, user }) {
   return (
     <PageFrame route="home" navigate={navigate} user={user}>

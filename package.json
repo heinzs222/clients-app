@@ -8,7 +8,7 @@
     "dev:local": "npm run build && node scripts/local-server.mjs",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "check": "npm run build && node --check netlify/functions/create-client-capi.mjs",
+    "check": "npm run build && node --check netlify/functions/create-client-capi.mjs && node scripts/auth-error-test.mjs",
     "test:smoke": "node scripts/smoke-test.mjs",
     "test:generated": "node scripts/generated-artifacts-test.mjs",
     "test:live": "node scripts/live-audit.mjs"

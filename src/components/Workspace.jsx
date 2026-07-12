@@ -317,8 +317,8 @@ function BillingPage({ billing, onCheckout, refreshBilling, navigate }) {
       <div className="billingOverview">
         <section className="billingMetric">
           <span>Available credits</span>
-          <strong>{billing.exempt ? "Unlimited" : available}</strong>
-          <small>{billing.exempt ? "This account is exempt from endpoint charges." : "Each credit provisions one isolated client and dataset endpoint."}</small>
+          <strong>{billing.exempt ? "Development" : available}</strong>
+          <small>{billing.exempt ? "Payment is bypassed only for this local or explicitly exempt environment." : "Each credit provisions one isolated client and dataset endpoint."}</small>
         </section>
         <section className="billingMetric">
           <span>Endpoint price</span>

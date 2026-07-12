@@ -27,6 +27,46 @@
       ],
       "destination": "https://simplecapi.com/:path*",
       "permanent": true
+    },
+    {
+      "source": "/docs",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/privacy",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/terms",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/status",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/login",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/register",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/forgot-password",
+      "destination": "/",
+      "permanent": false
+    },
+    {
+      "source": "/reset-password",
+      "destination": "/",
+      "permanent": false
     }
   ],
   "rewrites": [
@@ -38,13 +78,6 @@
       "source": "/.netlify/identity/:path*",
       "destination": "https://capi-tracker-service.netlify.app/.netlify/identity/:path*"
     },
-    { "source": "/docs", "destination": "/index.html" },
-    { "source": "/privacy", "destination": "/index.html" },
-    { "source": "/terms", "destination": "/index.html" },
-    { "source": "/status", "destination": "/index.html" },
-    { "source": "/login", "destination": "/index.html" },
-    { "source": "/register", "destination": "/index.html" },
-    { "source": "/forgot-password", "destination": "/index.html" },
-    { "source": "/reset-password", "destination": "/index.html" }
+    { "source": "/:path*", "destination": "/index.html" }
   ]
 }

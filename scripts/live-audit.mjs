@@ -54,10 +54,10 @@ try {
     });
 
     assert(pageState.title.includes("Simple CAPI"), `${viewport.name} title is incorrect.`);
-    assert(pageState.h1 === "Meta CAPI setup without the infrastructure work.", `${viewport.name} H1 is incorrect.`);
-    assert(pageState.chromeCount === 2, `${viewport.name} home page header or footer is missing.`);
-    assert(pageState.interactiveCount >= 5, `${viewport.name} home page actions are missing.`);
-    assert(pageState.internalLinks.includes("/docs"), `${viewport.name} documentation link is missing.`);
+    assert(pageState.h1 === "Simple CAPI", `${viewport.name} H1 is incorrect.`);
+    assert(pageState.chromeCount === 0, `${viewport.name} public navigation is exposed.`);
+    assert(pageState.interactiveCount === 0, `${viewport.name} coming-soon page exposes interactive links.`);
+    assert(pageState.internalLinks.length === 0, `${viewport.name} coming-soon page exposes internal links.`);
     assert(pageState.logoReady, `${viewport.name} brand logo did not load.`);
     assert(pageState.canonical === `${baseUrl}/`, `${viewport.name} canonical URL is incorrect.`);
     assert(pageState.horizontalOverflow <= 1, `${viewport.name} layout has horizontal overflow.`);
@@ -77,20 +77,22 @@ try {
     if (message.type() === "error") errors.push(`routes console: ${message.text()}`);
   });
 
-  for (const route of ["docs", "privacy", "terms", "status", "login", "register", "forgot-password"]) {
+  for (const route of ["docs", "privacy", "terms", "status", "login", "register", "forgot-password", "reset-password"]) {
     const response = await page.goto(`${baseUrl}/${route}`, { waitUntil: "networkidle" });
     assert(response?.status() === 200, `/${route} did not return 200.`);
-    assert((await page.title()).includes("Simple CAPI"), `/${route} has an incorrect title.`);
+    assert(page.url() === `${baseUrl}/`, `/${route} did not redirect to the coming-soon page.`);
+    assert((await page.title()) === "Simple CAPI - Coming Soon", `/${route} has an incorrect title.`);
   }
 
-  await page.goto(`${baseUrl}/login`, { waitUntil: "networkidle" });
+  await page.goto(`${baseUrl}/?view=login`, { waitUntil: "networkidle" });
+  assert(page.url() === `${baseUrl}/`, "A query-string product route remains exposed in production.");
   assert(await page.getByText("Preview the local workspace").count() === 0, "The localhost preview control is exposed in production.");
 
   const legacyAlias = await context.request.get("https://capi-tracker.vercel.app/docs");
-  assert(legacyAlias.url() === `${baseUrl}/docs`, "The legacy Vercel alias does not redirect to the canonical domain.");
+  assert(legacyAlias.url() === `${baseUrl}/`, "The legacy Vercel alias does not redirect to the locked canonical page.");
 
   await page.goto("https://capi-tracker-service.netlify.app/#simple-capi-domain-check", { waitUntil: "networkidle" });
-  assert(page.url() === `${baseUrl}/#simple-capi-domain-check`, "Identity email callbacks do not redirect to the branded domain.");
+  assert(page.url() === `${baseUrl}/`, "The backend project does not redirect to the locked branded domain.");
 
   const status = await context.request.get(`${baseUrl}/.netlify/functions/create-client-capi?action=status`);
   assert(status.ok(), "The provisioner status proxy is unavailable.");
@@ -101,7 +103,7 @@ try {
   assert(identity.ok(), "The Identity proxy is unavailable.");
   const identityBody = await identity.json();
   assert(identityBody.external?.email === true, "Email authentication is not enabled.");
-  assert(identityBody.disable_signup !== true, "Account registration is disabled.");
+  assert(identityBody.disable_signup === true, "Public account registration is still enabled.");
 
   const protectedRequest = await context.request.post(
     `${baseUrl}/.netlify/functions/create-client-capi?action=checkout`,
@@ -111,7 +113,7 @@ try {
   await context.close();
 
   assert(errors.length === 0, `Live browser errors:\n${errors.join("\n")}`);
-  console.log(`Live audit passed: ${baseUrl}, responsive layout, clean routes, Identity, protected API, and CSP.`);
+  console.log(`Live audit passed: ${baseUrl}, coming-soon lock, closed registration, protected API, and CSP.`);
 } finally {
   await browser.close();
 }
