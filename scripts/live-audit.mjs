@@ -84,6 +84,15 @@ try {
     assert((await page.title()).includes("Simple CAPI"), `/${route} has an incorrect title.`);
   }
 
+  await page.goto(`${baseUrl}/login`, { waitUntil: "networkidle" });
+  assert(await page.getByText("Preview the local workspace").count() === 0, "The localhost preview control is exposed in production.");
+
+  const legacyAlias = await context.request.get("https://capi-tracker.vercel.app/docs");
+  assert(legacyAlias.url() === `${baseUrl}/docs`, "The legacy Vercel alias does not redirect to the canonical domain.");
+
+  await page.goto("https://capi-tracker-service.netlify.app/#simple-capi-domain-check", { waitUntil: "networkidle" });
+  assert(page.url() === `${baseUrl}/#simple-capi-domain-check`, "Identity email callbacks do not redirect to the branded domain.");
+
   const status = await context.request.get(`${baseUrl}/.netlify/functions/create-client-capi?action=status`);
   assert(status.ok(), "The provisioner status proxy is unavailable.");
   const statusBody = await status.json();

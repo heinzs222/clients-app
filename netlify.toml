@@ -7,6 +7,12 @@
   node_bundler = "esbuild"
 
 [[redirects]]
+  from = "/"
+  to = "https://simplecapi.com/"
+  status = 301
+  force = true
+
+[[redirects]]
   from = "/*"
   to = "/index.html"
   status = 200

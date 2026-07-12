@@ -1,7 +1,12 @@
 # Simple CAPI
 
-> Coming soon.
+> Simple CAPI is preparing a simpler way to launch and manage secure Meta Conversions API tracking for client accounts.
+
+## Availability
+
+- The public product launch is coming soon.
+- The canonical product domain is simplecapi.com.
 
 ## Canonical site
 
-- [Simple CAPI](https://simplecapi.com/): Coming soon.
+- [Simple CAPI](https://simplecapi.com/): Official product homepage and launch status.

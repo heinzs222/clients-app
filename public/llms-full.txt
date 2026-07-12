@@ -1,7 +1,15 @@
 # Simple CAPI
 
-Coming soon.
+Simple CAPI is an upcoming service that makes secure Meta Conversions API tracking easier to launch and manage across client accounts.
 
-## Key page
+## Product direction
 
-- [Homepage](https://simplecapi.com/)
+Simple CAPI is designed to create isolated server-side conversion endpoints, keep Meta credentials out of browser code, and support browser/server event deduplication.
+
+## Availability
+
+The public product launch is coming soon. Current product information and future launch updates are published on the canonical website.
+
+## Canonical page
+
+- [Simple CAPI](https://simplecapi.com/): Official product homepage and launch status.

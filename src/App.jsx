@@ -76,6 +76,10 @@ export default function App() {
   const [route, setRoute] = useState(routeFromUrl);
   const [authUser, setAuthUser] = useState(null);
   const [authStatus, setAuthStatus] = useState("checking");
+  const [localPreview, setLocalPreview] = useState(() => {
+    const localHost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+    return localHost && new URLSearchParams(window.location.search).get("preview") === "1";
+  });
   const [authBusy, setAuthBusy] = useState(false);
   const [authError, setAuthError] = useState("");
   const [authMessage, setAuthMessage] = useState("");
@@ -106,7 +110,11 @@ export default function App() {
   const [updateState, setUpdateState] = useState({ status: "idle", error: "", success: false });
   const [deleteState, setDeleteState] = useState({ status: "idle", id: "", error: "" });
 
-  const effectiveUser = authUser;
+  const effectiveUser = useMemo(() => authUser || (localPreview ? {
+    id: "local-development",
+    email: "local-preview@simplecapi.test",
+    name: "Local Preview"
+  } : null), [authUser, localPreview]);
 
   const selectedEndpoint = useMemo(
     () => endpoints.find((endpoint) => endpoint.id === selectedId) || null,
@@ -351,6 +359,7 @@ export default function App() {
     try {
       const user = await login(authForm.email.trim(), authForm.password);
       setAuthUser(user);
+      setLocalPreview(false);
       setAuthForm((current) => ({ ...current, password: "", confirmPassword: "" }));
       setEndpointsState({ status: "idle", error: "" });
       navigate("dashboard", { replace: true });
@@ -437,6 +446,7 @@ export default function App() {
       setAuthError(friendlyAuthError(error));
     } finally {
       setAuthUser(null);
+      setLocalPreview(false);
       setEndpoints([]);
       setBilling((current) => ({ ...current, status: "idle", available_credits: 0, available_order_id: "", payments: [], message: "", error: "" }));
       setEndpointsState({ status: "idle", error: "" });
@@ -565,6 +575,11 @@ export default function App() {
         onRegister={submitRegister}
         onForgot={submitForgotPassword}
         onReset={submitResetPassword}
+        onPreview={() => {
+          setLocalPreview(true);
+          setEndpointsState({ status: "idle", error: "" });
+          navigate("dashboard", { replace: true });
+        }}
         busy={authBusy}
         error={authError}
         message={authMessage}
