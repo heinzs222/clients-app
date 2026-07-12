@@ -94,7 +94,7 @@ export default function AuthScreen({
             <div className="registerPipeline">
               <span className="eyebrow light"><i /> Client infrastructure</span>
               <h2>Every credential stays in its own lane.</h2>
-              <p>The app creates a dedicated Netlify environment for each Meta dataset instead of sharing one function across clients.</p>
+              <p>The app creates a dedicated server environment for each Meta dataset instead of sharing credentials across clients.</p>
               <ul>
                 <li><span><ShieldCheck size={19} /></span><div><strong>Server-side token storage</strong><small>No access token in tracker code or browser storage.</small></div></li>
                 <li><span><Rocket size={19} /></span><div><strong>Automatic provisioning</strong><small>Function, tracker, environment, and endpoint URL in one flow.</small></div></li>

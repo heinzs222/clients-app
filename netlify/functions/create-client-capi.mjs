@@ -194,19 +194,17 @@ function provisionerStatus() {
   return {
     success: true,
     ready: missing.length === 0,
-    missing,
+    missing_count: missing.length,
     billing: billingConfiguration(),
     user_limit: safeInteger(process.env.CAPI_MAX_ENDPOINTS_PER_USER, DEFAULT_USER_LIMIT),
-    message: missing.length
-      ? `Provisioner is missing: ${missing.join(", ")}`
-      : "Provisioner is ready."
+    message: missing.length ? "Provisioning service needs administrator configuration." : "Provisioner is ready."
   };
 }
 
 async function netlifyFetch(path, options = {}) {
   const token = cleanString(process.env.NETLIFY_AUTH_TOKEN);
   if (!token) {
-    throw Object.assign(new Error("Server is missing NETLIFY_AUTH_TOKEN."), { statusCode: 500 });
+    throw Object.assign(new Error("Server provisioning credentials are missing."), { statusCode: 500 });
   }
 
   const controller = new AbortController();
@@ -229,16 +227,21 @@ async function netlifyFetch(path, options = {}) {
       : await result.text().catch(() => "");
 
     if (!result.ok) {
-      const message = typeof data === "object"
-        ? cleanString(data.message) || cleanString(data.error) || "Netlify API request failed."
-        : cleanString(data) || "Netlify API request failed.";
-      throw Object.assign(new Error(message), { statusCode: result.status });
+      const providerMessage = typeof data === "object"
+        ? cleanString(data.message) || cleanString(data.error)
+        : cleanString(data);
+      const message = result.status === 401 || result.status === 403
+        ? "Infrastructure authorization failed."
+        : result.status === 404
+          ? "Infrastructure resource was not found."
+          : "Infrastructure request failed.";
+      throw Object.assign(new Error(message), { statusCode: result.status, providerMessage });
     }
 
     return data;
   } catch (error) {
     if (error?.name === "AbortError") {
-      throw Object.assign(new Error("Netlify API request timed out."), { statusCode: 504 });
+      throw Object.assign(new Error("Infrastructure request timed out."), { statusCode: 504 });
     }
     throw error;
   } finally {
@@ -751,13 +754,15 @@ function trackerScriptSource() {
     return value === null || value === undefined || value === "" ? (fallback || "") : value;
   }
 
-  function scriptOrigin() {
-    try { return new URL(script.src).origin; } catch (error) { return ""; }
+  function defaultEndpoint() {
+    try {
+      var url = new URL(script.src);
+      return url.origin + url.pathname.replace(/\/tracker\.js(?:\?.*)?$/, "") + "/events";
+    } catch (error) { return ""; }
   }
 
-  var origin = scriptOrigin();
   var CFG = {
-    endpoint: attr("capi-endpoint", origin ? origin + "/.netlify/functions/meta-capi-lead" : ""),
+    endpoint: attr("capi-endpoint", defaultEndpoint()),
     ghlWebhookUrl: attr("ghl-webhook-url", ""),
     formSelector: attr("form-selector", "form"),
     eventName: attr("event-name", "Lead"),
@@ -1322,7 +1327,7 @@ async function trackerAssets() {
   if (!script || window.__CAPI_LAUNCHER_LOADING__ || window.__CAPI_LAUNCHER_TRACKER__) return;
   window.__CAPI_LAUNCHER_LOADING__ = true;
   var core = document.createElement("script");
-  core.src = new URL(corePath, script.src).href;
+  core.src = new URL(corePath.replace(/^\//, ""), script.src).href;
   core.async = true;
   for (var j = 0; j < script.attributes.length; j += 1) {
     var attribute = script.attributes[j];
@@ -1363,7 +1368,7 @@ function statusPage(clientName) {
     main{width:min(620px,100%);background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:32px}.pill{display:inline-flex;align-items:center;gap:8px;color:#047857;font-weight:700;font-size:13px}.pill:before{content:"";width:9px;height:9px;border-radius:50%;background:#10b981}h1{font-size:30px;line-height:1.2;margin:18px 0 10px}p{color:#475569;line-height:1.6}code{display:block;background:#102238;color:#c8e4ff;padding:14px;border-radius:6px;margin-top:20px;word-break:break-all}
   </style>
 </head>
-<body><main><span class="pill">Endpoint online</span><h1>${escaped || "Client"} CAPI bridge</h1><p>This isolated Netlify service is ready to receive lead events and forward them to Meta Conversions API.</p><code>/.netlify/functions/meta-capi-lead</code></main></body>
+<body><main><span class="pill">Endpoint online</span><h1>${escaped || "Client"} CAPI bridge</h1><p>This isolated event service is ready to receive conversion events and forward them to Meta.</p></main></body>
 </html>`, "utf8");
 }
 
@@ -1403,13 +1408,13 @@ function envVars(datasetId, accessToken, graphVersion, options = {}) {
 }
 
 function canFallbackToStandardEnv(error) {
-  const message = cleanString(error?.message).toLowerCase();
+  const message = cleanString(error?.providerMessage || error?.message).toLowerCase();
   return (error?.statusCode === 403 || error?.statusCode === 422) &&
     (message.includes("specific scopes") || message.includes("post_processing") || message.includes("post-processing"));
 }
 
-async function createSiteEnvVars(accountSlug, siteId, datasetId, accessToken, graphVersion) {
-  const path = `/accounts/${encodeURIComponent(accountSlug)}/env?site_id=${encodeURIComponent(siteId)}`;
+async function createSiteEnvVars(accountId, siteId, datasetId, accessToken, graphVersion) {
+  const path = `/accounts/${encodeURIComponent(accountId)}/env?site_id=${encodeURIComponent(siteId)}`;
   try {
     await netlifyFetch(path, {
       method: "POST",
@@ -1429,8 +1434,8 @@ async function createSiteEnvVars(accountSlug, siteId, datasetId, accessToken, gr
   return "site-environment";
 }
 
-async function setEnvValue(accountSlug, siteId, key, value) {
-  const base = `/accounts/${encodeURIComponent(accountSlug)}/env/${encodeURIComponent(key)}?site_id=${encodeURIComponent(siteId)}`;
+async function setEnvValue(accountId, siteId, key, value) {
+  const base = `/accounts/${encodeURIComponent(accountId)}/env/${encodeURIComponent(key)}?site_id=${encodeURIComponent(siteId)}`;
   const secret = key === "META_ACCESS_TOKEN";
   let existing = null;
 
@@ -1458,7 +1463,7 @@ async function setEnvValue(accountSlug, siteId, key, value) {
     return;
   }
 
-  const path = `/accounts/${encodeURIComponent(accountSlug)}/env?site_id=${encodeURIComponent(siteId)}`;
+  const path = `/accounts/${encodeURIComponent(accountId)}/env?site_id=${encodeURIComponent(siteId)}`;
   try {
     await netlifyFetch(path, {
       method: "POST",
@@ -1536,8 +1541,23 @@ function baseUrlForSite(site) {
   return cleanString(site.ssl_url) || `https://${site.name}.netlify.app`;
 }
 
+function publicOrigin() {
+  const configured = cleanString(process.env.CAPI_PUBLIC_ORIGIN) || cleanString(process.env.CAPI_APP_ORIGIN).split(",")[0];
+  try { return new URL(configured).origin; } catch { return "https://simplecapi.com"; }
+}
+
+function gatewayRoute(siteName) {
+  const secret = cleanString(process.env.CAPI_GATEWAY_SECRET) || cleanString(process.env.NETLIFY_AUTH_TOKEN);
+  if (secret.length < 20) throw Object.assign(new Error("Secure endpoint routing is not configured."), { statusCode: 500 });
+  const key = crypto.createHash("sha256").update(`simplecapi-gateway-v1:${secret}`).digest();
+  const iv = crypto.createHmac("sha256", key).update(siteName).digest().subarray(0, 12);
+  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
+  const ciphertext = Buffer.concat([cipher.update(siteName, "utf8"), cipher.final()]);
+  return Buffer.concat([iv, ciphertext, cipher.getAuthTag()]).toString("base64url");
+}
+
 function endpointRecord(site, manifest = {}) {
-  const baseUrl = baseUrlForSite(site).replace(/\/$/, "");
+  const publicBase = `${publicOrigin()}/client/${gatewayRoute(site.name)}`;
   return {
     id: site.id,
     client_name: cleanString(manifest.client_name) || cleanString(site.name),
@@ -1550,11 +1570,8 @@ function endpointRecord(site, manifest = {}) {
       currency: cleanString(manifest.billing.currency),
       paid_at: cleanString(manifest.billing.paid_at)
     } : null,
-    site_name: site.name,
-    site_url: baseUrl,
-    endpoint: `${baseUrl}/.netlify/functions/meta-capi-lead`,
-    tracker_url: `${baseUrl}/tracker.js`,
-    admin_url: site.admin_url,
+    endpoint: `${publicBase}/events`,
+    tracker_url: `${publicBase}/tracker.js`,
     state: site.published_deploy?.state || site.state || "unknown",
     created_at: cleanString(manifest.created_at) || site.created_at,
     updated_at: cleanString(manifest.updated_at) || site.updated_at
@@ -1624,7 +1641,7 @@ async function requireOwnedSite(siteId, user) {
   return site;
 }
 
-async function createEndpoint(accountSlug, user, input, request) {
+async function createEndpoint(accountSlug, accountId, user, input, request) {
   const client = validateClientInput(input);
   const owned = await ownedSiteObjects(accountSlug, user);
   const limit = safeInteger(process.env.CAPI_MAX_ENDPOINTS_PER_USER, DEFAULT_USER_LIMIT);
@@ -1655,7 +1672,7 @@ async function createEndpoint(accountSlug, user, input, request) {
       body: JSON.stringify({ name: siteName })
     });
     const envMode = await createSiteEnvVars(
-      accountSlug,
+      accountId,
       site.id,
       client.datasetId,
       client.accessToken,
@@ -1687,7 +1704,7 @@ async function createEndpoint(accountSlug, user, input, request) {
   }
 }
 
-async function updateEndpoint(accountSlug, user, input) {
+async function updateEndpoint(accountId, user, input) {
   const site = await requireOwnedSite(input.siteId, user);
   const previous = await readManifest(site);
   const client = validateClientInput({
@@ -1698,13 +1715,13 @@ async function updateEndpoint(accountSlug, user, input) {
   }, { tokenRequired: false });
 
   if (client.datasetId !== cleanString(previous.dataset_id)) {
-    await setEnvValue(accountSlug, site.id, "META_DATASET_ID", client.datasetId);
+    await setEnvValue(accountId, site.id, "META_DATASET_ID", client.datasetId);
   }
   if (client.graphVersion !== cleanString(previous.graph_version)) {
-    await setEnvValue(accountSlug, site.id, "META_GRAPH_API_VERSION", client.graphVersion);
+    await setEnvValue(accountId, site.id, "META_GRAPH_API_VERSION", client.graphVersion);
   }
   if (client.accessToken) {
-    await setEnvValue(accountSlug, site.id, "META_ACCESS_TOKEN", client.accessToken);
+    await setEnvValue(accountId, site.id, "META_ACCESS_TOKEN", client.accessToken);
   }
   const deploy = await deploySite({
     site,
@@ -1758,10 +1775,11 @@ export default async function handler(request) {
     const user = await requireUser(request);
     const accountSlug = cleanString(process.env.NETLIFY_ACCOUNT_SLUG);
     if (!accountSlug) {
-      throw Object.assign(new Error("Server is missing NETLIFY_ACCOUNT_SLUG."), { statusCode: 500 });
+      throw Object.assign(new Error("Server provisioning account is missing."), { statusCode: 500 });
     }
 
-    await netlifyFetch(`/accounts/${encodeURIComponent(accountSlug)}`);
+    const account = await netlifyFetch(`/accounts/${encodeURIComponent(accountSlug)}`);
+    const accountId = cleanString(account?.id) || accountSlug;
 
     if (request.method === "GET" && action === "list") {
       const endpoints = await listOwnedSites(accountSlug, user);
@@ -1803,7 +1821,7 @@ export default async function handler(request) {
     }
 
     if (request.method === "POST" && action === "create") {
-      const endpoint = await createEndpoint(accountSlug, user, await parseJson(request), request);
+      const endpoint = await createEndpoint(accountSlug, accountId, user, await parseJson(request), request);
       return response(request, 201, { success: true, endpoint });
     }
 
@@ -1815,7 +1833,7 @@ export default async function handler(request) {
     }
 
     if (request.method === "PATCH" && action === "update") {
-      const endpoint = await updateEndpoint(accountSlug, user, await parseJson(request));
+      const endpoint = await updateEndpoint(accountId, user, await parseJson(request));
       return response(request, 200, { success: true, endpoint });
     }
 
@@ -1855,5 +1873,6 @@ export const __testing = {
   lemonOrderSearchParams,
   validateLemonOrder,
   billingConfiguration,
-  trustedAppOrigin
+  trustedAppOrigin,
+  gatewayRoute
 };

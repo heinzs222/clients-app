@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import vm from "node:vm";
 import { __testing } from "../netlify/functions/create-client-capi.mjs";
+import clientGateway from "../netlify/functions/client-gateway.mjs";
 
 function assert(condition, message) {
   if (!condition) throw new Error(message);
@@ -116,6 +117,48 @@ assert(/^\/assets\/tracker-core\.[a-f0-9]{16}\.js$/.test(tracker.corePath), "Tra
 assert(loaderText.includes(tracker.corePath), "Tracker loader does not reference its core asset.");
 assert(!loaderText.includes("ghlWebhookUrl"), "The public loader contains tracker implementation details.");
 assert(!loaderText.includes("\n") && !tracker.core.toString("utf8").includes("\n"), "Generated tracker assets are not compact.");
+assert(!/netlify/i.test(loaderText + tracker.core.toString("utf8")), "Generated tracker assets expose the infrastructure provider.");
+
+process.env.CAPI_GATEWAY_SECRET = "contract-test-gateway-secret-1234567890";
+const internalSite = "dhc-a1b2c3d4e5f6-example-client-abc123";
+const publicRoute = __testing.gatewayRoute(internalSite);
+assert(!publicRoute.includes(internalSite) && !publicRoute.includes("example-client"), "Public endpoint route exposes internal hosting details.");
+
+const originalFetch = globalThis.fetch;
+let gatewayRequest = null;
+globalThis.fetch = async (url, options = {}) => {
+  gatewayRequest = { url: String(url), options };
+  if (String(url).endsWith("/tracker.js")) {
+    return new Response("window.__TRACKER_TEST__=true;", { status: 200, headers: { "Content-Type": "application/javascript" } });
+  }
+  return new Response(JSON.stringify({ success: true, event_id: "lead_gateway_001" }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" }
+  });
+};
+
+try {
+  const assetResult = await clientGateway(new Request(`https://service.example/gateway?route=${publicRoute}&asset=tracker.js`));
+  assert(assetResult.status === 200, "Branded tracker gateway did not return the asset.");
+  assert(gatewayRequest.url === `https://${internalSite}.netlify.app/tracker.js`, "Tracker gateway resolved the wrong internal service.");
+
+  const eventResult = await clientGateway(new Request(`https://service.example/gateway?route=${publicRoute}&action=events`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+      "User-Agent": "Gateway Contract/1.0",
+      "X-Forwarded-For": "198.51.100.24"
+    },
+    body: "email=gateway%40example.com&event_id=lead_gateway_001"
+  }));
+  assert(eventResult.status === 200, "Branded event gateway did not return success.");
+  const forwarded = new URLSearchParams(gatewayRequest.options.body);
+  assert(forwarded.get("client_ip_address") === "198.51.100.24", "Gateway did not preserve the browser IP.");
+  assert(forwarded.get("client_user_agent") === "Gateway Contract/1.0", "Gateway did not preserve the browser user agent.");
+  assert((await clientGateway(new Request("https://service.example/gateway?route=invalid&asset=tracker.js"))).status === 404, "Gateway accepted an invalid route token.");
+} finally {
+  globalThis.fetch = originalFetch;
+}
 
 const billingUser = { id: "payment-contract-user", email: "owner@example.com" };
 process.env.LEMONSQUEEZY_STORE_ID = "1234";

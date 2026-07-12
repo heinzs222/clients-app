@@ -1,4 +1,4 @@
-const API_PATH = "/.netlify/functions/create-client-capi";
+const API_PATH = "/api/provisioner";
 
 export async function capiRequest(action, { method = "GET", body } = {}) {
   const response = await fetch(`${API_PATH}?action=${encodeURIComponent(action)}`, {

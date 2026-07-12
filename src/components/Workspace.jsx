@@ -13,7 +13,6 @@ import {
   Code2,
   CreditCard,
   Database,
-  ExternalLink,
   Eye,
   EyeOff,
   FileInput,
@@ -139,14 +138,13 @@ function EndpointTable({ endpoints, onOpen, onManage, onDelete, compact = false,
             const state = endpointState(endpoint);
             return (
               <tr key={endpoint.id}>
-                <td data-label="Client"><button className="clientLink" type="button" onClick={() => onOpen(endpoint)}>{endpoint.client_name}</button><small>{endpoint.site_name}</small></td>
+                <td data-label="Client"><button className="clientLink" type="button" onClick={() => onOpen(endpoint)}>{endpoint.client_name}</button><small>Endpoint {endpoint.id.slice(0, 8)}</small></td>
                 <td data-label="Dataset"><code>{endpoint.dataset_id || "Unavailable"}</code></td>
                 <td data-label="Status"><StatusPill state={state} label={state === "active" ? "Active" : state === "pending" ? "Pending" : "Check"} /></td>
                 <td data-label="Updated">{formatDate(endpoint.updated_at)}</td>
                 <td className="rowActions">
                   <button className="iconOnly" type="button" onClick={() => onOpen(endpoint)} aria-label={`Open ${endpoint.client_name} tracking`} title="Open tracking"><Eye size={18} /></button>
                   <button className="iconOnly" type="button" onClick={() => onManage(endpoint)} aria-label={`Manage ${endpoint.client_name}`} title="Endpoint settings"><Settings size={18} /></button>
-                  <a className="iconOnly" href={endpoint.site_url} target="_blank" rel="noreferrer" aria-label={`Open ${endpoint.client_name} service`} title="Open service"><ExternalLink size={18} /></a>
                   <button className="iconOnly danger" type="button" onClick={() => onDelete(endpoint)} disabled={busyId === endpoint.id} aria-label={`Delete ${endpoint.client_name}`} title="Delete endpoint"><Trash2 size={18} /></button>
                 </td>
               </tr>
@@ -174,7 +172,7 @@ function EndpointDeleteModal({ endpoint, open, onClose, onConfirm, busy }) {
         </>
       }
     >
-      <Notice tone="warning" title="This removes the generated Netlify site">The webhook, tracker URL, and stored Meta environment variables will stop working immediately. A redeemed endpoint payment is not restored as a reusable credit.</Notice>
+      <Notice tone="warning" title="This permanently removes the endpoint">The webhook, tracker URL, and stored Meta credentials will stop working immediately. A redeemed endpoint payment is not restored as a reusable credit.</Notice>
       <Field label={`Type ${endpoint?.client_name || "the client name"} to confirm`}>
         <InputShell><input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="off" /></InputShell>
       </Field>
@@ -194,7 +192,7 @@ function Dashboard({ endpoints, loading, error, navigate, onNew, onOpen, onManag
       />
       {error ? <Notice tone="error" title="Could not load endpoints">{error} <button className="inlineButton" type="button" onClick={refresh}>Try again</button></Notice> : null}
       <section className="metricGrid" aria-label="Endpoint overview">
-        <article><span><Database size={22} /></span><p>Total endpoints</p><strong>{loading ? "-" : endpoints.length}</strong><small>Separate Netlify sites</small></article>
+        <article><span><Database size={22} /></span><p>Total endpoints</p><strong>{loading ? "-" : endpoints.length}</strong><small>Isolated client services</small></article>
         <article><span className="green"><Activity size={22} /></span><p>Ready endpoints</p><strong>{loading ? "-" : active}</strong><small>{endpoints.length ? `${active} of ${endpoints.length} deployed` : "No endpoint created yet"}</small></article>
         <article><span className="cyan"><RefreshCw size={22} /></span><p>Last deployment</p><strong className="metricDate">{newest ? formatDate(newest.updated_at) : "None"}</strong><small>{newest ? newest.client_name : "Create the first client"}</small></article>
       </section>
@@ -217,7 +215,7 @@ function EndpointsPage({ endpoints, loading, error, onNew, onOpen, onManage, onD
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) return endpoints;
-    return endpoints.filter((item) => [item.client_name, item.dataset_id, item.site_name].some((value) => String(value || "").toLowerCase().includes(query)));
+    return endpoints.filter((item) => [item.client_name, item.dataset_id, item.id].some((value) => String(value || "").toLowerCase().includes(query)));
   }, [endpoints, search]);
   return (
     <main className="workspaceMain">
@@ -234,7 +232,7 @@ function EndpointsPage({ endpoints, loading, error, onNew, onOpen, onManage, onD
           <EmptyState icon={Search} title="No matching endpoints">Try a different client name or Dataset ID.</EmptyState>
         ) : (
           <EmptyState icon={Server} title="No endpoints yet" action={<button className="button primary" type="button" onClick={onNew}><Plus size={18} /> Create endpoint</button>}>
-            Every client you create will appear here with its own Netlify URL.
+            Every client you create will appear here with its own private endpoint.
           </EmptyState>
         )}
       </section>
@@ -383,7 +381,7 @@ function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refr
 
   return (
     <main className="workspaceMain">
-      <WorkspaceHeader title="Create new endpoint" description="Connect one Meta dataset to its own isolated Netlify function." />
+      <WorkspaceHeader title="Create new endpoint" description="Connect one Meta dataset to its own isolated server endpoint." />
       <Progress stage={createState.status === "success" ? 4 : createState.status === "loading" ? 3 : 2} />
       <div className="wizardLayout">
         <form className="wizardCard" onSubmit={submit}>
@@ -423,7 +421,7 @@ function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refr
           <ol>
             <li><strong>Dataset ID</strong><small>Select the correct client dataset in Meta Events Manager.</small></li>
             <li><strong>Access token</strong><small>Generate the token from that same dataset, not another client.</small></li>
-            <li><strong>Client boundary</strong><small>This creates a separate Netlify site and environment variable set.</small></li>
+            <li><strong>Client boundary</strong><small>This creates a separate service and encrypted credential set.</small></li>
           </ol>
           <div className="secureNote"><LockKeyhole size={17} /><span>The token is never included in the tracker, endpoint URL, dashboard record, or API response.</span></div>
         </aside>
@@ -487,7 +485,7 @@ function TrackingInstall({ endpoint, settings, setSettings }) {
             </div>
           </fieldset>
           {!confirmationMode ? (
-            <Field label="GHL inbound webhook URL" hint={directMode ? "Optional. Leave blank to send directly to Netlify with no workflow." : "Form data posts to GHL first, then the workflow sends it to Netlify."}>
+            <Field label="GHL inbound webhook URL" hint={directMode ? "Optional. Leave blank to send directly to the CAPI endpoint with no workflow." : "Form data posts to GHL first, then the workflow sends it to Simple CAPI."}>
               <InputShell icon={Webhook}><input type="url" value={settings.ghlWebhookUrl} onChange={(event) => setSettings({ ...settings, ghlWebhookUrl: event.target.value.trim() })} placeholder="https://services.leadconnectorhq.com/hooks/..." autoComplete="off" /></InputShell>
             </Field>
           ) : null}
@@ -513,7 +511,7 @@ function TrackingInstall({ endpoint, settings, setSettings }) {
           <Toggle checked={settings.firePixel} onChange={(value) => setSettings({ ...settings, firePixel: value })} label={`Fire browser ${settings.eventName}`} description="Uses the same event ID as the matching server event when an existing Meta Pixel is present." />
           <Toggle checked={settings.onlyMetaTraffic} onChange={(value) => setSettings({ ...settings, onlyMetaTraffic: value })} label="Meta traffic only" description="Skip tracking unless fbclid, fbp, fbc, or a Meta-style utm_source is present." />
           <Notice tone="info" title="One client, multiple landing pages">Reuse this endpoint for pages that send to the same Meta dataset. The page URL, attribution fields, and optional label keep each conversion identifiable. Create a separate endpoint when the client or dataset changes.</Notice>
-          <Notice tone="info" title={confirmationMode ? "Confirmation page mode" : directMode ? "Direct mode" : "GHL relay mode"}>{confirmationMode ? "Paste this tag only on the page shown after a successful booking. It sends directly to Netlify and needs no GHL workflow." : directMode ? "The browser posts straight to the generated CAPI endpoint. Client IP is read at Netlify." : "The tracker posts a hidden form to GHL. Map the original inbound IP in the next tab."}</Notice>
+          <Notice tone="info" title={confirmationMode ? "Confirmation page mode" : directMode ? "Direct mode" : "GHL relay mode"}>{confirmationMode ? "Paste this tag only on the page shown after a successful booking. It sends directly to Simple CAPI and needs no GHL workflow." : directMode ? "The browser posts straight to the generated CAPI endpoint, which captures the request IP server-side." : "The tracker posts a hidden form to GHL. Map the original inbound IP in the next tab."}</Notice>
         </div>
       </section>
       <div className="trackingCodeStack">
@@ -535,7 +533,7 @@ function GhlMapping({ endpoint }) {
         <ol className="numberedSteps">
           <li><span>1</span><div><strong>Submit one real test form</strong><small>This lets GHL expose the inboundWebhookRequest fields for mapping.</small></div></li>
           <li><span>2</span><div><strong>Add a Custom Webhook action</strong><small>Set the method to POST and content type to application/json.</small></div></li>
-          <li><span>3</span><div><strong>Use the generated endpoint URL</strong><small>Do not use the Netlify site homepage.</small></div></li>
+          <li><span>3</span><div><strong>Use the generated endpoint URL</strong><small>Copy the branded URL shown below exactly.</small></div></li>
           <li><span>4</span><div><strong>Paste the request body</strong><small>Keep event_id mapped from inboundWebhookRequest for deduplication.</small></div></li>
         </ol>
         <Field label="Custom Webhook URL"><InputShell code><input value={endpoint.endpoint} readOnly /><CopyButton value={endpoint.endpoint} compact /></InputShell></Field>
@@ -592,9 +590,8 @@ function EndpointSettings({ endpoint, onUpdate, onDelete, updateState }) {
       </form>
       <aside className="endpointMetaPanel">
         <h2>Deployment</h2>
-        <dl><div><dt>Site</dt><dd>{endpoint.site_name}</dd></div><div><dt>Created</dt><dd>{formatDate(endpoint.created_at)}</dd></div><div><dt>Updated</dt><dd>{formatDate(endpoint.updated_at)}</dd></div><div><dt>State</dt><dd><StatusPill state={endpointState(endpoint)} /></dd></div></dl>
-        <a className="button secondary full" href={endpoint.admin_url} target="_blank" rel="noreferrer">Open in Netlify <ExternalLink size={17} /></a>
-        <div className="dangerZone"><h3>Delete endpoint</h3><p>Removes the site, function, tracker, and Meta environment variables.</p><button className="button danger" type="button" onClick={() => onDelete(endpoint)}><Trash2 size={17} /> Delete</button></div>
+        <dl><div><dt>Endpoint ID</dt><dd>{endpoint.id.slice(0, 8)}</dd></div><div><dt>Created</dt><dd>{formatDate(endpoint.created_at)}</dd></div><div><dt>Updated</dt><dd>{formatDate(endpoint.updated_at)}</dd></div><div><dt>State</dt><dd><StatusPill state={endpointState(endpoint)} /></dd></div></dl>
+        <div className="dangerZone"><h3>Delete endpoint</h3><p>Removes the event service, tracker, and stored Meta credentials.</p><button className="button danger" type="button" onClick={() => onDelete(endpoint)}><Trash2 size={17} /> Delete</button></div>
       </aside>
     </div>
   );
@@ -617,7 +614,7 @@ function TrackingPage({ endpoint, user, initialTab, onBack, onVerify, verifyStat
       <WorkspaceHeader
         title={endpoint.client_name}
         description={`Dataset ${endpoint.dataset_id || "unavailable"} / ${endpoint.graph_version || "v23.0"}`}
-        action={<div className="headerActions"><button className="button secondary" type="button" onClick={() => onVerify(endpoint)} disabled={verifyState.status === "loading"}><RefreshCw className={verifyState.status === "loading" ? "spin" : ""} size={17} /> Verify</button><a className="button ghost" href={endpoint.site_url} target="_blank" rel="noreferrer">Open service <ExternalLink size={17} /></a></div>}
+        action={<div className="headerActions"><button className="button secondary" type="button" onClick={() => onVerify(endpoint)} disabled={verifyState.status === "loading"}><RefreshCw className={verifyState.status === "loading" ? "spin" : ""} size={17} /> Verify</button></div>}
       />
       <section className="deploymentBanner">
         <div><span><CheckCircle2 size={23} /></span><div><h2>Endpoint deployed</h2><p>{endpoint.endpoint}</p></div></div>

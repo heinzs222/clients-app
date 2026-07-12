@@ -94,7 +94,7 @@ try {
   await page.goto("https://capi-tracker-service.netlify.app/#simple-capi-domain-check", { waitUntil: "networkidle" });
   assert(page.url() === `${baseUrl}/`, "The backend project does not redirect to the locked branded domain.");
 
-  const status = await context.request.get(`${baseUrl}/.netlify/functions/create-client-capi?action=status`);
+  const status = await context.request.get(`${baseUrl}/api/provisioner?action=status`);
   assert(status.ok(), "The provisioner status proxy is unavailable.");
   const statusBody = await status.json();
   assert(statusBody.ready === true, "The production provisioner is not ready.");
@@ -106,7 +106,7 @@ try {
   assert(identityBody.disable_signup === true, "Public account registration is still enabled.");
 
   const protectedRequest = await context.request.post(
-    `${baseUrl}/.netlify/functions/create-client-capi?action=checkout`,
+    `${baseUrl}/api/provisioner?action=checkout`,
     { headers: { Origin: baseUrl, "Content-Type": "application/json" }, data: {} }
   );
   assert(protectedRequest.status() === 401, "An unauthenticated provisioning request was not rejected.");

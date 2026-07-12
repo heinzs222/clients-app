@@ -90,7 +90,7 @@ function serveFile(req, res) {
 
 const server = http.createServer(async (req, res) => {
   try {
-    if (new URL(req.url, `http://127.0.0.1:${port}`).pathname === "/.netlify/functions/create-client-capi") {
+    if (new URL(req.url, `http://127.0.0.1:${port}`).pathname === "/api/provisioner") {
       await runFunction(req, res);
       return;
     }

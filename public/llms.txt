@@ -4,7 +4,7 @@
 
 ## Product
 
-- Creates one isolated Netlify CAPI endpoint per client and Meta dataset.
+- Creates one isolated CAPI endpoint per client and Meta dataset.
 - Keeps Meta access tokens in server-side environment variables.
 - Supports browser and server Lead and Schedule event deduplication.
 - Provides direct form tracking and optional GoHighLevel webhook mapping.

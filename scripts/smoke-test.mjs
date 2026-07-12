@@ -101,7 +101,7 @@ try {
     if (pathname === trackerAssets.corePath) {
       return route.fulfill({ status: 200, contentType: "application/javascript", body: trackerCore });
     }
-    if (pathname === "/.netlify/functions/meta-capi-lead") {
+    if (pathname === "/client/test-route/events") {
       directRequests.push({ headers: request.headers(), body: request.postData() || "" });
       return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ success: true }) });
     }
@@ -119,7 +119,7 @@ try {
     window.fbq = function() { window.__pixelCalls.push(Array.from(arguments)); };
     const script = document.createElement("script");
     script.src = "https://tracker.example/tracker.js";
-    script.setAttribute("data-capi-endpoint", "https://tracker.example/.netlify/functions/meta-capi-lead");
+    script.setAttribute("data-capi-endpoint", "https://tracker.example/client/test-route/events");
     script.setAttribute("data-test-event-code", "TEST_CUSTOM_FORM_001");
     document.body.appendChild(script);
   });
@@ -143,7 +143,7 @@ try {
     contentType: "text/html",
     body: `<!doctype html><html><body><main><h1>Appointment confirmed</h1></main>
       <script>window.__pixelCalls=[];window.fbq=function(){window.__pixelCalls.push(Array.from(arguments));};</script>
-      <script src="https://tracker.example/tracker.js" data-capi-endpoint="https://tracker.example/.netlify/functions/meta-capi-lead" data-event-name="Schedule" data-trigger="page-load" data-value="150" data-source="Appointment Booking" data-test-event-code="TEST_SCHEDULE_001" defer></script>
+      <script src="https://tracker.example/tracker.js" data-capi-endpoint="https://tracker.example/client/test-route/events" data-event-name="Schedule" data-trigger="page-load" data-value="150" data-source="Appointment Booking" data-test-event-code="TEST_SCHEDULE_001" defer></script>
     </body></html>`
   }));
   await customFormPage.goto(`${baseUrl}/booking-confirmed`, { waitUntil: "load" });
@@ -170,6 +170,7 @@ try {
   assert(await page.getByRole("button", { name: /Launch your first endpoint/ }).isVisible(), "Homepage primary action did not render.");
   assert(await page.locator(".publicHeader").count() === 1, "Home page header did not render.");
   assert(await page.locator(".publicFooter").count() === 1, "Home page footer did not render.");
+  assert(!/netlify/i.test(await page.locator("body").innerText()), "Customer-facing homepage exposes the infrastructure provider.");
   await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-home.png"), fullPage: true });
 
   await page.goto(`${baseUrl}/?preview=1&view=dashboard`, { waitUntil: "networkidle" });
@@ -178,7 +179,7 @@ try {
   const dashboardIsEmpty = await page.getByText("No endpoints yet").isVisible().catch(() => false);
   assert(dashboardHasEndpoints || dashboardIsEmpty, "Dashboard endpoint state did not render.");
 
-  await page.route("**/.netlify/functions/create-client-capi?action=list", async (route) => {
+  await page.route("**/api/provisioner?action=list", async (route) => {
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
@@ -189,11 +190,8 @@ try {
           client_name: "Example Home Services",
           dataset_id: "123456789012345",
           graph_version: "v23.0",
-          site_name: "dhc-example-home-services",
-          site_url: "https://example-client.netlify.app",
-          endpoint: "https://example-client.netlify.app/.netlify/functions/meta-capi-lead",
-          tracker_url: "https://example-client.netlify.app/tracker.js",
-          admin_url: "https://app.netlify.com/projects/example-client",
+          endpoint: "https://simplecapi.com/client/opaque-route/events",
+          tracker_url: "https://simplecapi.com/client/opaque-route/tracker.js",
           state: "ready",
           created_at: "2026-07-10T12:00:00.000Z",
           updated_at: "2026-07-11T12:00:00.000Z"
@@ -221,6 +219,7 @@ try {
   assert(mappingCode.includes('"page_variant"'), "GHL mapping omitted the landing-page variant.");
   await page.getByRole("button", { name: /Match data/ }).click();
   assert(await page.getByText("8 signal groups supported").isVisible(), "Match-data panel did not render.");
+  assert(!/netlify/i.test(await page.locator("body").innerText()), "Customer-facing workspace exposes the infrastructure provider.");
 
   await page.goto(`${baseUrl}/?preview=1&view=setup`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Create new endpoint" }).isVisible(), "Setup wizard did not render.");
@@ -228,7 +227,7 @@ try {
 
   async function mockPaidAppPage(availableCredits) {
     const billingPage = await context.newPage();
-    await billingPage.route("**/.netlify/functions/create-client-capi?**", (route) => {
+    await billingPage.route("**/api/provisioner?**", (route) => {
       const action = new URL(route.request().url()).searchParams.get("action");
       if (action === "status") {
         return route.fulfill({ contentType: "application/json", body: JSON.stringify({ success: true, ready: true, user_limit: 25, billing: { required: true, configured: true, provider: "lemonsqueezy", price_cents: 500, currency: "USD", mode: "test" } }) });
