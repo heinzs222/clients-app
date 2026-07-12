@@ -94,10 +94,13 @@ try {
   await page.goto("https://capi-tracker-service.netlify.app/#simple-capi-domain-check", { waitUntil: "networkidle" });
   assert(page.url() === `${baseUrl}/`, "The backend project does not redirect to the locked branded domain.");
 
-  const status = await context.request.get(`${baseUrl}/api/provisioner?action=status`);
+  const status = await context.request.get(`${baseUrl}/api/workspace?action=status`);
   assert(status.ok(), "The provisioner status proxy is unavailable.");
   const statusBody = await status.json();
   assert(statusBody.ready === true, "The production provisioner is not ready.");
+
+  const retiredWorkspaceRoute = await context.request.get(`${baseUrl}/api/provisioner?action=status`);
+  assert(!(retiredWorkspaceRoute.headers()["content-type"] || "").includes("application/json"), "The retired management route remains exposed.");
 
   const identity = await context.request.get(`${baseUrl}/api/auth/settings`);
   assert(identity.ok(), "The Identity proxy is unavailable.");
@@ -109,7 +112,7 @@ try {
   assert(!(retiredIdentityRoute.headers()["content-type"] || "").includes("application/json"), "The retired infrastructure auth route remains exposed.");
 
   const protectedRequest = await context.request.post(
-    `${baseUrl}/api/provisioner?action=checkout`,
+    `${baseUrl}/api/workspace?action=checkout`,
     { headers: { Origin: baseUrl, "Content-Type": "application/json" }, data: {} }
   );
   assert(protectedRequest.status() === 401, "An unauthenticated provisioning request was not rejected.");

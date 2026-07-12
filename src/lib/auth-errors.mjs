@@ -37,7 +37,7 @@ export function friendlyAuthError(error) {
   }
 
   if (/identity|not found|404/.test(normalized)) {
-    return "Authentication is not available for this deployment.";
+    return "Authentication is temporarily unavailable.";
   }
 
   return details || "Authentication failed. Please try again.";

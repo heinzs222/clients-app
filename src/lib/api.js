@@ -1,4 +1,4 @@
-const API_PATH = "/api/provisioner";
+const API_PATH = "/api/workspace";
 
 export async function capiRequest(action, { method = "GET", body } = {}) {
   const response = await fetch(`${API_PATH}?action=${encodeURIComponent(action)}`, {
@@ -13,7 +13,7 @@ export async function capiRequest(action, { method = "GET", body } = {}) {
   try {
     data = text ? JSON.parse(text) : {};
   } catch {
-    throw new Error("The server returned an unreadable response.");
+    throw new Error("The service returned an unreadable response.");
   }
 
   if (!response.ok || data.success === false) {

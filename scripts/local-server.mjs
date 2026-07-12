@@ -90,7 +90,7 @@ function serveFile(req, res) {
 
 const server = http.createServer(async (req, res) => {
   try {
-    if (new URL(req.url, `http://127.0.0.1:${port}`).pathname === "/api/provisioner") {
+    if (new URL(req.url, `http://127.0.0.1:${port}`).pathname === "/api/workspace") {
       await runFunction(req, res);
       return;
     }

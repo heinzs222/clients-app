@@ -91,7 +91,7 @@ function ProductApp() {
   const [callbackReady, setCallbackReady] = useState(false);
   const [inviteToken, setInviteToken] = useState("");
   const [authForm, setAuthForm] = useState({ fullName: "", email: "", password: "", confirmPassword: "" });
-  const [backend, setBackend] = useState({ status: "checking", ready: false, message: "Checking provisioning service...", userLimit: 0 });
+  const [backend, setBackend] = useState({ status: "checking", ready: false, message: "Checking service availability...", userLimit: 0 });
   const [billing, setBilling] = useState({
     status: "idle",
     required: true,
@@ -147,13 +147,13 @@ function ProductApp() {
   }, []);
 
   const checkBackend = useCallback(async () => {
-    setBackend((current) => ({ ...current, status: "checking", ready: false, message: "Checking provisioning service..." }));
+    setBackend((current) => ({ ...current, status: "checking", ready: false, message: "Checking service availability..." }));
     try {
       const data = await capiRequest("status");
       setBackend({
         status: data.ready ? "ready" : "missing",
         ready: Boolean(data.ready),
-        message: data.message || (data.ready ? "Provisioner is ready." : "Provisioner needs configuration."),
+        message: data.ready ? "Service is ready." : "Service is unavailable.",
         userLimit: data.user_limit || 0,
         billing: data.billing || null
       });
@@ -457,7 +457,7 @@ function ProductApp() {
   async function createEndpoint(input) {
     const requiresCredit = billing.required && !billing.exempt;
     if (requiresCredit && !billing.available_order_id) {
-      setCreateState({ status: "error", error: "Purchase a $5 endpoint credit before provisioning." });
+      setCreateState({ status: "error", error: "Purchase a $5 endpoint credit before creating an endpoint." });
       return false;
     }
     setCreateState({ status: "loading", error: "" });

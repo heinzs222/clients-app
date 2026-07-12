@@ -112,12 +112,29 @@ assert(options.statusCode === 204, "OPTIONS did not return 204.");
 const tracker = await __testing.trackerAssets();
 const trackerSource = __testing.trackerScriptSource();
 const loaderText = tracker.loader.toString("utf8");
+const coreText = tracker.core.toString("utf8");
 assert(tracker.core.length < trackerSource.length, "Generated tracker core was not minified.");
 assert(/^\/assets\/tracker-core\.[a-f0-9]{16}\.js$/.test(tracker.corePath), "Tracker core does not use a content hash.");
 assert(loaderText.includes(tracker.corePath), "Tracker loader does not reference its core asset.");
 assert(!loaderText.includes("ghlWebhookUrl"), "The public loader contains tracker implementation details.");
-assert(!loaderText.includes("\n") && !tracker.core.toString("utf8").includes("\n"), "Generated tracker assets are not compact.");
-assert(!/netlify/i.test(loaderText + tracker.core.toString("utf8")), "Generated tracker assets expose the infrastructure provider.");
+assert(!/ghl|leadconnector|inboundWebhook/i.test(coreText), "Generated tracker exposes a removed relay integration.");
+assert(!loaderText.includes("\n") && !coreText.includes("\n"), "Generated tracker assets are not compact.");
+assert(!/netlify/i.test(loaderText + coreText), "Generated tracker assets expose the infrastructure provider.");
+
+const publicEndpoint = __testing.clientEndpointRecord({
+  id: "endpoint-record-test",
+  client_name: "Example Client",
+  dataset_id: "123456789012345",
+  graph_version: "v23.0",
+  tracker_url: "https://simplecapi.com/client/opaque/tracker.js",
+  endpoint: "https://simplecapi.com/client/opaque/events",
+  billing: { order_id: "sensitive-order-reference" },
+  state: "ready",
+  created_at: "2026-07-12T00:00:00.000Z",
+  updated_at: "2026-07-12T00:00:00.000Z"
+});
+assert(!("endpoint" in publicEndpoint) && !("billing" in publicEndpoint), "Customer endpoint records expose internal routing or billing metadata.");
+assert(publicEndpoint.tracker_url.endsWith("/tracker.js"), "Customer endpoint record omitted the installation asset.");
 
 process.env.CAPI_GATEWAY_SECRET = "contract-test-gateway-secret-1234567890";
 const internalSite = "dhc-a1b2c3d4e5f6-example-client-abc123";

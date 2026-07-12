@@ -1,5 +1,4 @@
 export const DEFAULT_TRACKING = Object.freeze({
-  ghlWebhookUrl: "",
   eventName: "Lead",
   trigger: "form",
   formSelector: "form",
@@ -48,8 +47,6 @@ export function trackerTag(endpoint, settings = DEFAULT_TRACKING) {
   const config = { ...DEFAULT_TRACKING, ...settings };
   const attributes = [
     ["src", endpoint.tracker_url],
-    ["data-capi-endpoint", endpoint.endpoint],
-    ["data-ghl-webhook-url", config.ghlWebhookUrl],
     ["data-event-name", config.eventName || "Lead"],
     ["data-trigger", config.trigger || "form"],
     ["data-form-selector", config.trigger === "page-load" ? "" : (config.formSelector || "form")],
@@ -70,57 +67,6 @@ export function trackerTag(endpoint, settings = DEFAULT_TRACKING) {
     .join(" ");
 
   return `<script ${attributes} defer></script>`;
-}
-
-export function ghlWebhookBody() {
-  return JSON.stringify({
-    event_name: "{{inboundWebhookRequest.event_name}}",
-    event_id: "{{inboundWebhookRequest.event_id}}",
-    test_event_code: "{{inboundWebhookRequest.test_event_code}}",
-    full_name: "{{inboundWebhookRequest.full_name}}",
-    first_name: "{{inboundWebhookRequest.first_name}}",
-    last_name: "{{inboundWebhookRequest.last_name}}",
-    email: "{{inboundWebhookRequest.email}}",
-    phone: "{{inboundWebhookRequest.phone}}",
-    external_id: "{{inboundWebhookRequest.external_id}}",
-    client_ip_address: "{{inboundWebhookRequest.headers.cf-connecting-ip}}",
-    address1: "{{inboundWebhookRequest.address1}}",
-    city: "{{inboundWebhookRequest.city}}",
-    state: "{{inboundWebhookRequest.state}}",
-    postal_code: "{{inboundWebhookRequest.postal_code}}",
-    country: "{{inboundWebhookRequest.country}}",
-    business_name: "{{inboundWebhookRequest.business_name}}",
-    source: "{{inboundWebhookRequest.source}}",
-    tags: "{{inboundWebhookRequest.tags}}",
-    project_type: "{{inboundWebhookRequest.project_type}}",
-    project_timeline: "{{inboundWebhookRequest.project_timeline}}",
-    landing_page: "{{inboundWebhookRequest.landing_page}}",
-    page_url: "{{inboundWebhookRequest.page_url}}",
-    page_variant: "{{inboundWebhookRequest.page_variant}}",
-    referrer: "{{inboundWebhookRequest.referrer}}",
-    client_user_agent: "{{inboundWebhookRequest.client_user_agent}}",
-    fbclid: "{{inboundWebhookRequest.fbclid}}",
-    fbp: "{{inboundWebhookRequest.fbp}}",
-    fbc: "{{inboundWebhookRequest.fbc}}",
-    utm_source: "{{inboundWebhookRequest.utm_source}}",
-    utm_medium: "{{inboundWebhookRequest.utm_medium}}",
-    utm_campaign: "{{inboundWebhookRequest.utm_campaign}}",
-    utm_content: "{{inboundWebhookRequest.utm_content}}",
-    utm_term: "{{inboundWebhookRequest.utm_term}}",
-    utm_adset: "{{inboundWebhookRequest.utm_adset}}",
-    utm_ad: "{{inboundWebhookRequest.utm_ad}}",
-    utm_id: "{{inboundWebhookRequest.utm_id}}",
-    hsa_acc: "{{inboundWebhookRequest.hsa_acc}}",
-    hsa_cam: "{{inboundWebhookRequest.hsa_cam}}",
-    hsa_grp: "{{inboundWebhookRequest.hsa_grp}}",
-    hsa_ad: "{{inboundWebhookRequest.hsa_ad}}",
-    hsa_src: "{{inboundWebhookRequest.hsa_src}}",
-    hsa_net: "{{inboundWebhookRequest.hsa_net}}",
-    hsa_ver: "{{inboundWebhookRequest.hsa_ver}}",
-    currency: "{{inboundWebhookRequest.currency}}",
-    value: "{{inboundWebhookRequest.value}}",
-    submitted_at: "{{inboundWebhookRequest.submitted_at}}"
-  }, null, 2);
 }
 
 function storageNamespace(userId) {

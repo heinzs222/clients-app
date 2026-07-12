@@ -35,12 +35,17 @@ page.on("console", (message) => {
 
 try {
   const trackerPage = await context.newPage();
+  const trackerRequests = [];
   trackerPage.on("pageerror", (error) => runtimeErrors.push(`tracker pageerror: ${error.message}`));
-  await trackerPage.route("https://services.leadconnectorhq.com/**", (route) => route.fulfill({ status: 204 }));
   await trackerPage.route("https://tracker.example/**", (route) => {
-    const pathname = new URL(route.request().url()).pathname;
+    const request = route.request();
+    const pathname = new URL(request.url()).pathname;
+    if (pathname === "/client/test-route/events") {
+      trackerRequests.push(request.postData() || "");
+      return route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ success: true }) });
+    }
     const body = pathname === "/tracker.js" ? trackerLoader : pathname === trackerAssets.corePath ? trackerCore : "";
-    route.fulfill({ status: body ? 200 : 404, contentType: "application/javascript", body });
+    return route.fulfill({ status: body ? 200 : 404, contentType: "application/javascript", body });
   });
   await trackerPage.goto(`${baseUrl}/?utm_source=fb_ad&fbclid=contract-click`, { waitUntil: "domcontentloaded" });
   await trackerPage.setContent(`<!doctype html><html><body>
@@ -59,7 +64,7 @@ try {
     window.addEventListener("capi-launcher:lead", (event) => { window.__trackerEvent = event.detail; });
     const script = document.createElement("script");
     script.src = "https://tracker.example/tracker.js";
-    script.setAttribute("data-ghl-webhook-url", "https://services.leadconnectorhq.com/hooks/test/webhook-trigger/test");
+    script.setAttribute("data-capi-endpoint", "https://tracker.example/client/test-route/events");
     script.setAttribute("data-page-variant", "Control");
     script.setAttribute("data-test-event-code", "TEST_BROWSER_001");
     document.body.appendChild(script);
@@ -68,27 +73,24 @@ try {
   await trackerPage.evaluate(() => {
     document.getElementById("estimate-form").dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
   });
-  await trackerPage.waitForTimeout(250);
+  for (let i = 0; i < 20 && trackerRequests.length < 1; i += 1) await trackerPage.waitForTimeout(50);
   const trackerResult = await trackerPage.evaluate(() => {
-    const hidden = document.querySelector('form[target^="dh_capi_"]');
-    const values = hidden ? Object.fromEntries(Array.from(hidden.querySelectorAll("input")).map((input) => [input.name, input.value])) : {};
     return {
       pixelCalls: window.__pixelCalls,
       event: window.__trackerEvent,
-      hiddenForms: document.querySelectorAll('form[target^="dh_capi_"]').length,
-      values,
       fbc: document.cookie.split("; ").find((item) => item.startsWith("_fbc=")) || ""
     };
   });
-  assert(trackerResult.hiddenForms === 1, "Tracker created duplicate internal GHL forms.");
+  assert(trackerRequests.length === 1, "Lead form did not send exactly one request.");
+  const trackerValues = Object.fromEntries(new URLSearchParams(trackerRequests[0]));
   assert(trackerResult.pixelCalls.length === 1, "Browser Pixel Lead did not fire exactly once.");
-  assert(trackerResult.values.event_id === trackerResult.pixelCalls[0][3].eventID, "Pixel and webhook event IDs differ.");
-  assert(trackerResult.values.page_variant === "Control", "Tracker did not include the landing-page variant.");
+  assert(trackerValues.event_id === trackerResult.pixelCalls[0][3].eventID, "Pixel and server event IDs differ.");
+  assert(trackerValues.page_variant === "Control", "Tracker did not include the landing-page variant.");
   assert(trackerResult.pixelCalls[0][2].page_variant === "Control", "Browser Pixel event omitted the landing-page variant.");
-  assert(trackerResult.values.test_event_code === "TEST_BROWSER_001", "Tracker did not forward the Meta test event code.");
-  assert(trackerResult.event.event_id === trackerResult.values.event_id, "Tracker lifecycle event ID differs.");
-  assert(trackerResult.values.external_id === "jane@example.com", "Tracker external_id is incorrect.");
-  assert(trackerResult.values.fbc.endsWith(".contract-click"), "Tracker did not build fbc from fbclid.");
+  assert(trackerValues.test_event_code === "TEST_BROWSER_001", "Tracker did not forward the Meta test event code.");
+  assert(trackerResult.event.event_id === trackerValues.event_id, "Tracker lifecycle event ID differs.");
+  assert(trackerValues.external_id === "jane@example.com", "Tracker external_id is incorrect.");
+  assert(trackerValues.fbc.endsWith(".contract-click"), "Tracker did not build fbc from fbclid.");
   assert(trackerResult.fbc.includes("contract-click"), "Tracker did not persist the _fbc cookie.");
   await trackerPage.close();
 
@@ -169,11 +171,13 @@ try {
   await customFormPage.close();
 
   await page.goto(`${baseUrl}/`, { waitUntil: "networkidle" });
-  assert(await page.getByRole("heading", { name: "Meta CAPI setup without the infrastructure work." }).isVisible(), "Product home page did not render.");
+  assert(await page.getByRole("heading", { name: "Launch reliable Meta tracking in minutes." }).isVisible(), "Product home page did not render.");
   assert(await page.getByRole("button", { name: /Launch your first endpoint/ }).isVisible(), "Homepage primary action did not render.");
   assert(await page.locator(".publicHeader").count() === 1, "Home page header did not render.");
   assert(await page.locator(".publicFooter").count() === 1, "Home page footer did not render.");
-  assert(!/netlify/i.test(await page.locator("body").innerText()), "Customer-facing homepage exposes the infrastructure provider.");
+  const homeText = await page.locator("body").innerText();
+  assert(!/GHL|webhook|SHA-256|fbp|fbc|client IP|user agent|deduplication/i.test(homeText), "Homepage exposes implementation details.");
+  assert(!/netlify/i.test(homeText), "Customer-facing homepage exposes the infrastructure provider.");
   await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-home.png"), fullPage: true });
 
   await page.goto(`${baseUrl}/?preview=1&view=dashboard`, { waitUntil: "networkidle" });
@@ -182,7 +186,7 @@ try {
   const dashboardIsEmpty = await page.getByText("No endpoints yet").isVisible().catch(() => false);
   assert(dashboardHasEndpoints || dashboardIsEmpty, "Dashboard endpoint state did not render.");
 
-  await page.route("**/api/provisioner?action=list", async (route) => {
+  await page.route("**/api/workspace?action=list", async (route) => {
     await route.fulfill({
       contentType: "application/json",
       body: JSON.stringify({
@@ -205,24 +209,23 @@ try {
   await page.goto(`${baseUrl}/?preview=1&view=endpoints`, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Example Home Services", exact: true }).click();
   assert(await page.getByRole("heading", { name: "Example Home Services" }).isVisible(), "Tracking detail did not open.");
-  assert(await page.getByText("Lead form script", { exact: true }).isVisible(), "Tracker install panel did not render.");
+  assert(await page.getByText("Lead installation script", { exact: true }).isVisible(), "Tracker install panel did not render.");
   await page.getByLabel("Landing page label").fill("Variant B");
   const variantInstallCode = await page.locator(".codePanel pre").first().innerText();
   assert(variantInstallCode.includes('data-page-variant="Variant B"'), "Installer omitted the landing-page variant.");
+  assert(!variantInstallCode.includes("data-capi-endpoint"), "Installer exposes an unnecessary event route.");
   await page.getByRole("button", { name: /Schedule confirmation/ }).click();
-  assert(await page.getByText("Schedule confirmation script", { exact: true }).isVisible(), "Schedule installer did not render.");
+  assert(await page.getByText("Schedule installation script", { exact: true }).isVisible(), "Schedule installer did not render.");
   assert(await page.getByText("Confirmation page only", { exact: true }).isVisible(), "Schedule placement warning did not render.");
   const scheduleInstallCode = await page.locator(".codePanel pre").first().innerText();
   assert(scheduleInstallCode.includes('data-event-name="Schedule"'), "Schedule installer generated the wrong event name.");
   assert(scheduleInstallCode.includes('data-trigger="page-load"'), "Schedule installer omitted the page-load trigger.");
   assert(!scheduleInstallCode.includes("data-form-selector"), "Schedule installer included an irrelevant form selector.");
-  await page.getByRole("button", { name: /GHL mapping/ }).click();
-  assert(await page.getByText("GHL JSON body", { exact: true }).isVisible(), "GHL mapping panel did not render.");
-  const mappingCode = await page.locator(".codePanel pre").first().innerText();
-  assert(mappingCode.includes('"page_variant"'), "GHL mapping omitted the landing-page variant.");
-  await page.getByRole("button", { name: /Match data/ }).click();
-  assert(await page.getByText("8 signal groups supported").isVisible(), "Match-data panel did not render.");
+  const trackingText = await page.locator("body").innerText();
+  assert(!/GHL|webhook|SHA-256|fbp|fbc|client IP|user agent|deduplication/i.test(trackingText), "Tracking UI exposes implementation details.");
+  assert(await page.locator(".pageTabs button").count() === 2, "Tracking UI exposes unnecessary configuration tabs.");
   assert(!/netlify/i.test(await page.locator("body").innerText()), "Customer-facing workspace exposes the infrastructure provider.");
+  await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-install.png"), fullPage: true });
 
   await page.goto(`${baseUrl}/?preview=1&view=setup`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Create new endpoint" }).isVisible(), "Setup wizard did not render.");
@@ -230,7 +233,7 @@ try {
 
   async function mockPaidAppPage(availableCredits) {
     const billingPage = await context.newPage();
-    await billingPage.route("**/api/provisioner?**", (route) => {
+    await billingPage.route("**/api/workspace?**", (route) => {
       const action = new URL(route.request().url()).searchParams.get("action");
       if (action === "status") {
         return route.fulfill({ contentType: "application/json", body: JSON.stringify({ success: true, ready: true, user_limit: 25, billing: { required: true, configured: true, provider: "lemonsqueezy", price_cents: 500, currency: "USD", mode: "test" } }) });
@@ -293,10 +296,10 @@ try {
   assert(await page.getByText("Preview the local workspace").count() === 0, "Local preview control should only render on login.");
 
   await page.goto(`${baseUrl}/?view=status`, { waitUntil: "networkidle" });
-  assert(await page.getByRole("heading", { name: "Provisioning service" }).isVisible(), "Status page did not render.");
+  assert(await page.getByRole("heading", { name: "Service availability" }).isVisible(), "Status page did not render.");
 
   assert(runtimeErrors.length === 0, runtimeErrors.join("\n"));
-  process.stdout.write("Smoke test passed: tracker, product home, Lemon Squeezy gate, dashboard, GHL mapping, mobile, auth, and status.\n");
+  process.stdout.write("Smoke test passed: tracker, simplified product UI, payment gate, dashboard, mobile, auth, and status.\n");
 } finally {
   await browser.close();
 }

@@ -51,7 +51,7 @@ export default function AuthScreen({
             <div className="authTitle">
               <span className="eyebrow">Secure workspace</span>
               <h1>Create your account</h1>
-              <p>Provision and manage separate Meta CAPI endpoints from one workspace.</p>
+              <p>Create and manage client Meta tracking from one workspace.</p>
             </div>
             <form className="authForm" onSubmit={submit}>
               <Field label="Full name">
@@ -92,13 +92,13 @@ export default function AuthScreen({
 
           <aside className="registerVisual">
             <div className="registerPipeline">
-              <span className="eyebrow light"><i /> Client infrastructure</span>
-              <h2>Every credential stays in its own lane.</h2>
-              <p>The app creates a dedicated server environment for each Meta dataset instead of sharing credentials across clients.</p>
+              <span className="eyebrow light"><i /> Built for agencies</span>
+              <h2>Client tracking without the setup drag.</h2>
+              <p>Create one setup per client and get a ready-to-paste installation script in minutes.</p>
               <ul>
-                <li><span><ShieldCheck size={19} /></span><div><strong>Server-side token storage</strong><small>No access token in tracker code or browser storage.</small></div></li>
-                <li><span><Rocket size={19} /></span><div><strong>Automatic provisioning</strong><small>Function, tracker, environment, and endpoint URL in one flow.</small></div></li>
-                <li><span><Check size={19} /></span><div><strong>Account ownership</strong><small>Users can manage only endpoints created by their account.</small></div></li>
+                <li><span><ShieldCheck size={19} /></span><div><strong>Secure setup</strong><small>Sensitive credentials never appear in installation code.</small></div></li>
+                <li><span><Rocket size={19} /></span><div><strong>Ready in minutes</strong><small>Add the client, choose the event, and paste one script.</small></div></li>
+                <li><span><Check size={19} /></span><div><strong>Private workspace</strong><small>Manage only the client setups owned by your account.</small></div></li>
               </ul>
             </div>
           </aside>

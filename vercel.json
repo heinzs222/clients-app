@@ -71,7 +71,7 @@
   ],
   "rewrites": [
     {
-      "source": "/api/provisioner",
+      "source": "/api/workspace",
       "destination": "https://capi-tracker-service.netlify.app/.netlify/functions/create-client-capi"
     },
     {

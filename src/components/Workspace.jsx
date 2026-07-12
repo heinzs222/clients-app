@@ -16,8 +16,6 @@ import {
   Eye,
   EyeOff,
   FileInput,
-  FileJson,
-  Fingerprint,
   KeyRound,
   LayoutDashboard,
   LifeBuoy,
@@ -33,7 +31,6 @@ import {
   Settings,
   ShieldCheck,
   Trash2,
-  Webhook,
   X
 } from "lucide-react";
 import {
@@ -42,7 +39,6 @@ import {
   cleanDatasetId,
   endpointState,
   formatDate,
-  ghlWebhookBody,
   isValidAccessToken,
   isValidDatasetId,
   loadTrackingSettings,
@@ -172,7 +168,7 @@ function EndpointDeleteModal({ endpoint, open, onClose, onConfirm, busy }) {
         </>
       }
     >
-      <Notice tone="warning" title="This permanently removes the endpoint">The webhook, tracker URL, and stored Meta credentials will stop working immediately. A redeemed endpoint payment is not restored as a reusable credit.</Notice>
+      <Notice tone="warning" title="This permanently removes the endpoint">Tracking for this client will stop immediately. A redeemed endpoint payment is not restored as a reusable credit.</Notice>
       <Field label={`Type ${endpoint?.client_name || "the client name"} to confirm`}>
         <InputShell><input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="off" /></InputShell>
       </Field>
@@ -187,14 +183,14 @@ function Dashboard({ endpoints, loading, error, navigate, onNew, onOpen, onManag
     <main className="workspaceMain">
       <WorkspaceHeader
         title="Dashboard"
-        description="Your client-specific Meta Conversions API infrastructure."
+        description="Your client tracking workspace."
         action={<button className="button primary" type="button" onClick={onNew}><Plus size={18} /> New endpoint</button>}
       />
       {error ? <Notice tone="error" title="Could not load endpoints">{error} <button className="inlineButton" type="button" onClick={refresh}>Try again</button></Notice> : null}
       <section className="metricGrid" aria-label="Endpoint overview">
-        <article><span><Database size={22} /></span><p>Total endpoints</p><strong>{loading ? "-" : endpoints.length}</strong><small>Isolated client services</small></article>
-        <article><span className="green"><Activity size={22} /></span><p>Ready endpoints</p><strong>{loading ? "-" : active}</strong><small>{endpoints.length ? `${active} of ${endpoints.length} deployed` : "No endpoint created yet"}</small></article>
-        <article><span className="cyan"><RefreshCw size={22} /></span><p>Last deployment</p><strong className="metricDate">{newest ? formatDate(newest.updated_at) : "None"}</strong><small>{newest ? newest.client_name : "Create the first client"}</small></article>
+        <article><span><Database size={22} /></span><p>Total endpoints</p><strong>{loading ? "-" : endpoints.length}</strong><small>Client tracking setups</small></article>
+        <article><span className="green"><Activity size={22} /></span><p>Ready endpoints</p><strong>{loading ? "-" : active}</strong><small>{endpoints.length ? `${active} of ${endpoints.length} ready` : "No endpoint created yet"}</small></article>
+        <article><span className="cyan"><RefreshCw size={22} /></span><p>Last update</p><strong className="metricDate">{newest ? formatDate(newest.updated_at) : "None"}</strong><small>{newest ? newest.client_name : "Create the first client"}</small></article>
       </section>
       <section className="managedSection">
         <header><div><h2>Recent endpoints</h2><p>Open a client to copy installation code or verify its service.</p></div><button className="button ghost" type="button" onClick={() => navigate("endpoints")}>View all <ChevronRight size={17} /></button></header>
@@ -219,7 +215,7 @@ function EndpointsPage({ endpoints, loading, error, onNew, onOpen, onManage, onD
   }, [endpoints, search]);
   return (
     <main className="workspaceMain">
-      <WorkspaceHeader title="Endpoints" description="Manage isolated client functions, trackers, and credentials." action={<button className="button primary" type="button" onClick={onNew}><Plus size={18} /> New endpoint</button>} />
+      <WorkspaceHeader title="Endpoints" description="Manage each client's tracking setup." action={<button className="button primary" type="button" onClick={onNew}><Plus size={18} /> New endpoint</button>} />
       {error ? <Notice tone="error" title="Could not load endpoints">{error} <button className="inlineButton" type="button" onClick={refresh}>Try again</button></Notice> : null}
       <section className="managedSection endpointsManager">
         <header>
@@ -243,7 +239,7 @@ function EndpointsPage({ endpoints, loading, error, onNew, onOpen, onManage, onD
 function Progress({ stage }) {
   return (
     <div className="wizardProgress" aria-label="Endpoint setup progress">
-      {["Payment", "Client configuration", "Provision server", "Install tracking"].map((label, index) => {
+      {["Payment", "Client details", "Create setup", "Install"].map((label, index) => {
         const number = index + 1;
         return (
           <React.Fragment key={label}>
@@ -264,16 +260,16 @@ function PaymentStep({ billing, onCheckout, refreshBilling, onCancel }) {
   const busy = ["loading", "checkout", "verifying"].includes(billing.status);
   return (
     <main className="workspaceMain">
-      <WorkspaceHeader title="Create new endpoint" description="Each isolated endpoint is a one-time purchase." />
+      <WorkspaceHeader title="Create new endpoint" description="Each client endpoint is a one-time purchase." />
       <Progress stage={1} />
       <div className="wizardLayout paymentLayout">
         <section className="wizardCard paymentCard">
           <header><span className="paymentIcon"><CreditCard size={23} /></span><div><h2>Endpoint credit</h2><p>Lemon Squeezy securely processes the payment as merchant of record. Card details never pass through Simple CAPI.</p></div></header>
           <div className="priceLine"><strong>{money(billing.price_cents, billing.currency)}</strong><span>one-time</span></div>
           <ul className="paymentIncludes">
-            <li><CheckCircle2 size={18} /><span>One isolated client and Meta dataset endpoint</span></li>
+            <li><CheckCircle2 size={18} /><span>One client and Meta dataset endpoint</span></li>
             <li><CheckCircle2 size={18} /><span>Lead and Schedule tracking across that client's pages</span></li>
-            <li><CheckCircle2 size={18} /><span>Credential isolation and endpoint management</span></li>
+            <li><CheckCircle2 size={18} /><span>Secure credential handling and endpoint management</span></li>
           </ul>
           {billing.mode === "test" ? <Notice tone="warning" title="Lemon Squeezy test mode">Use Lemon Squeezy's test checkout. No real charge will be made.</Notice> : null}
           {!billing.configured ? <Notice tone="error" title="Payments unavailable">Lemon Squeezy has not been configured by the administrator.</Notice> : null}
@@ -292,7 +288,7 @@ function PaymentStep({ billing, onCheckout, refreshBilling, onCancel }) {
           <h2>How payment works</h2>
           <ol>
             <li><strong>Secure checkout</strong><small>Lemon Squeezy handles card entry, tax, and required authentication.</small></li>
-            <li><strong>Verified credit</strong><small>The server confirms payment amount, owner, and status.</small></li>
+            <li><strong>Verified credit</strong><small>Your payment is confirmed before the endpoint is created.</small></li>
             <li><strong>Single redemption</strong><small>One successful payment can create exactly one endpoint.</small></li>
           </ol>
           <div className="secureNote"><LockKeyhole size={17} /><span>Closing or cancelling checkout does not create an endpoint or consume a credit.</span></div>
@@ -309,14 +305,14 @@ function BillingPage({ billing, onCheckout, refreshBilling, navigate }) {
     <main className="workspaceMain">
       <WorkspaceHeader
         title="Billing"
-        description="One Lemon Squeezy payment purchases one isolated client and dataset endpoint."
+        description="One payment purchases one client and dataset endpoint."
         action={<button className="button secondary" type="button" onClick={() => refreshBilling()} disabled={busy}><RefreshCw size={17} /> Refresh</button>}
       />
       <div className="billingOverview">
         <section className="billingMetric">
           <span>Available credits</span>
           <strong>{billing.exempt ? "Development" : available}</strong>
-          <small>{billing.exempt ? "Payment is bypassed only for this local or explicitly exempt environment." : "Each credit provisions one isolated client and dataset endpoint."}</small>
+          <small>{billing.exempt ? "Payment is bypassed only for this local or explicitly exempt environment." : "Each credit creates one client and dataset endpoint."}</small>
         </section>
         <section className="billingMetric">
           <span>Endpoint price</span>
@@ -381,13 +377,13 @@ function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refr
 
   return (
     <main className="workspaceMain">
-      <WorkspaceHeader title="Create new endpoint" description="Connect one Meta dataset to its own isolated server endpoint." />
+      <WorkspaceHeader title="Create new endpoint" description="Add one client and generate the installation script." />
       <Progress stage={createState.status === "success" ? 4 : createState.status === "loading" ? 3 : 2} />
       <div className="wizardLayout">
         <form className="wizardCard" onSubmit={submit}>
-          <header><h2>Client details</h2><p>The access token is sent once to the server and is never saved in this browser.</p></header>
+          <header><h2>Client details</h2><p>The access token is handled securely and never included in the installation script.</p></header>
           <div className="formStack">
-            {!billing.exempt && billing.required ? <Notice tone="success" title="Payment confirmed">{billing.available_credits} endpoint credit{billing.available_credits === 1 ? " is" : "s are"} available. One credit will be redeemed after successful provisioning.</Notice> : null}
+            {!billing.exempt && billing.required ? <Notice tone="success" title="Payment confirmed">{billing.available_credits} endpoint credit{billing.available_credits === 1 ? " is" : "s are"} available. One credit will be redeemed after the endpoint is created.</Notice> : null}
             <Field label="Client or project name" hint="Use a recognizable business name." error={touched && form.clientName.trim().length < 2 ? "Enter at least two characters." : undefined}>
               <InputShell><input value={form.clientName} onChange={(event) => setForm({ ...form, clientName: event.target.value })} placeholder="Acme Home Services" autoComplete="organization" /></InputShell>
             </Field>
@@ -401,16 +397,16 @@ function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refr
             </Field>
             <details className="advancedSettings">
               <summary>Advanced settings</summary>
-              <Field label="Meta Graph API version" hint="The provisioner defaults to v23.0.">
+              <Field label="Meta Graph API version" hint="Defaults to v23.0.">
                 <InputShell code><input value={form.graphVersion} onChange={(event) => setForm({ ...form, graphVersion: event.target.value.trim() })} placeholder="v23.0" autoComplete="off" /></InputShell>
               </Field>
             </details>
-            {!backend.ready ? <Notice tone={backend.status === "checking" ? "info" : "error"} title="Provisioner unavailable">{backend.message}</Notice> : null}
+            {!backend.ready ? <Notice tone={backend.status === "checking" ? "info" : "error"} title="Service unavailable">{backend.status === "checking" ? "Checking availability..." : "Endpoint creation is temporarily unavailable."}</Notice> : null}
             {createState.error ? <Notice tone="error" title="Endpoint was not created">{createState.error}</Notice> : null}
             <div className="wizardActions">
               <button className="button ghost" type="button" onClick={onCancel} disabled={createState.status === "loading"}>Cancel</button>
               <button className="button primary" type="submit" disabled={createState.status === "loading" || !backend.ready}>
-                {createState.status === "loading" ? <Spinner label="Provisioning" /> : <>Provision endpoint <ArrowRight size={18} /></>}
+                {createState.status === "loading" ? <Spinner label="Creating endpoint" /> : <>Create endpoint <ArrowRight size={18} /></>}
               </button>
             </div>
           </div>
@@ -421,9 +417,9 @@ function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refr
           <ol>
             <li><strong>Dataset ID</strong><small>Select the correct client dataset in Meta Events Manager.</small></li>
             <li><strong>Access token</strong><small>Generate the token from that same dataset, not another client.</small></li>
-            <li><strong>Client boundary</strong><small>This creates a separate service and encrypted credential set.</small></li>
+            <li><strong>Client endpoint</strong><small>Use one endpoint for each client and Meta dataset.</small></li>
           </ol>
-          <div className="secureNote"><LockKeyhole size={17} /><span>The token is never included in the tracker, endpoint URL, dashboard record, or API response.</span></div>
+          <div className="secureNote"><LockKeyhole size={17} /><span>The token is never included in the installation script.</span></div>
         </aside>
       </div>
     </main>
@@ -451,14 +447,12 @@ function CodePanel({ title, description, value, copyLabel = "Copy" }) {
 
 function TrackingInstall({ endpoint, settings, setSettings }) {
   const script = trackerTag(endpoint, settings);
-  const directMode = !settings.ghlWebhookUrl;
   const confirmationMode = settings.trigger === "page-load";
 
   function selectMode(mode) {
     const schedule = mode === "page-load";
     setSettings({
       ...settings,
-      ghlWebhookUrl: schedule ? "" : settings.ghlWebhookUrl,
       trigger: schedule ? "page-load" : "form",
       eventName: schedule ? "Schedule" : "Lead",
       formSelector: "form",
@@ -484,11 +478,6 @@ function TrackingInstall({ endpoint, settings, setSettings }) {
               </button>
             </div>
           </fieldset>
-          {!confirmationMode ? (
-            <Field label="GHL inbound webhook URL" hint={directMode ? "Optional. Leave blank to send directly to the CAPI endpoint with no workflow." : "Form data posts to GHL first, then the workflow sends it to Simple CAPI."}>
-              <InputShell icon={Webhook}><input type="url" value={settings.ghlWebhookUrl} onChange={(event) => setSettings({ ...settings, ghlWebhookUrl: event.target.value.trim() })} placeholder="https://services.leadconnectorhq.com/hooks/..." autoComplete="off" /></InputShell>
-            </Field>
-          ) : null}
           <div className="twoFields">
             <Field label="Country">
               <InputShell><select value={settings.country} onChange={(event) => setSettings({ ...settings, country: event.target.value })}><option value="US">United States</option><option value="CA">Canada</option><option value="GB">United Kingdom</option><option value="AU">Australia</option><option value="NZ">New Zealand</option><option value="IE">Ireland</option></select></InputShell>
@@ -508,54 +497,19 @@ function TrackingInstall({ endpoint, settings, setSettings }) {
           <Field label="Meta test event code" hint="Optional. Paste the temporary TEST code from Events Manager, then remove it after testing.">
             <InputShell code><input value={settings.testEventCode} onChange={(event) => setSettings({ ...settings, testEventCode: event.target.value.trim() })} placeholder="TEST12345" autoComplete="off" /></InputShell>
           </Field>
-          <Toggle checked={settings.firePixel} onChange={(value) => setSettings({ ...settings, firePixel: value })} label={`Fire browser ${settings.eventName}`} description="Uses the same event ID as the matching server event when an existing Meta Pixel is present." />
-          <Toggle checked={settings.onlyMetaTraffic} onChange={(value) => setSettings({ ...settings, onlyMetaTraffic: value })} label="Meta traffic only" description="Skip tracking unless fbclid, fbp, fbc, or a Meta-style utm_source is present." />
-          <Notice tone="info" title="One client, multiple landing pages">Reuse this endpoint for pages that send to the same Meta dataset. The page URL, attribution fields, and optional label keep each conversion identifiable. Create a separate endpoint when the client or dataset changes.</Notice>
-          <Notice tone="info" title={confirmationMode ? "Confirmation page mode" : directMode ? "Direct mode" : "GHL relay mode"}>{confirmationMode ? "Paste this tag only on the page shown after a successful booking. It sends directly to Simple CAPI and needs no GHL workflow." : directMode ? "The browser posts straight to the generated CAPI endpoint, which captures the request IP server-side." : "The tracker posts a hidden form to GHL. Map the original inbound IP in the next tab."}</Notice>
+          <Toggle checked={settings.firePixel} onChange={(value) => setSettings({ ...settings, firePixel: value })} label="Complete Meta tracking" description="Recommended when the Meta Pixel is already installed on the page." />
+          <Toggle checked={settings.onlyMetaTraffic} onChange={(value) => setSettings({ ...settings, onlyMetaTraffic: value })} label="Meta traffic only" description="Track only visits attributed to Meta campaigns." />
+          <Notice tone="info" title="One client, multiple pages">Reuse this setup across pages for the same client and Meta dataset. Create a new endpoint for a different client or dataset.</Notice>
+          <Notice tone="info" title="Where to paste it">{confirmationMode ? "Use the script only on the page displayed after a successful booking." : "Use the script on the page that contains the form, then publish and submit one real test."}</Notice>
         </div>
       </section>
       <div className="trackingCodeStack">
-        <CodePanel title={confirmationMode ? "Schedule confirmation script" : "Lead form script"} description={confirmationMode ? "Paste only into the booking thank-you or confirmation page. Do not install it globally or on the calendar selection page." : "Paste into the actual page that contains the form. It loads a hosted, minified tracker; no Meta token is included."} value={script} />
+        <CodePanel title={confirmationMode ? "Schedule installation script" : "Lead installation script"} description={confirmationMode ? "Paste it into the booking thank-you or confirmation page." : "Paste it into the page that contains the form."} value={script} />
         {confirmationMode
           ? <Notice tone="warning" title="Confirmation page only">Installing this tag globally would record Schedule before an appointment is completed.</Notice>
-          : <Notice tone="warning" title="Iframe boundary">A script on the outer GHL page cannot inspect a form inside a cross-origin iframe. Install the tag in the form page itself.</Notice>}
+          : <Notice tone="warning" title="Embedded forms">If the form is inside an iframe, place the script inside the form's own code rather than on the outer page.</Notice>}
       </div>
     </div>
-  );
-}
-
-function GhlMapping({ endpoint }) {
-  const body = ghlWebhookBody();
-  return (
-    <div className="trackingColumns equal">
-      <section className="instructionPanel">
-        <header><span><Route size={22} /></span><div><h2>GHL workflow step</h2><p>Use this after the inbound webhook creates or updates the contact.</p></div></header>
-        <ol className="numberedSteps">
-          <li><span>1</span><div><strong>Submit one real test form</strong><small>This lets GHL expose the inboundWebhookRequest fields for mapping.</small></div></li>
-          <li><span>2</span><div><strong>Add a Custom Webhook action</strong><small>Set the method to POST and content type to application/json.</small></div></li>
-          <li><span>3</span><div><strong>Use the generated endpoint URL</strong><small>Copy the branded URL shown below exactly.</small></div></li>
-          <li><span>4</span><div><strong>Paste the request body</strong><small>Keep event_id mapped from inboundWebhookRequest for deduplication.</small></div></li>
-        </ol>
-        <Field label="Custom Webhook URL"><InputShell code><input value={endpoint.endpoint} readOnly /><CopyButton value={endpoint.endpoint} compact /></InputShell></Field>
-      </section>
-      <CodePanel title="GHL JSON body" description="Paste this object into the Custom Webhook request body." value={body} />
-    </div>
-  );
-}
-
-function MatchDataPanel() {
-  const signals = [
-    ["Email", "SHA-256 hashed"], ["Phone", "Normalized and hashed"], ["First + last name", "SHA-256 hashed"],
-    ["Address fields", "City, state, ZIP, country"], ["External ID", "Email or phone fallback"],
-    ["fbp + fbc", "Sent unhashed"], ["Client IP + user agent", "Sent unhashed"], ["Event ID", "Shared with browser Pixel"]
-  ];
-  return (
-    <section className="matchPanel">
-      <header><div><Fingerprint size={24} /><h2>Match data coverage</h2></div><span>8 signal groups supported</span></header>
-      <p>The tracker captures these values when they are available in the form or browser. The server normalizes and hashes fields according to their Meta user_data format.</p>
-      <div className="signalGrid">{signals.map(([name, detail]) => <div key={name}><CheckCircle2 size={18} /><span><strong>{name}</strong><small>{detail}</small></span></div>)}</div>
-      <Notice tone="info" title="No score guarantee">Event Match Quality is calculated by Meta from actual submitted data and matchability. The app improves coverage but cannot guarantee a number such as 9.5 or 10.</Notice>
-    </section>
   );
 }
 
@@ -584,14 +538,14 @@ function EndpointSettings({ endpoint, onUpdate, onDelete, updateState }) {
             </InputShell>
           </Field>
           {updateState.error ? <Notice tone="error">{updateState.error}</Notice> : null}
-          {updateState.success ? <Notice tone="success">Endpoint settings and deployment were updated.</Notice> : null}
-          <button className="button primary alignStart" type="submit" disabled={!valid || updateState.status === "loading"}>{updateState.status === "loading" ? <Spinner label="Updating" /> : "Save and redeploy"}</button>
+          {updateState.success ? <Notice tone="success">Endpoint settings were updated.</Notice> : null}
+          <button className="button primary alignStart" type="submit" disabled={!valid || updateState.status === "loading"}>{updateState.status === "loading" ? <Spinner label="Updating" /> : "Save changes"}</button>
         </div>
       </form>
       <aside className="endpointMetaPanel">
-        <h2>Deployment</h2>
+        <h2>Endpoint details</h2>
         <dl><div><dt>Endpoint ID</dt><dd>{endpoint.id.slice(0, 8)}</dd></div><div><dt>Created</dt><dd>{formatDate(endpoint.created_at)}</dd></div><div><dt>Updated</dt><dd>{formatDate(endpoint.updated_at)}</dd></div><div><dt>State</dt><dd><StatusPill state={endpointState(endpoint)} /></dd></div></dl>
-        <div className="dangerZone"><h3>Delete endpoint</h3><p>Removes the event service, tracker, and stored Meta credentials.</p><button className="button danger" type="button" onClick={() => onDelete(endpoint)}><Trash2 size={17} /> Delete</button></div>
+        <div className="dangerZone"><h3>Delete endpoint</h3><p>Permanently removes this client's tracking setup and stored credentials.</p><button className="button danger" type="button" onClick={() => onDelete(endpoint)}><Trash2 size={17} /> Delete</button></div>
       </aside>
     </div>
   );
@@ -617,19 +571,15 @@ function TrackingPage({ endpoint, user, initialTab, onBack, onVerify, verifyStat
         action={<div className="headerActions"><button className="button secondary" type="button" onClick={() => onVerify(endpoint)} disabled={verifyState.status === "loading"}><RefreshCw className={verifyState.status === "loading" ? "spin" : ""} size={17} /> Verify</button></div>}
       />
       <section className="deploymentBanner">
-        <div><span><CheckCircle2 size={23} /></span><div><h2>Endpoint deployed</h2><p>{endpoint.endpoint}</p></div></div>
+        <div><span><CheckCircle2 size={23} /></span><div><h2>Tracking ready</h2><p>Your installation script is ready to use.</p></div></div>
         {verifyState.status === "success" ? <StatusPill state={verifyState.healthy ? "active" : "error"} label={verifyState.healthy ? `Healthy / ${verifyState.latency_ms} ms` : "Unavailable"} /> : <StatusPill state={endpointState(endpoint)} label={endpointState(endpoint) === "active" ? "Ready" : "Check"} />}
       </section>
       {verifyState.error ? <Notice tone="error">{verifyState.error}</Notice> : null}
       <div className="pageTabs" role="tablist">
-        <button className={tab === "install" ? "active" : ""} type="button" onClick={() => setTab("install")}><Code2 size={18} /> Install tracker</button>
-        <button className={tab === "ghl" ? "active" : ""} type="button" onClick={() => setTab("ghl")}><FileJson size={18} /> GHL mapping</button>
-        <button className={tab === "match" ? "active" : ""} type="button" onClick={() => setTab("match")}><Fingerprint size={18} /> Match data</button>
+        <button className={tab === "install" ? "active" : ""} type="button" onClick={() => setTab("install")}><Code2 size={18} /> Install</button>
         <button className={tab === "settings" ? "active" : ""} type="button" onClick={() => setTab("settings")}><Settings size={18} /> Settings</button>
       </div>
       {tab === "install" ? <TrackingInstall endpoint={endpoint} settings={settings} setSettings={setSettings} /> : null}
-      {tab === "ghl" ? <GhlMapping endpoint={endpoint} /> : null}
-      {tab === "match" ? <MatchDataPanel /> : null}
       {tab === "settings" ? <EndpointSettings endpoint={endpoint} onUpdate={onUpdate} onDelete={onDelete} updateState={updateState} /> : null}
     </main>
   );
@@ -687,7 +637,7 @@ export default function Workspace({
   } else if ((route === "tracking" || route === "endpoint-settings") && selectedEndpoint) {
     page = <TrackingPage endpoint={selectedEndpoint} user={user} initialTab={route === "endpoint-settings" ? "settings" : "install"} onBack={() => navigate("endpoints")} onVerify={onVerify} verifyState={verifyState} onUpdate={onUpdate} updateState={updateState} onDelete={requestDelete} />;
   } else {
-    page = <main className="workspaceMain"><WorkspaceHeader title="Tracking" description="Select an endpoint to configure its tracker and GHL mapping." /><EmptyState icon={Route} title="Choose an endpoint" action={<button className="button primary" type="button" onClick={() => navigate("endpoints")}>View endpoints <ArrowRight size={17} /></button>}>Tracking configuration belongs to one client endpoint at a time.</EmptyState></main>;
+    page = <main className="workspaceMain"><WorkspaceHeader title="Tracking" description="Select a client to get its installation script." /><EmptyState icon={Route} title="Choose an endpoint" action={<button className="button primary" type="button" onClick={() => navigate("endpoints")}>View endpoints <ArrowRight size={17} /></button>}>Each client has its own tracking setup.</EmptyState></main>;
   }
 
   return (

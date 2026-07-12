@@ -194,10 +194,9 @@ function provisionerStatus() {
   return {
     success: true,
     ready: missing.length === 0,
-    missing_count: missing.length,
     billing: billingConfiguration(),
     user_limit: safeInteger(process.env.CAPI_MAX_ENDPOINTS_PER_USER, DEFAULT_USER_LIMIT),
-    message: missing.length ? "Provisioning service needs administrator configuration." : "Provisioner is ready."
+    message: missing.length ? "Service is unavailable." : "Service is ready."
   };
 }
 
@@ -763,7 +762,6 @@ function trackerScriptSource() {
 
   var CFG = {
     endpoint: attr("capi-endpoint", defaultEndpoint()),
-    ghlWebhookUrl: attr("ghl-webhook-url", ""),
     formSelector: attr("form-selector", "form"),
     eventName: attr("event-name", "Lead"),
     trigger: attr("trigger", "form").toLowerCase(),
@@ -1078,40 +1076,6 @@ function trackerScriptSource() {
     window.fbq("track", CFG.eventName, params, { eventID: payload.event_id });
   }
 
-  function submitHiddenPost(url, payload) {
-    if (!url || url.indexOf("PASTE_") !== -1) return false;
-    var iframeName = "dh_capi_" + Math.random().toString(36).slice(2);
-    var iframe = document.createElement("iframe");
-    iframe.name = iframeName;
-    iframe.style.display = "none";
-    iframe.setAttribute("aria-hidden", "true");
-    var postForm = document.createElement("form");
-    postForm.__dhCapiInternal = true;
-    postForm.method = "POST";
-    postForm.action = url;
-    postForm.target = iframeName;
-    postForm.style.display = "none";
-    Object.keys(payload).forEach(function(key) {
-      var value = payload[key];
-      if (Array.isArray(value)) value = value.join(",");
-      if (value === "" || value === null || value === undefined) return;
-      var input = document.createElement("input");
-      input.type = "hidden";
-      input.name = key;
-      input.value = String(value);
-      postForm.appendChild(input);
-    });
-    document.body.appendChild(iframe);
-    document.body.appendChild(postForm);
-    if (nativeFormSubmit) nativeFormSubmit.call(postForm);
-    else postForm.submit();
-    window.setTimeout(function() {
-      if (postForm.parentNode) postForm.parentNode.removeChild(postForm);
-      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-    }, 5000);
-    return true;
-  }
-
   function postDirect(payload) {
     if (!CFG.endpoint) return;
     var params = new URLSearchParams();
@@ -1137,7 +1101,6 @@ function trackerScriptSource() {
   }
 
   function matchesConfiguredForm(form) {
-    if (form && form.__dhCapiInternal) return false;
     try { return form && form.matches && form.matches(CFG.formSelector); }
     catch (error) { return form && form.tagName && form.tagName.toLowerCase() === "form"; }
   }
@@ -1146,11 +1109,10 @@ function trackerScriptSource() {
     options = options || {};
     try { window.sessionStorage.setItem("dh_meta_event_id", payload.event_id); } catch (error) {}
     if (!options.skipPixel) firePixel(payload);
-    if (!submitHiddenPost(CFG.ghlWebhookUrl, payload)) postDirect(payload);
+    postDirect(payload);
     var detail = {
       event_id: payload.event_id,
-      event_name: payload.event_name,
-      destination: CFG.ghlWebhookUrl ? "ghl" : "direct"
+      event_name: payload.event_name
     };
     try {
       window.dispatchEvent(new CustomEvent("capi-launcher:event", { detail: detail }));
@@ -1578,6 +1540,19 @@ function endpointRecord(site, manifest = {}) {
   };
 }
 
+function clientEndpointRecord(record) {
+  return {
+    id: record.id,
+    client_name: record.client_name,
+    dataset_id: record.dataset_id,
+    graph_version: record.graph_version,
+    tracker_url: record.tracker_url,
+    state: record.state,
+    created_at: record.created_at,
+    updated_at: record.updated_at
+  };
+}
+
 async function verifyEndpoint(endpoint) {
   const startedAt = Date.now();
   const controller = new AbortController();
@@ -1783,7 +1758,7 @@ export default async function handler(request) {
 
     if (request.method === "GET" && action === "list") {
       const endpoints = await listOwnedSites(accountSlug, user);
-      return response(request, 200, { success: true, endpoints, count: endpoints.length });
+      return response(request, 200, { success: true, endpoints: endpoints.map(clientEndpointRecord), count: endpoints.length });
     }
 
     if (request.method === "GET" && action === "billing") {
@@ -1822,7 +1797,7 @@ export default async function handler(request) {
 
     if (request.method === "POST" && action === "create") {
       const endpoint = await createEndpoint(accountSlug, accountId, user, await parseJson(request), request);
-      return response(request, 201, { success: true, endpoint });
+      return response(request, 201, { success: true, endpoint: clientEndpointRecord(endpoint) });
     }
 
     if (request.method === "POST" && action === "verify") {
@@ -1834,7 +1809,7 @@ export default async function handler(request) {
 
     if (request.method === "PATCH" && action === "update") {
       const endpoint = await updateEndpoint(accountId, user, await parseJson(request));
-      return response(request, 200, { success: true, endpoint });
+      return response(request, 200, { success: true, endpoint: clientEndpointRecord(endpoint) });
     }
 
     if (request.method === "DELETE" && action === "delete") {
@@ -1848,7 +1823,7 @@ export default async function handler(request) {
   } catch (error) {
     const status = error?.statusCode || 500;
     const message = status >= 500
-      ? cleanString(error?.message) || "The provisioning service failed."
+      ? "The service could not complete this request."
       : cleanString(error?.message) || "Request failed.";
     return response(request, status, { success: false, error: message });
   }
@@ -1874,5 +1849,6 @@ export const __testing = {
   validateLemonOrder,
   billingConfiguration,
   trustedAppOrigin,
-  gatewayRoute
+  gatewayRoute,
+  clientEndpointRecord
 };
