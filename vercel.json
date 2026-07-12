@@ -87,7 +87,7 @@
       "destination": "https://capi-tracker-service.netlify.app/.netlify/functions/client-gateway?route=:route&asset=assets%2F:asset"
     },
     {
-      "source": "/.netlify/identity/:path*",
+      "source": "/api/auth/:path*",
       "destination": "https://capi-tracker-service.netlify.app/.netlify/identity/:path*"
     },
     { "source": "/:path*", "destination": "/index.html" }

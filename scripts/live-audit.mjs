@@ -99,11 +99,14 @@ try {
   const statusBody = await status.json();
   assert(statusBody.ready === true, "The production provisioner is not ready.");
 
-  const identity = await context.request.get(`${baseUrl}/.netlify/identity/settings`);
+  const identity = await context.request.get(`${baseUrl}/api/auth/settings`);
   assert(identity.ok(), "The Identity proxy is unavailable.");
   const identityBody = await identity.json();
   assert(identityBody.external?.email === true, "Email authentication is not enabled.");
   assert(identityBody.disable_signup === true, "Public account registration is still enabled.");
+
+  const retiredIdentityRoute = await context.request.get(`${baseUrl}/.netlify/identity/settings`);
+  assert(!(retiredIdentityRoute.headers()["content-type"] || "").includes("application/json"), "The retired infrastructure auth route remains exposed.");
 
   const protectedRequest = await context.request.post(
     `${baseUrl}/api/provisioner?action=checkout`,

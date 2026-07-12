@@ -28,6 +28,9 @@ const runtimeErrors = [];
 page.on("pageerror", (error) => runtimeErrors.push(`pageerror: ${error.message}`));
 page.on("console", (message) => {
   if (message.type() === "error") runtimeErrors.push(`console: ${message.text()}`);
+  if (message.type() === "warning" && message.text().includes("DO NOT USE HTTP IN PRODUCTION")) {
+    runtimeErrors.push(`console: ${message.text()}`);
+  }
 });
 
 try {
@@ -277,6 +280,14 @@ try {
   await page.goto(`${baseUrl}/?view=login`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Welcome back" }).isVisible(), "Login page did not render.");
   assert(await page.getByText("Preview the local workspace").isVisible(), "Local preview control did not render on localhost.");
+
+  await page.evaluate(() => {
+    window.localStorage.setItem("gotrue.user", JSON.stringify({ token: {} }));
+  });
+  await page.reload({ waitUntil: "networkidle" });
+  assert(await page.getByRole("heading", { name: "Welcome back" }).isVisible(), "Login page did not recover from a malformed session.");
+  assert(await page.evaluate(() => window.localStorage.getItem("gotrue.user")) === null, "Malformed auth session was not cleared.");
+
   await page.getByRole("button", { name: "Create one" }).click();
   assert(await page.getByRole("heading", { name: "Create your account" }).isVisible(), "Registration page did not render.");
   assert(await page.getByText("Preview the local workspace").count() === 0, "Local preview control should only render on login.");

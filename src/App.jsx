@@ -14,6 +14,7 @@ import {
 import { Brand, PublicFooter } from "./components/UI.jsx";
 import { capiRequest } from "./lib/api.js";
 import { friendlyAuthError } from "./lib/auth-errors.mjs";
+import { clearMalformedAuthSession } from "./lib/auth-session.mjs";
 
 const AuthScreen = lazy(() => import("./components/AuthScreen.jsx"));
 const Workspace = lazy(() => import("./components/Workspace.jsx"));
@@ -321,6 +322,7 @@ function ProductApp() {
   async function initializeAuth() {
     setAuthStatus("checking");
     try {
+      clearMalformedAuthSession();
       let callback = null;
       if (hasAuthHash()) callback = await handleAuthCallback();
       if (callback?.type === "recovery") {
