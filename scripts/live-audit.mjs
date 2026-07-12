@@ -47,7 +47,6 @@ try {
         logoReady: Boolean(logo?.complete && logo.naturalWidth > 0),
         canonical: canonical?.href || "",
         horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-        hasTeaser: document.body.textContent.includes("Coming soon."),
         chromeCount: document.querySelectorAll(".publicHeader, .publicFooter").length,
         interactiveCount: document.querySelectorAll("a, button").length,
         internalLinks: Array.from(document.querySelectorAll('a[href^="/"]')).map((anchor) => anchor.getAttribute("href"))
@@ -55,10 +54,10 @@ try {
     });
 
     assert(pageState.title.includes("Simple CAPI"), `${viewport.name} title is incorrect.`);
-    assert(pageState.h1 === "Simple CAPI", `${viewport.name} H1 is incorrect.`);
-    assert(pageState.hasTeaser, `${viewport.name} teaser line is missing.`);
-    assert(pageState.chromeCount === 0, `${viewport.name} home page rendered header or footer.`);
-    assert(pageState.interactiveCount === 0, `${viewport.name} home page rendered links or buttons.`);
+    assert(pageState.h1 === "Meta CAPI setup without the infrastructure work.", `${viewport.name} H1 is incorrect.`);
+    assert(pageState.chromeCount === 2, `${viewport.name} home page header or footer is missing.`);
+    assert(pageState.interactiveCount >= 5, `${viewport.name} home page actions are missing.`);
+    assert(pageState.internalLinks.includes("/docs"), `${viewport.name} documentation link is missing.`);
     assert(pageState.logoReady, `${viewport.name} brand logo did not load.`);
     assert(pageState.canonical === `${baseUrl}/`, `${viewport.name} canonical URL is incorrect.`);
     assert(pageState.horizontalOverflow <= 1, `${viewport.name} layout has horizontal overflow.`);

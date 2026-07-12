@@ -1,9 +1,17 @@
 import React from "react";
 import {
+  Activity,
   ArrowRight,
+  Check,
+  Code2,
   CreditCard,
   Database,
-  Server
+  Fingerprint,
+  LockKeyhole,
+  Route,
+  Server,
+  ShieldCheck,
+  Webhook
 } from "lucide-react";
 import { Notice, PublicFooter, PublicHeader, StatusPill } from "./UI.jsx";
 
@@ -17,16 +25,98 @@ function PageFrame({ route, navigate, user, children }) {
   );
 }
 
-export function HomePage() {
+export function HomePage({ navigate, user }) {
   return (
-    <main className="comingSoonPage" aria-label="Simple CAPI coming soon">
-      <section className="comingSoonHero">
-        <img className="comingSoonMark" src="/capi-tracker-mark.png" alt="" width="254" height="236" />
-        <p className="comingSoonKicker">simplecapi.com</p>
-        <h1>Simple CAPI</h1>
-        <p className="comingSoonLine">Coming soon.</p>
-      </section>
-    </main>
+    <PageFrame route="home" navigate={navigate} user={user}>
+      <main>
+        <section className="homeHero">
+          <div className="homeHeroCopy">
+            <span className="eyebrow"><i /> Server-side Meta tracking, simplified</span>
+            <h1>Meta CAPI setup without the infrastructure work.</h1>
+            <p>Simple CAPI launches an isolated Netlify endpoint for each client, keeps Meta credentials server-side, and pairs browser and server Lead and Schedule events with the same event ID.</p>
+            <div className="heroActions">
+              <button className="button primary" type="button" onClick={() => navigate(user ? "setup" : "register")}>
+                {user ? "Create an endpoint" : "Launch your first endpoint"}<ArrowRight size={18} />
+              </button>
+              <button className="button secondary" type="button" onClick={() => navigate("docs")}>Read the setup guide</button>
+            </div>
+            <div className="heroTrust">
+              <span><Check size={16} /> No token in page code</span>
+              <span><Check size={16} /> Separate client environments</span>
+              <span><Check size={16} /> Multiple pages per dataset</span>
+            </div>
+          </div>
+
+          <div className="pipelineVisual" aria-label="Form or GHL to Simple CAPI to Meta data flow">
+            <header><i /><i /><i /><code>simplecapi / deploy</code></header>
+            <div className="pipelineLog">
+              <p><span>&gt;</span> Validating dataset credentials</p>
+              <p className="active"><span>&gt;</span> Provisioning isolated Netlify site</p>
+              <p><span>&gt;</span> Installing tracker and CAPI function</p>
+            </div>
+            <div className="pipelineNodes">
+              <div><Webhook size={22} /><span>Form or GHL</span></div>
+              <ArrowRight size={21} />
+              <div className="selected"><Fingerprint size={22} /><span>Deduplication</span></div>
+              <ArrowRight size={21} />
+              <div><Database size={22} /><span>Meta CAPI</span></div>
+            </div>
+            <footer><i /> Server ready</footer>
+          </div>
+        </section>
+
+        <section className="featureBand">
+          <div className="sectionHeading">
+            <span className="eyebrow">What gets automated</span>
+            <h2>Better conversion signals without another automation stack.</h2>
+            <p>Simple CAPI creates the server layer so Meta receives cleaner, more complete conversion events and agencies have a stronger basis for measurement and optimization.</p>
+          </div>
+          <div className="featureGrid">
+            <article>
+              <span><Server size={22} /></span>
+              <h3>Dedicated client endpoint</h3>
+              <p>Each client and Meta dataset receives a separate Netlify site and environment variable set.</p>
+            </article>
+            <article>
+              <span><Code2 size={22} /></span>
+              <h3>Hosted form tracker</h3>
+              <p>Captures available match data, attribution, browser IDs, user agent, and a shared event ID.</p>
+            </article>
+            <article>
+              <span><Route size={22} /></span>
+              <h3>Direct or GHL delivery</h3>
+              <p>Send supported forms directly or generate the JSON mapping for a GHL custom webhook step.</p>
+            </article>
+            <article>
+              <span><ShieldCheck size={22} /></span>
+              <h3>Server-side secrets</h3>
+              <p>Meta access tokens go only to the provisioner and are stored as Netlify environment variables.</p>
+            </article>
+          </div>
+        </section>
+
+        <section className="pricingBand">
+          <div>
+            <span className="eyebrow">Simple pricing</span>
+            <h2>$5 per client endpoint. No subscription.</h2>
+            <p>One payment creates an isolated client and dataset endpoint with Lead and Schedule tracking across that client's pages.</p>
+          </div>
+          <button className="button primary" type="button" onClick={() => navigate(user ? "setup" : "register")}><CreditCard size={18} /> Buy an endpoint</button>
+        </section>
+
+        <section className="principleBand">
+          <div>
+            <span className="eyebrow">Built for real client work</span>
+            <h2>One workspace. Clear client boundaries.</h2>
+          </div>
+          <ul>
+            <li><LockKeyhole size={20} /><span><strong>Isolated credentials</strong> A client token never shares an environment with another client.</span></li>
+            <li><Fingerprint size={20} /><span><strong>Match data coverage</strong> Email, phone, name, address, external ID, fbp, fbc, IP, and user agent are supported when available.</span></li>
+            <li><Activity size={20} /><span><strong>Clear attribution</strong> Page URLs, UTMs, and optional A/B labels remain attached to the conversion event.</span></li>
+          </ul>
+        </section>
+      </main>
+    </PageFrame>
   );
 }
 
@@ -45,7 +135,7 @@ const docsSections = [
   {
     id: "create",
     title: "1. Create the endpoint",
-    body: <p>Purchase one $5 endpoint credit through Lemon Squeezy, then enter a client name, the numeric Meta Dataset ID, and the Conversions API access token. The token is not saved in browser storage or returned by the API. It is written to that client site's Netlify environment.</p>
+    body: <p>Purchase one $5 endpoint credit through Lemon Squeezy, then enter a client name, the numeric Meta Dataset ID, and the Conversions API access token. The result is one isolated client and dataset endpoint. The token is not saved in browser storage or returned by the API. It is written to that client site's Netlify environment.</p>
   },
   {
     id: "install",
@@ -69,6 +159,11 @@ const docsSections = [
     id: "deduplication",
     title: "Deduplication",
     body: <p>Meta deduplicates matching browser and server events using the same event name and event ID. The tracker fires the browser event and passes that exact ID through GHL to the Netlify function. Do not replace <code>event_id</code> with a contact ID in the workflow.</p>
+  },
+  {
+    id: "multiple-pages",
+    title: "Multiple landing pages",
+    body: <p>Reuse the same endpoint on multiple landing pages when they belong to the same client and Meta dataset. Simple CAPI sends the exact page URL and attribution fields with every conversion. For A/B tests, set a different Landing page label on each generated tag, such as <code>Control</code> and <code>Variant B</code>. Create a new endpoint when the client or Meta dataset changes.</p>
   },
   {
     id: "match-data",

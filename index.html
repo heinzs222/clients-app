@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Simple CAPI | Coming Soon</title>
-    <meta name="description" content="Simple CAPI makes secure Meta Conversions API tracking easier to launch and manage. Coming soon." />
+    <title>Meta Conversions API Tracking Software | Simple CAPI</title>
+    <meta name="description" content="Launch isolated Meta Conversions API endpoints, keep client credentials server-side, and deduplicate browser and server Lead and Schedule events." />
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="theme-color" content="#f4f7fd" />
     <meta name="application-name" content="Simple CAPI" />
@@ -14,17 +14,17 @@
     <link rel="manifest" href="/site.webmanifest" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Simple CAPI" />
-    <meta property="og:title" content="Simple CAPI | Coming Soon" />
-    <meta property="og:description" content="A simpler way to launch and manage secure Meta Conversions API tracking. Coming soon." />
+    <meta property="og:title" content="Meta Conversions API Tracking Software | Simple CAPI" />
+    <meta property="og:description" content="Launch isolated client CAPI endpoints and connect deduplicated browser and server conversion events with one hosted tracker." />
     <meta property="og:url" content="https://simplecapi.com/" />
-    <meta property="og:image" content="https://simplecapi.com/capi-tracker-mark.png" />
-    <meta property="og:image:width" content="254" />
-    <meta property="og:image:height" content="236" />
+    <meta property="og:image" content="https://simplecapi.com/capi-tracker-logo.png" />
+    <meta property="og:image:width" content="1241" />
+    <meta property="og:image:height" content="239" />
     <meta property="og:image:alt" content="Simple CAPI" />
-    <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Simple CAPI | Coming Soon" />
-    <meta name="twitter:description" content="A simpler way to launch and manage secure Meta Conversions API tracking. Coming soon." />
-    <meta name="twitter:image" content="https://simplecapi.com/capi-tracker-mark.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Meta Conversions API Tracking Software | Simple CAPI" />
+    <meta name="twitter:description" content="Launch isolated client CAPI endpoints and deduplicate browser and server conversion events." />
+    <meta name="twitter:image" content="https://simplecapi.com/capi-tracker-logo.png" />
     <meta name="twitter:image:alt" content="Simple CAPI" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -41,12 +41,27 @@
             "logo": "https://simplecapi.com/capi-tracker-mark.png"
           },
           {
-            "@type": "WebSite",
-            "@id": "https://simplecapi.com/#website",
+            "@type": "SoftwareApplication",
+            "@id": "https://simplecapi.com/#software",
             "name": "Simple CAPI",
             "url": "https://simplecapi.com/",
-            "description": "Simple CAPI makes secure Meta Conversions API tracking easier to launch and manage. Coming soon.",
-            "publisher": { "@id": "https://simplecapi.com/#organization" }
+            "description": "Software for launching isolated Meta Conversions API endpoints and deduplicating browser and server conversion events.",
+            "applicationCategory": "BusinessApplication",
+            "applicationSubCategory": "Advertising tracking software",
+            "operatingSystem": "Web",
+            "publisher": { "@id": "https://simplecapi.com/#organization" },
+            "offers": {
+              "@type": "Offer",
+              "price": "5.00",
+              "priceCurrency": "USD",
+              "description": "One isolated client Meta Conversions API endpoint credit"
+            },
+            "featureList": [
+              "Client-isolated Meta Conversions API endpoints",
+              "Browser and server event deduplication",
+              "Lead and Schedule event tracking",
+              "Server-side Meta credential storage"
+            ]
           }
         ]
       }
@@ -54,7 +69,7 @@
   </head>
   <body>
     <div id="root"></div>
-    <noscript>Simple CAPI is coming soon.</noscript>
+    <noscript>Simple CAPI requires JavaScript to provision and manage Meta Conversions API endpoints.</noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

@@ -12,6 +12,8 @@ For every client, the app:
 4. Deploys a stable `/tracker.js` loader and a content-hashed, minified tracker core for same-document HTML forms.
 5. Returns the endpoint URL, tracker tag, and GHL Custom Webhook JSON mapping.
 
+One endpoint belongs to one client and Meta dataset. It can be reused across that client's landing pages and can send the supported Lead and Schedule events. A different client or dataset requires a separate endpoint.
+
 The Meta access token is never embedded in the tracker, saved to browser storage, logged by application code, or returned by the provisioning API.
 
 The browser tracker is intentionally minified and split for smaller delivery and reliable caching. Like all browser JavaScript, it remains inspectable by a determined visitor; security comes from keeping credentials and Meta requests in the server-side function.
@@ -96,10 +98,11 @@ After creating an endpoint:
 1. Open the endpoint's **Install tracker** tab.
 2. Add the GHL inbound webhook URL if GHL should receive the form first.
 3. Select the correct country and currency.
-4. Paste the generated script into the actual page containing the form.
-5. Submit one real test form so GHL exposes the inbound fields.
-6. Add a GHL Custom Webhook action after contact creation.
-7. Use the generated Netlify function URL and paste the generated JSON body.
+4. Optionally add a Landing page label such as `Control` or `Variant B` for A/B reporting.
+5. Paste the generated script into the actual page containing the form. Reuse the endpoint on additional pages only when they belong to the same client and Meta dataset.
+6. Submit one real test form so GHL exposes the inbound fields.
+7. Add a GHL Custom Webhook action after contact creation.
+8. Use the generated Netlify function URL and paste the generated JSON body.
 
 If no GHL inbound URL is configured, the tracker posts directly to the generated CAPI endpoint.
 

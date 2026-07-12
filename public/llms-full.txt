@@ -1,15 +1,15 @@
 # Simple CAPI
 
-Simple CAPI is an upcoming service that makes secure Meta Conversions API tracking easier to launch and manage across client accounts.
+Simple CAPI is a web application for launching and managing secure Meta Conversions API tracking across client accounts.
 
 ## Product direction
 
-Simple CAPI is designed to create isolated server-side conversion endpoints, keep Meta credentials out of browser code, and support browser/server event deduplication.
+Simple CAPI creates isolated server-side conversion endpoints, keeps Meta credentials out of browser code, and supports browser/server event deduplication for Lead and Schedule events.
 
-## Availability
+## Endpoint scope
 
-The public product launch is coming soon. Current product information and future launch updates are published on the canonical website.
+One endpoint belongs to one client and Meta dataset. It can be used across that client's landing pages, while a different client or dataset requires a separate endpoint.
 
 ## Canonical page
 
-- [Simple CAPI](https://simplecapi.com/): Official product homepage and launch status.
+- [Simple CAPI](https://simplecapi.com/): Official product homepage.

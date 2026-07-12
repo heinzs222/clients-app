@@ -57,6 +57,7 @@ try {
     const script = document.createElement("script");
     script.src = "https://tracker.example/tracker.js";
     script.setAttribute("data-ghl-webhook-url", "https://services.leadconnectorhq.com/hooks/test/webhook-trigger/test");
+    script.setAttribute("data-page-variant", "Control");
     script.setAttribute("data-test-event-code", "TEST_BROWSER_001");
     document.body.appendChild(script);
   });
@@ -79,6 +80,8 @@ try {
   assert(trackerResult.hiddenForms === 1, "Tracker created duplicate internal GHL forms.");
   assert(trackerResult.pixelCalls.length === 1, "Browser Pixel Lead did not fire exactly once.");
   assert(trackerResult.values.event_id === trackerResult.pixelCalls[0][3].eventID, "Pixel and webhook event IDs differ.");
+  assert(trackerResult.values.page_variant === "Control", "Tracker did not include the landing-page variant.");
+  assert(trackerResult.pixelCalls[0][2].page_variant === "Control", "Browser Pixel event omitted the landing-page variant.");
   assert(trackerResult.values.test_event_code === "TEST_BROWSER_001", "Tracker did not forward the Meta test event code.");
   assert(trackerResult.event.event_id === trackerResult.values.event_id, "Tracker lifecycle event ID differs.");
   assert(trackerResult.values.external_id === "jane@example.com", "Tracker external_id is incorrect.");
@@ -163,10 +166,10 @@ try {
   await customFormPage.close();
 
   await page.goto(`${baseUrl}/`, { waitUntil: "networkidle" });
-  assert(await page.getByRole("heading", { name: "Simple CAPI" }).isVisible(), "Coming-soon home page did not render.");
-  assert(await page.getByText("Coming soon.", { exact: true }).isVisible(), "Coming-soon teaser line did not render.");
-  assert(await page.locator(".publicHeader, .publicFooter").count() === 0, "Home page should not render public header or footer.");
-  assert(await page.locator("a, button").count() === 0, "Home page should not render links or buttons.");
+  assert(await page.getByRole("heading", { name: "Meta CAPI setup without the infrastructure work." }).isVisible(), "Product home page did not render.");
+  assert(await page.getByRole("button", { name: /Launch your first endpoint/ }).isVisible(), "Homepage primary action did not render.");
+  assert(await page.locator(".publicHeader").count() === 1, "Home page header did not render.");
+  assert(await page.locator(".publicFooter").count() === 1, "Home page footer did not render.");
   await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-home.png"), fullPage: true });
 
   await page.goto(`${baseUrl}/?preview=1&view=dashboard`, { waitUntil: "networkidle" });
@@ -202,6 +205,9 @@ try {
   await page.getByRole("button", { name: "Example Home Services", exact: true }).click();
   assert(await page.getByRole("heading", { name: "Example Home Services" }).isVisible(), "Tracking detail did not open.");
   assert(await page.getByText("Lead form script", { exact: true }).isVisible(), "Tracker install panel did not render.");
+  await page.getByLabel("Landing page label").fill("Variant B");
+  const variantInstallCode = await page.locator(".codePanel pre").first().innerText();
+  assert(variantInstallCode.includes('data-page-variant="Variant B"'), "Installer omitted the landing-page variant.");
   await page.getByRole("button", { name: /Schedule confirmation/ }).click();
   assert(await page.getByText("Schedule confirmation script", { exact: true }).isVisible(), "Schedule installer did not render.");
   assert(await page.getByText("Confirmation page only", { exact: true }).isVisible(), "Schedule placement warning did not render.");
@@ -211,6 +217,8 @@ try {
   assert(!scheduleInstallCode.includes("data-form-selector"), "Schedule installer included an irrelevant form selector.");
   await page.getByRole("button", { name: /GHL mapping/ }).click();
   assert(await page.getByText("GHL JSON body", { exact: true }).isVisible(), "GHL mapping panel did not render.");
+  const mappingCode = await page.locator(".codePanel pre").first().innerText();
+  assert(mappingCode.includes('"page_variant"'), "GHL mapping omitted the landing-page variant.");
   await page.getByRole("button", { name: /Match data/ }).click();
   assert(await page.getByText("8 signal groups supported").isVisible(), "Match-data panel did not render.");
 
@@ -278,7 +286,7 @@ try {
   assert(await page.getByRole("heading", { name: "Provisioning service" }).isVisible(), "Status page did not render.");
 
   assert(runtimeErrors.length === 0, runtimeErrors.join("\n"));
-  process.stdout.write("Smoke test passed: tracker, coming-soon home, Lemon Squeezy gate, dashboard, GHL mapping, mobile, auth, and status.\n");
+  process.stdout.write("Smoke test passed: tracker, product home, Lemon Squeezy gate, dashboard, GHL mapping, mobile, auth, and status.\n");
 } finally {
   await browser.close();
 }

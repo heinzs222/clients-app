@@ -70,6 +70,7 @@ const result = await handler({
     country: "US",
     external_id: "lead-42",
     landing_page: "https://example.com/estimate?fbclid=test-click",
+    page_variant: "Variant B",
     fbclid: "test-click",
     fbp: "fb.1.1000.2000",
     currency: "USD",
@@ -97,6 +98,7 @@ assert(sentEvent.user_data.client_ip_address === "203.0.113.8", "Client IP was n
 assert(sentEvent.user_data.client_user_agent === "CAPI Contract Test/1.0", "User agent was not included.");
 assert(sentEvent.user_data.fbp === "fb.1.1000.2000", "fbp was not included.");
 assert(sentEvent.user_data.fbc.endsWith(".test-click"), "fbc was not built from fbclid.");
+assert(sentEvent.custom_data.page_variant === "Variant B", "Landing-page variant was not forwarded.");
 assert(sentEvent.custom_data.q1_service === "generator", "Safe extra form fields were not forwarded.");
 
 const invalid = await handler({ httpMethod: "POST", headers: { "content-type": "application/json" }, body: "{" });

@@ -1,12 +1,14 @@
 # Simple CAPI
 
-> Simple CAPI is preparing a simpler way to launch and manage secure Meta Conversions API tracking for client accounts.
+> Simple CAPI launches isolated Meta Conversions API endpoints for agencies and client accounts.
 
-## Availability
+## Product
 
-- The public product launch is coming soon.
-- The canonical product domain is simplecapi.com.
+- Creates one isolated Netlify CAPI endpoint per client and Meta dataset.
+- Keeps Meta access tokens in server-side environment variables.
+- Supports browser and server Lead and Schedule event deduplication.
+- Provides direct form tracking and optional GoHighLevel webhook mapping.
 
 ## Canonical site
 
-- [Simple CAPI](https://simplecapi.com/): Official product homepage and launch status.
+- [Simple CAPI](https://simplecapi.com/): Official product homepage.

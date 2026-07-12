@@ -10,6 +10,7 @@ export const DEFAULT_TRACKING = Object.freeze({
   tags: "estimate-lead,website-form",
   projectType: "",
   projectTimeline: "",
+  pageVariant: "",
   testEventCode: "",
   onlyMetaTraffic: false,
   firePixel: true
@@ -59,6 +60,7 @@ export function trackerTag(endpoint, settings = DEFAULT_TRACKING) {
     ["data-tags", config.tags || "estimate-lead,website-form"],
     ["data-project-type", config.projectType],
     ["data-project-timeline", config.projectTimeline],
+    ["data-page-variant", config.pageVariant],
     ["data-test-event-code", config.testEventCode],
     ["data-only-meta-traffic", String(Boolean(config.onlyMetaTraffic))],
     ["data-fire-pixel", String(Boolean(config.firePixel))]
@@ -94,6 +96,7 @@ export function ghlWebhookBody() {
     project_timeline: "{{inboundWebhookRequest.project_timeline}}",
     landing_page: "{{inboundWebhookRequest.landing_page}}",
     page_url: "{{inboundWebhookRequest.page_url}}",
+    page_variant: "{{inboundWebhookRequest.page_variant}}",
     referrer: "{{inboundWebhookRequest.referrer}}",
     client_user_agent: "{{inboundWebhookRequest.client_user_agent}}",
     fbclid: "{{inboundWebhookRequest.fbclid}}",

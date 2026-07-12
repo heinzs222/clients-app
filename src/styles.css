@@ -443,54 +443,6 @@ button:disabled {
   color: var(--blue-dark);
 }
 
-.comingSoonPage {
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  padding: 32px;
-  background: #f4f7fd;
-}
-
-.comingSoonHero {
-  width: min(560px, 100%);
-  display: grid;
-  justify-items: center;
-  text-align: center;
-}
-
-.comingSoonMark {
-  width: 66px;
-  height: 62px;
-  display: block;
-  object-fit: contain;
-  margin-bottom: 24px;
-}
-
-.comingSoonKicker {
-  margin: 0 0 18px;
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-
-.comingSoonHero h1 {
-  margin: 0;
-  color: var(--ink);
-  font-size: 64px;
-  line-height: 1;
-  font-weight: 830;
-}
-
-.comingSoonLine {
-  margin: 20px 0 0;
-  color: #3d4b62;
-  font-size: 22px;
-  line-height: 1.35;
-  font-weight: 650;
-}
-
 .homeHero {
   width: min(1280px, calc(100% - 48px));
   min-height: 650px;
@@ -3023,54 +2975,83 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 
-  .comingSoonHero h1 {
-    font-size: 44px;
-  }
-
-  .comingSoonLine {
-    font-size: 18px;
+  .homeHero {
+    padding: 24px 0 30px;
+    gap: 24px;
   }
 
   .homeHeroCopy h1 {
-    font-size: 38px;
+    margin: 12px 0 14px;
+    font-size: 34px;
   }
 
   .homeHeroCopy > p {
-    font-size: 16px;
+    margin-bottom: 18px;
+    font-size: 15px;
+    line-height: 1.5;
   }
 
   .heroActions .button {
     width: 100%;
+    min-height: 42px;
   }
 
   .heroTrust {
+    margin-top: 14px;
     align-items: flex-start;
-    flex-direction: column;
-    gap: 8px;
+    gap: 8px 14px;
+    font-size: 11.5px;
   }
 
   .pipelineVisual {
-    min-height: 390px;
+    min-height: 0;
+  }
+
+  .pipelineVisual > header {
+    height: 34px;
+    padding: 0 12px;
+  }
+
+  .pipelineVisual > header i {
+    width: 8px;
+    height: 8px;
+  }
+
+  .pipelineVisual > header code {
+    margin-left: 5px;
+    font-size: 10px;
   }
 
   .pipelineLog {
-    padding: 24px 18px 14px;
-    font-size: 11px;
+    display: none;
   }
 
   .pipelineNodes {
-    padding: 20px 16px 30px;
-    grid-template-columns: 1fr;
+    padding: 12px;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    gap: 5px;
   }
 
   .pipelineNodes > div {
-    min-height: 72px;
-    flex-direction: row;
+    min-height: 76px;
+    gap: 6px;
+    font-size: 10px;
+  }
+
+  .pipelineNodes > div svg {
+    width: 17px;
+    height: 17px;
   }
 
   .pipelineNodes > svg {
-    margin: 0 auto;
-    transform: rotate(90deg);
+    width: 14px;
+    height: 14px;
+  }
+
+  .pipelineVisual > footer {
+    height: 34px;
+    padding: 0 14px;
+    font-size: 10px;
   }
 
   .featureBand {
@@ -3316,6 +3297,50 @@ button:disabled {
     padding: 20px 0 0;
     border-top: 1px solid #f2bcb5;
     border-left: 0;
+  }
+}
+
+@media (max-width: 680px) and (max-height: 700px) {
+  .homeHero {
+    padding: 16px 0 20px;
+    gap: 14px;
+  }
+
+  .homeHeroCopy h1 {
+    margin: 8px 0 10px;
+    font-size: 30px;
+  }
+
+  .homeHeroCopy > p {
+    margin-bottom: 12px;
+    font-size: 13.5px;
+    line-height: 1.4;
+  }
+
+  .heroActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .heroActions .button {
+    min-height: 38px;
+    padding: 0 8px;
+    font-size: 11px;
+  }
+
+  .heroTrust,
+  .pipelineVisual > header,
+  .pipelineVisual > footer {
+    display: none;
+  }
+
+  .pipelineNodes {
+    padding: 10px;
+  }
+
+  .pipelineNodes > div {
+    min-height: 68px;
   }
 }
 

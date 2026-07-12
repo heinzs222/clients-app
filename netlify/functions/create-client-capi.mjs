@@ -589,7 +589,7 @@ function userData(input, event, timestampMs) {
 const RESERVED = new Set([
   "event_name", "event_id", "event_time", "test_event_code", "full_name", "first_name", "last_name",
   "email", "phone", "external_id", "address1", "city", "state", "postal_code", "country",
-  "landing_page", "page_url", "client_ip_address", "client_user_agent", "fbp", "fbc", "fbclid",
+  "landing_page", "page_url", "page_variant", "client_ip_address", "client_user_agent", "fbp", "fbc", "fbclid",
   "currency", "value", "utm_source", "utm_medium", "utm_campaign", "utm_content", "utm_term",
   "utm_adset", "utm_ad", "utm_id", "referrer", "source", "tags", "project_type", "project_timeline"
 ]);
@@ -630,6 +630,7 @@ function buildPayload(input, event) {
     utm_term: getString(input.utm_term),
     utm_id: getString(input.utm_id),
     fbclid: getString(input.fbclid),
+    page_variant: getString(input.page_variant),
     referrer: getString(input.referrer),
     source: getString(input.source),
     tags: getString(input.tags),
@@ -768,6 +769,7 @@ function trackerScriptSource() {
     tags: attr("tags", "estimate-lead,website-form"),
     projectType: attr("project-type", ""),
     projectTimeline: attr("project-timeline", ""),
+    pageVariant: attr("page-variant", ""),
     testEventCode: attr("test-event-code", ""),
     onlyMetaTraffic: attr("only-meta-traffic", "false") === "true",
     firePixel: attr("fire-pixel", "true") !== "false",
@@ -1028,6 +1030,7 @@ function trackerScriptSource() {
       project_timeline: fieldValue(form, ["project_timeline", "timeline", "when"]) || CFG.projectTimeline,
       landing_page: clean(attribution.landing_page) || page,
       page_url: page,
+      page_variant: CFG.pageVariant,
       referrer: clean(attribution.referrer) || document.referrer,
       client_user_agent: window.navigator.userAgent,
       fbclid: getParam("fbclid"),
@@ -1060,12 +1063,14 @@ function trackerScriptSource() {
 
   function firePixel(payload) {
     if (!CFG.firePixel || typeof window.fbq !== "function") return;
-    window.fbq("track", CFG.eventName, {
+    var params = {
       content_name: CFG.source || CFG.eventName,
       content_category: "Sales",
       value: CFG.value,
       currency: CFG.currency
-    }, { eventID: payload.event_id });
+    };
+    if (CFG.pageVariant) params.page_variant = CFG.pageVariant;
+    window.fbq("track", CFG.eventName, params, { eventID: payload.event_id });
   }
 
   function submitHiddenPost(url, payload) {

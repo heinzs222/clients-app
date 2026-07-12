@@ -4,7 +4,7 @@
 
 - Audited URL: https://simplecapi.com/
 - Audit date: July 12, 2026
-- Scope: coming-soon homepage, custom-domain routing, crawl controls, metadata, structured data, responsive rendering, authentication proxy, and security headers.
+- Scope: product homepage, custom-domain routing, crawl controls, metadata, structured data, responsive rendering, authentication proxy, and security headers.
 - Final Lighthouse SEO score: **100/100** with zero failed SEO audits.
 - Security headers score: **100/100**.
 - Desktop and mobile browser audits pass with no console errors or horizontal overflow.
@@ -19,7 +19,7 @@
 | Structured data | Pass | Organization and WebSite JSON-LD target the canonical domain |
 | Crawlability | Pass | Valid robots.txt, XML sitemap, llms.txt, and llms-full.txt |
 | Security | Pass | HTTPS, HSTS, CSP, frame protection, MIME protection, referrer policy, and permissions policy |
-| Rendering | Pass | Coming-soon layout is stable on desktop and mobile with the supplied brand mark |
+| Rendering | Pass | Product homepage is stable on desktop and mobile with the supplied brand assets |
 | Application routes | Pass | Documentation, legal, status, login, registration, and recovery routes return 200 |
 | Application services | Pass | Identity and provisioner proxies are live; unauthenticated provisioning is rejected |
 
@@ -36,5 +36,5 @@
 
 - Finish the Lemon Squeezy test store by switching it to USD, publishing the $5 endpoint-credit product, and adding its variant ID. The test API key and store ID are already configured.
 - Add `simplecapi.com` to Google Search Console and Bing Webmaster Tools, then submit the sitemap.
-- Replace the coming-soon page with the full public product experience when launch content is approved.
+- Add verified customer proof and demo media when those assets are approved.
 - Review field Core Web Vitals and search queries after sufficient production traffic exists.

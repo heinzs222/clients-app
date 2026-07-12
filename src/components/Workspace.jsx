@@ -273,8 +273,8 @@ function PaymentStep({ billing, onCheckout, refreshBilling, onCancel }) {
           <header><span className="paymentIcon"><CreditCard size={23} /></span><div><h2>Endpoint credit</h2><p>Lemon Squeezy securely processes the payment as merchant of record. Card details never pass through Simple CAPI.</p></div></header>
           <div className="priceLine"><strong>{money(billing.price_cents, billing.currency)}</strong><span>one-time</span></div>
           <ul className="paymentIncludes">
-            <li><CheckCircle2 size={18} /><span>One dedicated Netlify CAPI endpoint</span></li>
-            <li><CheckCircle2 size={18} /><span>Hosted universal form tracker</span></li>
+            <li><CheckCircle2 size={18} /><span>One isolated client and Meta dataset endpoint</span></li>
+            <li><CheckCircle2 size={18} /><span>Lead and Schedule tracking across that client's pages</span></li>
             <li><CheckCircle2 size={18} /><span>Credential isolation and endpoint management</span></li>
           </ul>
           {billing.mode === "test" ? <Notice tone="warning" title="Lemon Squeezy test mode">Use Lemon Squeezy's test checkout. No real charge will be made.</Notice> : null}
@@ -311,14 +311,14 @@ function BillingPage({ billing, onCheckout, refreshBilling, navigate }) {
     <main className="workspaceMain">
       <WorkspaceHeader
         title="Billing"
-        description="One Lemon Squeezy payment purchases one endpoint credit."
+        description="One Lemon Squeezy payment purchases one isolated client and dataset endpoint."
         action={<button className="button secondary" type="button" onClick={() => refreshBilling()} disabled={busy}><RefreshCw size={17} /> Refresh</button>}
       />
       <div className="billingOverview">
         <section className="billingMetric">
           <span>Available credits</span>
           <strong>{billing.exempt ? "Unlimited" : available}</strong>
-          <small>{billing.exempt ? "This account is exempt from endpoint charges." : "Each credit provisions one endpoint."}</small>
+          <small>{billing.exempt ? "This account is exempt from endpoint charges." : "Each credit provisions one isolated client and dataset endpoint."}</small>
         </section>
         <section className="billingMetric">
           <span>Endpoint price</span>
@@ -504,11 +504,15 @@ function TrackingInstall({ endpoint, settings, setSettings }) {
             <Field label="Event value"><InputShell><input type="number" min="0" step="0.01" value={settings.leadValue} onChange={(event) => setSettings({ ...settings, leadValue: event.target.value })} /></InputShell></Field>
           </div>
           {!confirmationMode ? <Field label="Form selector" hint="The default tracks every standard form on the page."><InputShell code><input value={settings.formSelector} onChange={(event) => setSettings({ ...settings, formSelector: event.target.value || "form" })} placeholder="form" /></InputShell></Field> : null}
+          <Field label="Landing page label" hint="Optional. Use labels such as Control or Variant B when this client runs an A/B test.">
+            <InputShell code><input value={settings.pageVariant} onChange={(event) => setSettings({ ...settings, pageVariant: event.target.value.trimStart().slice(0, 80) })} placeholder="Control" autoComplete="off" /></InputShell>
+          </Field>
           <Field label="Meta test event code" hint="Optional. Paste the temporary TEST code from Events Manager, then remove it after testing.">
             <InputShell code><input value={settings.testEventCode} onChange={(event) => setSettings({ ...settings, testEventCode: event.target.value.trim() })} placeholder="TEST12345" autoComplete="off" /></InputShell>
           </Field>
           <Toggle checked={settings.firePixel} onChange={(value) => setSettings({ ...settings, firePixel: value })} label={`Fire browser ${settings.eventName}`} description="Uses the same event ID as the matching server event when an existing Meta Pixel is present." />
           <Toggle checked={settings.onlyMetaTraffic} onChange={(value) => setSettings({ ...settings, onlyMetaTraffic: value })} label="Meta traffic only" description="Skip tracking unless fbclid, fbp, fbc, or a Meta-style utm_source is present." />
+          <Notice tone="info" title="One client, multiple landing pages">Reuse this endpoint for pages that send to the same Meta dataset. The page URL, attribution fields, and optional label keep each conversion identifiable. Create a separate endpoint when the client or dataset changes.</Notice>
           <Notice tone="info" title={confirmationMode ? "Confirmation page mode" : directMode ? "Direct mode" : "GHL relay mode"}>{confirmationMode ? "Paste this tag only on the page shown after a successful booking. It sends directly to Netlify and needs no GHL workflow." : directMode ? "The browser posts straight to the generated CAPI endpoint. Client IP is read at Netlify." : "The tracker posts a hidden form to GHL. Map the original inbound IP in the next tab."}</Notice>
         </div>
       </section>

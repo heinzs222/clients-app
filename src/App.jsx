@@ -53,7 +53,7 @@ function hasAuthHash() {
 
 function pageTitle(route) {
   const labels = {
-    home: "Simple CAPI - Coming Soon",
+    home: "Meta Conversions API Tracking Software - Simple CAPI",
     login: "Log in - Simple CAPI",
     register: "Create account - Simple CAPI",
     forgot: "Recover access - Simple CAPI",

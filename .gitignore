@@ -13,4 +13,6 @@ dist
 # Local runtime logs
 *.log
 
-.vercel
+# Private product research and conversations
+convo-with-bruno.html
+research/bruno/

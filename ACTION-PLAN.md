@@ -4,7 +4,7 @@
 
 1. Connect `simplecapi.com` to the Vercel production project and verify DNS and HTTPS.
 2. Rebrand public metadata, app copy, manifest, schema, and discovery files as Simple CAPI.
-3. Keep the public homepage as the approved minimal coming-soon design.
+3. Restore the full public product homepage with Simple CAPI branding and current product scope.
 4. Authorize the custom domain in the Netlify provisioner.
 5. Redirect Identity email callbacks and the legacy Vercel alias to the canonical domain.
 6. Restore full tracker, dashboard, billing, GHL mapping, auth, and mobile regression coverage.
@@ -18,4 +18,4 @@
 3. Run a test-mode $5 checkout and confirm one-order/one-endpoint redemption.
 4. Complete merchant approval, copy the product to live mode, and replace the test API key, store ID, and variant ID with live values.
 5. Submit `https://simplecapi.com/sitemap.xml` to search engines.
-6. Replace the coming-soon page when the public launch date and final marketing content are ready.
+6. Add verified customer proof and demo media when those assets are approved.
