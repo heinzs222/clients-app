@@ -141,6 +141,15 @@ assert(paid.amount === 500 && paid.currency === "USD", "Valid Lemon Squeezy endp
 assert(paid.orderHash === hash(`lemon:${paidOrder.id}`), "Lemon Squeezy order redemption hash is incorrect.");
 assert(__testing.checkoutOrderId(paidOrder.id) === paidOrder.id, "Lemon Squeezy order ID validation failed.");
 assert(__testing.checkoutOrderId("not-an-order") === "", "Invalid Lemon Squeezy order ID was accepted.");
+const orderParams = __testing.lemonOrderSearchParams(billingUser);
+assert(orderParams.get("filter[store_id]") === "1234", "Lemon Squeezy store filter is incorrect.");
+assert(orderParams.get("filter[user_email]") === billingUser.email, "Lemon Squeezy email filter is incorrect.");
+assert(!orderParams.has("filter[store-id]") && !orderParams.has("filter[user-email]"), "Unsupported Lemon Squeezy filter names were generated.");
+process.env.CAPI_APP_ORIGIN = "https://simplecapi.com";
+const proxiedRequest = new Request("https://capi-tracker-service.netlify.app/.netlify/functions/create-client-capi", {
+  headers: { origin: "https://simplecapi.com" }
+});
+assert(__testing.trustedAppOrigin(proxiedRequest) === "https://simplecapi.com", "Checkout redirects do not preserve the trusted public app origin.");
 
 function expectsPaymentFailure(order, message, options) {
   let failed = false;

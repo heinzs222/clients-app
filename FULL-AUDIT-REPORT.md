@@ -34,7 +34,7 @@
 
 ## Remaining External Work
 
-- Configure Lemon Squeezy API, store, and variant credentials before accepting public payments.
+- Finish the Lemon Squeezy test store by switching it to USD, publishing the $5 endpoint-credit product, and adding its variant ID. The test API key and store ID are already configured.
 - Add `simplecapi.com` to Google Search Console and Bing Webmaster Tools, then submit the sitemap.
 - Replace the coming-soon page with the full public product experience when launch content is approved.
 - Review field Core Web Vitals and search queries after sufficient production traffic exists.

@@ -114,6 +114,12 @@ function allowedAppOrigins(request) {
   return origins;
 }
 
+function trustedAppOrigin(request) {
+  const origin = request.headers.get("origin");
+  if (origin && allowedAppOrigins(request).has(origin)) return origin;
+  return new URL(request.url).origin;
+}
+
 function response(request, status, body) {
   const origin = request.headers.get("origin");
   const headers = {
@@ -285,7 +291,7 @@ function checkoutOrderId(value) {
 }
 
 async function createLemonCheckout(request, user) {
-  const origin = new URL(request.url).origin;
+  const origin = trustedAppOrigin(request);
   const owner = ownerKey(user);
   const price = endpointPriceCents();
   const storeId = lemonStoreId();
@@ -386,6 +392,14 @@ async function redeemedSiteForOrder(accountSlug, user, orderId) {
   return endpoints.find((endpoint) => cleanString(endpoint.billing?.order_id) === cleanString(orderId))?.id || "";
 }
 
+function lemonOrderSearchParams(user) {
+  return new URLSearchParams({
+    "filter[store_id]": String(lemonStoreId()),
+    "filter[user_email]": cleanString(user?.email),
+    "page[size]": "100"
+  });
+}
+
 async function billingStatus(accountSlug, user, request) {
   const config = billingConfiguration();
   const exempt = billingExempt(user, request) || !config.required;
@@ -396,11 +410,7 @@ async function billingStatus(accountSlug, user, request) {
     return { ...config, exempt: false, available_credits: 0, payments: [] };
   }
 
-  const params = new URLSearchParams({
-    "filter[store-id]": String(lemonStoreId()),
-    "filter[user-email]": cleanString(user.email),
-    "page[size]": "100"
-  });
+  const params = lemonOrderSearchParams(user);
   const orders = await lemonFetch(`/orders?${params}`);
   const endpoints = await listOwnedSites(accountSlug, user);
   const redeemed = new Map(endpoints
@@ -1837,6 +1847,8 @@ export const __testing = {
   trackerAssets,
   ownerKey,
   checkoutOrderId,
+  lemonOrderSearchParams,
   validateLemonOrder,
-  billingConfiguration
+  billingConfiguration,
+  trustedAppOrigin
 };

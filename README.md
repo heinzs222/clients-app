@@ -46,11 +46,12 @@ LEMONSQUEEZY_TEST_MODE=true
 New endpoints cost `$5 USD` each. Pricing is enforced by the server; changing browser code cannot bypass checkout.
 
 1. Create a Lemon Squeezy store, complete identity verification, and connect a supported payout account.
-2. Create a one-time software product with a `$5 USD` variant.
-3. Create an API key and add it with the numeric store and variant IDs to the backend environment.
-4. Keep `CAPI_REQUIRE_PAYMENT=true`, `CAPI_ENDPOINT_PRICE_CENTS=500`, and `LEMONSQUEEZY_TEST_MODE=true` while testing.
-5. Add the owner's login email to `CAPI_BILLING_EXEMPT_EMAILS` if internal endpoints should not require payment.
-6. Complete a test checkout, then set `LEMONSQUEEZY_TEST_MODE=false` after the live store and product are approved.
+2. Set the store currency to USD before creating products.
+3. Create and publish a one-time software product with a `$5 USD` variant.
+4. Create an API key and add it with the numeric store and variant IDs to the backend environment.
+5. Keep `CAPI_REQUIRE_PAYMENT=true`, `CAPI_ENDPOINT_PRICE_CENTS=500`, and `LEMONSQUEEZY_TEST_MODE=true` while testing.
+6. Add the owner's login email to `CAPI_BILLING_EXEMPT_EMAILS` if internal endpoints should not require payment.
+7. Complete a test checkout, then replace the test key and IDs and set `LEMONSQUEEZY_TEST_MODE=false` after the live store and product are approved.
 
 The app creates Lemon Squeezy-hosted one-time checkouts. Before provisioning, it retrieves the order server-side and verifies the authenticated email, store, variant, amount, currency, test/live mode, payment status, and refund state. Redemption is tied to a deterministic endpoint name and recorded in the generated endpoint manifest so one order cannot create multiple endpoints.
 
