@@ -52,13 +52,13 @@ Do not call 9.3 an average until there is a documented sample. Do not publish in
 
 ## Offer Boundaries
 
-- One purchased endpoint belongs to one client and Meta dataset.
+- One purchased endpoint belongs to one client, one Meta dataset, and one conversion type.
 - The same endpoint can serve that client's A/B landing pages; URLs, UTMs, and optional page labels distinguish them.
-- The endpoint supports Lead and Schedule tracking modes.
+- Lead costs $5 one-time and Schedule costs $5 one-time. A client using both requires two endpoints and pays $10 total.
 - A different client or Meta dataset requires a separate endpoint.
 - Browser JavaScript is inspectable. Meta credentials remain server-side and isolated.
 
-This is clearer than selling "one webhook per event per landing page," which does not match the current product.
+This keeps pricing tied to the conversion capability while still allowing each purchased conversion across that client's compatible pages.
 
 ## Lead Generation Funnel
 

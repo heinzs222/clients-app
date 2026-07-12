@@ -191,14 +191,24 @@ try {
       contentType: "application/json",
       body: JSON.stringify({
         success: true,
-        count: 1,
+        count: 2,
         endpoints: [{
           id: "11111111-1111-4111-8111-111111111111",
-          client_name: "Example Home Services",
+          client_name: "Example Lead Client",
           dataset_id: "123456789012345",
           graph_version: "v23.0",
-          endpoint: "https://simplecapi.com/client/opaque-route/events",
+          event_name: "Lead",
           tracker_url: "https://simplecapi.com/client/opaque-route/tracker.js",
+          state: "ready",
+          created_at: "2026-07-10T12:00:00.000Z",
+          updated_at: "2026-07-11T12:00:00.000Z"
+        }, {
+          id: "22222222-2222-4222-8222-222222222222",
+          client_name: "Example Schedule Client",
+          dataset_id: "123456789012345",
+          graph_version: "v23.0",
+          event_name: "Schedule",
+          tracker_url: "https://simplecapi.com/client/opaque-schedule-route/tracker.js",
           state: "ready",
           created_at: "2026-07-10T12:00:00.000Z",
           updated_at: "2026-07-11T12:00:00.000Z"
@@ -207,20 +217,26 @@ try {
     });
   });
   await page.goto(`${baseUrl}/?preview=1&view=endpoints`, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: "Example Home Services", exact: true }).click();
-  assert(await page.getByRole("heading", { name: "Example Home Services" }).isVisible(), "Tracking detail did not open.");
+  await page.getByRole("button", { name: "Example Lead Client", exact: true }).click();
+  assert(await page.getByRole("heading", { name: "Example Lead Client" }).isVisible(), "Lead tracking detail did not open.");
   assert(await page.getByText("Lead installation script", { exact: true }).isVisible(), "Tracker install panel did not render.");
+  assert(await page.getByText("This endpoint is locked to its purchased conversion type.", { exact: true }).isVisible(), "Lead endpoint does not explain its conversion lock.");
   await page.getByLabel("Landing page label").fill("Variant B");
   const variantInstallCode = await page.locator(".codePanel pre").first().innerText();
   assert(variantInstallCode.includes('data-page-variant="Variant B"'), "Installer omitted the landing-page variant.");
+  assert(variantInstallCode.includes('data-event-name="Lead"'), "Lead endpoint generated the wrong event name.");
   assert(!variantInstallCode.includes("data-capi-endpoint"), "Installer exposes an unnecessary event route.");
-  await page.getByRole("button", { name: /Schedule confirmation/ }).click();
+  assert(await page.getByRole("button", { name: /Schedule confirmation/ }).count() === 0, "Lead endpoint allows switching to Schedule without another purchase.");
+
+  await page.getByRole("button", { name: "All endpoints" }).click();
+  await page.getByRole("button", { name: "Example Schedule Client", exact: true }).click();
   assert(await page.getByText("Schedule installation script", { exact: true }).isVisible(), "Schedule installer did not render.");
   assert(await page.getByText("Confirmation page only", { exact: true }).isVisible(), "Schedule placement warning did not render.");
   const scheduleInstallCode = await page.locator(".codePanel pre").first().innerText();
   assert(scheduleInstallCode.includes('data-event-name="Schedule"'), "Schedule installer generated the wrong event name.");
   assert(scheduleInstallCode.includes('data-trigger="page-load"'), "Schedule installer omitted the page-load trigger.");
   assert(!scheduleInstallCode.includes("data-form-selector"), "Schedule installer included an irrelevant form selector.");
+  assert(await page.getByRole("button", { name: /Lead form/ }).count() === 0, "Schedule endpoint allows switching to Lead without another purchase.");
   const trackingText = await page.locator("body").innerText();
   assert(!/GHL|webhook|SHA-256|fbp|fbc|client IP|user agent|deduplication/i.test(trackingText), "Tracking UI exposes implementation details.");
   assert(await page.locator(".pageTabs button").count() === 2, "Tracking UI exposes unnecessary configuration tabs.");
@@ -251,7 +267,7 @@ try {
   }
 
   const unpaidPage = await mockPaidAppPage(0);
-  assert(await unpaidPage.getByRole("heading", { name: "Endpoint credit" }).isVisible(), "Lemon Squeezy payment gate did not render.");
+  assert(await unpaidPage.getByRole("heading", { name: "Conversion credit" }).isVisible(), "Lemon Squeezy payment gate did not render.");
   assert(await unpaidPage.getByRole("button", { name: /Pay \$5\.00 securely/ }).isVisible(), "Lemon Squeezy Checkout command did not render.");
   await unpaidPage.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-payment.png"), fullPage: true });
   await unpaidPage.goto(`${baseUrl}/?preview=1&view=billing`, { waitUntil: "networkidle" });
@@ -265,8 +281,14 @@ try {
   await unpaidPage.close();
 
   const creditedPage = await mockPaidAppPage(1);
-  assert(await creditedPage.getByLabel("Client or project name").isVisible(), "Paid endpoint credit did not unlock provisioning.");
+  assert(await creditedPage.getByLabel("Client or project name").isVisible(), "Paid conversion credit did not unlock endpoint creation.");
   assert(await creditedPage.getByText("Payment confirmed", { exact: true }).isVisible(), "Paid credit confirmation did not render.");
+  assert(await creditedPage.getByRole("button", { name: /Lead \$5 one-time setup/ }).isVisible(), "Lead purchase option did not render.");
+  const scheduleChoice = creditedPage.getByRole("button", { name: /Schedule \$5 one-time setup/ });
+  assert(await scheduleChoice.isVisible(), "Schedule purchase option did not render.");
+  await scheduleChoice.click();
+  assert(await scheduleChoice.getAttribute("aria-pressed") === "true", "Schedule purchase option could not be selected.");
+  await creditedPage.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-conversion-setup.png"), fullPage: true });
   await creditedPage.close();
 
   await page.setViewportSize({ width: 390, height: 844 });

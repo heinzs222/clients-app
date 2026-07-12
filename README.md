@@ -12,7 +12,7 @@ For every client, the app:
 4. Deploys a stable `/tracker.js` loader and a content-hashed, minified tracker core for same-document HTML forms.
 5. Returns the endpoint URL, tracker tag, and GHL Custom Webhook JSON mapping.
 
-One endpoint belongs to one client and Meta dataset. It can be reused across that client's landing pages and can send the supported Lead and Schedule events. A different client or dataset requires a separate endpoint.
+One endpoint belongs to one client, one Meta dataset, and one purchased conversion type. Lead costs `$5 USD` and Schedule costs `$5 USD`; enabling both requires two endpoints and costs `$10 USD`. Each endpoint can be reused across compatible pages for that same client and dataset.
 
 The Meta access token is never embedded in the tracker, saved to browser storage, logged by application code, or returned by the provisioning API.
 
@@ -47,7 +47,7 @@ Leave `CAPI_BILLING_EXEMPT_EMAILS` empty when every production endpoint must con
 
 ## Lemon Squeezy billing
 
-New endpoints cost `$5 USD` each. Pricing is enforced by the server; changing browser code cannot bypass checkout.
+Each Lead or Schedule endpoint costs `$5 USD`. The conversion type is stored with the endpoint and enforced by the server, so changing browser code cannot switch a paid Lead endpoint into Schedule or vice versa.
 
 1. Create a Lemon Squeezy store, complete identity verification, and connect a supported payout account.
 2. Set the store currency to USD before creating products.
@@ -99,16 +99,13 @@ npm run dev:netlify
 
 After creating an endpoint:
 
-1. Open the endpoint's **Install tracker** tab.
-2. Add the GHL inbound webhook URL if GHL should receive the form first.
-3. Select the correct country and currency.
-4. Optionally add a Landing page label such as `Control` or `Variant B` for A/B reporting.
-5. Paste the generated script into the actual page containing the form. Reuse the endpoint on additional pages only when they belong to the same client and Meta dataset.
-6. Submit one real test form so GHL exposes the inbound fields.
-7. Add a GHL Custom Webhook action after contact creation.
-8. Use the generated Netlify function URL and paste the generated JSON body.
-
-If no GHL inbound URL is configured, the tracker posts directly to the generated CAPI endpoint.
+1. Purchase one conversion credit.
+2. Choose Lead or Schedule while creating the endpoint.
+3. Open the endpoint's **Install** tab.
+4. Select the correct country and currency.
+5. Optionally add a Landing page label such as `Control` or `Variant B` for A/B reporting.
+6. Paste the generated script into the actual page containing the form or the successful booking confirmation page, as instructed.
+7. Submit one real test and confirm the conversion in Meta Test Events.
 
 For Meta Test Events, paste the temporary `TEST...` value into **Meta test event code** before copying the tracker tag. Submit the real form while Test Events is open, then clear the code and replace the temporary tag so production events are no longer marked as tests.
 
@@ -116,7 +113,7 @@ For Meta Test Events, paste the temporary `TEST...` value into **Meta test event
 
 The tracker handles standard and dynamically inserted same-document forms, plus programmatic `form.submit()` calls. It cannot inspect a form inside a cross-origin iframe. For an iframe form, install the tracker inside the iframe document or map the form platform's own webhook into the generated endpoint.
 
-For appointment conversions, select **Schedule confirmation** in the endpoint's Install Tracker screen. The generated tag includes `data-trigger="page-load"` and must be installed only on the page reached after a successful booking. The Lead tag stores matching identity data in session storage so the confirmation-page Schedule event can reuse it. Both browser and server Schedule events share one event ID, and confirmation-page reloads are suppressed for five minutes.
+For appointment conversions, purchase a Schedule endpoint. Its generated tag must be installed only on the page reached after a successful booking. Schedule and Lead are separate paid endpoints.
 
 The tracker improves match-data coverage and browser/server deduplication. It cannot guarantee a specific Meta Event Match Quality score or attribution outcome.
 

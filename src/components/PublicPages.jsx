@@ -53,7 +53,7 @@ export function HomePage({ navigate, user }) {
             <div className="heroTrust">
               <span><Check size={16} /> One script to install</span>
               <span><Check size={16} /> Credentials stay protected</span>
-              <span><Check size={16} /> Lead and Schedule events</span>
+              <span><Check size={16} /> $5 per conversion</span>
             </div>
           </div>
 
@@ -90,7 +90,7 @@ export function HomePage({ navigate, user }) {
             <article>
               <span><Activity size={22} /></span>
               <h3>Lead and Schedule</h3>
-              <p>Configure the conversion you need without rebuilding the setup.</p>
+              <p>Purchase either conversion separately and use it across that client's pages.</p>
             </article>
             <article>
               <span><Database size={22} /></span>
@@ -108,8 +108,8 @@ export function HomePage({ navigate, user }) {
         <section className="pricingBand">
           <div>
             <span className="eyebrow">Simple pricing</span>
-            <h2>$5 per client endpoint. No subscription.</h2>
-            <p>One payment creates one client and dataset endpoint with Lead and Schedule tracking across that client's pages.</p>
+            <h2>$5 for Lead. $5 for Schedule.</h2>
+            <p>Each one-time payment creates one conversion endpoint. A client using both conversions pays $10 total. No subscription.</p>
           </div>
           <button className="button primary" type="button" onClick={() => navigate(user ? "setup" : "register")}><CreditCard size={18} /> Buy an endpoint</button>
         </section>
@@ -134,12 +134,12 @@ const docsSections = [
   {
     id: "create",
     title: "1. Add the client",
-    body: <p>Purchase one endpoint credit, then enter the client name, Meta Dataset ID, and Conversions API access token.</p>
+    body: <p>Purchase one $5 conversion credit, then enter the client name, Meta Dataset ID, and Conversions API access token.</p>
   },
   {
     id: "event",
     title: "2. Choose the conversion",
-    body: <p>Select Lead for a form page or Schedule for a booking confirmation page. Set the country, currency, value, and any optional campaign label.</p>
+    body: <p>Select Lead for a form page or Schedule for a booking confirmation page. Each endpoint is locked to one purchased conversion. Adding both requires two credits, for a total of $10.</p>
   },
   {
     id: "install",
@@ -215,7 +215,7 @@ export function TermsPage({ navigate, user }) {
     <PageFrame route="terms" navigate={navigate} user={user}>
       <main className="contentPage legalPage">
         <header className="contentHero">
-          <span className="eyebrow">Last updated July 11, 2026</span>
+          <span className="eyebrow">Last updated July 13, 2026</span>
           <h1>Terms of Service</h1>
           <p>Operational terms for using Simple CAPI to create and manage Meta CAPI endpoints.</p>
         </header>
@@ -224,7 +224,7 @@ export function TermsPage({ navigate, user }) {
           <section><h2>2. Authorized use</h2><p>You may use the service only for accounts, websites, datasets, and lead data you are authorized to manage. You may not use it to send misleading, unlawful, or unauthorized events.</p></section>
           <section><h2>3. Credentials</h2><p>You are responsible for obtaining valid Meta credentials, limiting access to your account, rotating exposed tokens, and removing endpoints no longer in use.</p></section>
           <section><h2>4. Privacy compliance</h2><p>You are the party determining what lead data is collected and sent. You are responsible for notices, consent, data processing agreements, retention obligations, and honoring data subject rights.</p></section>
-          <section><h2>5. Payments and endpoint credits</h2><p>Unless an account is explicitly exempt, creating an endpoint requires one $5 USD Lemon Squeezy payment. A confirmed payment provides one endpoint credit. A credit is consumed when endpoint creation succeeds and cannot be reused for another endpoint. Deleting an endpoint does not restore its credit. Refund requests are reviewed according to applicable law and the service's stated refund policy.</p></section>
+          <section><h2>5. Payments and conversion credits</h2><p>Unless an account is explicitly exempt, each Lead or Schedule endpoint requires one $5 USD payment. Lead and Schedule are purchased separately, so enabling both costs $10 USD. A confirmed payment provides one conversion credit, which is consumed when endpoint creation succeeds and cannot be reused. Deleting an endpoint does not restore its credit. Refund requests are reviewed according to applicable law and the service's stated refund policy.</p></section>
           <section><h2>6. No performance guarantee</h2><p>The service is designed to improve conversion data completeness. It does not guarantee a specific Event Match Quality score, attribution result, ad performance, delivery rate, or revenue outcome.</p></section>
           <section><h2>7. Third-party platforms</h2><p>Your use of Lemon Squeezy, Meta, and other connected services remains subject to their terms. Changes, outages, limits, token revocation, payment disputes, or enforcement decisions by those platforms may affect the service.</p></section>
           <section><h2>8. Availability and liability</h2><p>The service is provided on an as-available basis. To the extent permitted by law, Simple CAPI is not liable for indirect losses, lost advertising spend, missing attribution, or third-party platform failures.</p></section>

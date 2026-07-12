@@ -34,7 +34,6 @@ import {
   X
 } from "lucide-react";
 import {
-  DEFAULT_TRACKING,
   cleanAccessToken,
   cleanDatasetId,
   endpointState,
@@ -44,6 +43,7 @@ import {
   loadTrackingSettings,
   removeTrackingSettings,
   saveTrackingSettings,
+  trackingDefaultsForEvent,
   trackerTag
 } from "../lib/capi.js";
 import {
@@ -134,7 +134,7 @@ function EndpointTable({ endpoints, onOpen, onManage, onDelete, compact = false,
             const state = endpointState(endpoint);
             return (
               <tr key={endpoint.id}>
-                <td data-label="Client"><button className="clientLink" type="button" onClick={() => onOpen(endpoint)}>{endpoint.client_name}</button><small>Endpoint {endpoint.id.slice(0, 8)}</small></td>
+                <td data-label="Client"><button className="clientLink" type="button" onClick={() => onOpen(endpoint)}>{endpoint.client_name}</button><small>{endpoint.event_name || "Lead"} / Endpoint {endpoint.id.slice(0, 8)}</small></td>
                 <td data-label="Dataset"><code>{endpoint.dataset_id || "Unavailable"}</code></td>
                 <td data-label="Status"><StatusPill state={state} label={state === "active" ? "Active" : state === "pending" ? "Pending" : "Check"} /></td>
                 <td data-label="Updated">{formatDate(endpoint.updated_at)}</td>
@@ -211,7 +211,7 @@ function EndpointsPage({ endpoints, loading, error, onNew, onOpen, onManage, onD
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) return endpoints;
-    return endpoints.filter((item) => [item.client_name, item.dataset_id, item.id].some((value) => String(value || "").toLowerCase().includes(query)));
+    return endpoints.filter((item) => [item.client_name, item.dataset_id, item.event_name, item.id].some((value) => String(value || "").toLowerCase().includes(query)));
   }, [endpoints, search]);
   return (
     <main className="workspaceMain">
@@ -260,15 +260,15 @@ function PaymentStep({ billing, onCheckout, refreshBilling, onCancel }) {
   const busy = ["loading", "checkout", "verifying"].includes(billing.status);
   return (
     <main className="workspaceMain">
-      <WorkspaceHeader title="Create new endpoint" description="Each client endpoint is a one-time purchase." />
+      <WorkspaceHeader title="Create new endpoint" description="Each Lead or Schedule conversion is a separate one-time purchase." />
       <Progress stage={1} />
       <div className="wizardLayout paymentLayout">
         <section className="wizardCard paymentCard">
-          <header><span className="paymentIcon"><CreditCard size={23} /></span><div><h2>Endpoint credit</h2><p>Lemon Squeezy securely processes the payment as merchant of record. Card details never pass through Simple CAPI.</p></div></header>
+          <header><span className="paymentIcon"><CreditCard size={23} /></span><div><h2>Conversion credit</h2><p>Lemon Squeezy securely processes the payment as merchant of record. Card details never pass through Simple CAPI.</p></div></header>
           <div className="priceLine"><strong>{money(billing.price_cents, billing.currency)}</strong><span>one-time</span></div>
           <ul className="paymentIncludes">
-            <li><CheckCircle2 size={18} /><span>One client and Meta dataset endpoint</span></li>
-            <li><CheckCircle2 size={18} /><span>Lead and Schedule tracking across that client's pages</span></li>
+            <li><CheckCircle2 size={18} /><span>One Lead or Schedule conversion endpoint</span></li>
+            <li><CheckCircle2 size={18} /><span>Use it across pages for the same client and dataset</span></li>
             <li><CheckCircle2 size={18} /><span>Secure credential handling and endpoint management</span></li>
           </ul>
           {billing.mode === "test" ? <Notice tone="warning" title="Lemon Squeezy test mode">Use Lemon Squeezy's test checkout. No real charge will be made.</Notice> : null}
@@ -289,7 +289,7 @@ function PaymentStep({ billing, onCheckout, refreshBilling, onCancel }) {
           <ol>
             <li><strong>Secure checkout</strong><small>Lemon Squeezy handles card entry, tax, and required authentication.</small></li>
             <li><strong>Verified credit</strong><small>Your payment is confirmed before the endpoint is created.</small></li>
-            <li><strong>Single redemption</strong><small>One successful payment can create exactly one endpoint.</small></li>
+            <li><strong>Single redemption</strong><small>One successful payment creates either Lead or Schedule tracking.</small></li>
           </ol>
           <div className="secureNote"><LockKeyhole size={17} /><span>Closing or cancelling checkout does not create an endpoint or consume a credit.</span></div>
         </aside>
@@ -305,17 +305,17 @@ function BillingPage({ billing, onCheckout, refreshBilling, navigate }) {
     <main className="workspaceMain">
       <WorkspaceHeader
         title="Billing"
-        description="One payment purchases one client and dataset endpoint."
+        description="Each $5 payment purchases one Lead or Schedule conversion endpoint."
         action={<button className="button secondary" type="button" onClick={() => refreshBilling()} disabled={busy}><RefreshCw size={17} /> Refresh</button>}
       />
       <div className="billingOverview">
         <section className="billingMetric">
           <span>Available credits</span>
           <strong>{billing.exempt ? "Development" : available}</strong>
-          <small>{billing.exempt ? "Payment is bypassed only for this local or explicitly exempt environment." : "Each credit creates one client and dataset endpoint."}</small>
+          <small>{billing.exempt ? "Payment is bypassed only for this local or explicitly exempt environment." : "Lead and Schedule each require one credit."}</small>
         </section>
         <section className="billingMetric">
-          <span>Endpoint price</span>
+          <span>Conversion price</span>
           <strong>{money(billing.price_cents, billing.currency)}</strong>
           <small>One-time payment. No recurring subscription.</small>
         </section>
@@ -333,7 +333,7 @@ function BillingPage({ billing, onCheckout, refreshBilling, navigate }) {
       {billing.error ? <Notice tone="error" title="Billing request failed">{billing.error}</Notice> : null}
       {!billing.configured && billing.required && !billing.exempt ? <Notice tone="error" title="Lemon Squeezy is not configured">The administrator must add the Lemon Squeezy API, store, and variant settings before payments can be accepted.</Notice> : null}
       <section className="billingHistory">
-        <header><div><h2>Payment history</h2><p>Completed endpoint-credit purchases associated with this account.</p></div></header>
+        <header><div><h2>Payment history</h2><p>Completed conversion-credit purchases associated with this account.</p></div></header>
         {billing.payments?.length ? (
           <div className="endpointTableWrap">
             <table className="endpointTable billingTable">
@@ -358,7 +358,7 @@ function BillingPage({ billing, onCheckout, refreshBilling, navigate }) {
 
 function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refreshBilling, onCancel }) {
   const [showToken, setShowToken] = useState(false);
-  const [form, setForm] = useState({ clientName: "", datasetId: "", accessToken: "", graphVersion: "v23.0" });
+  const [form, setForm] = useState({ clientName: "", datasetId: "", accessToken: "", graphVersion: "v23.0", eventName: "Lead" });
   const [touched, setTouched] = useState(false);
   const valid = form.clientName.trim().length >= 2 && isValidDatasetId(form.datasetId) && isValidAccessToken(form.accessToken);
   const hasCredit = billing.exempt || !billing.required || Number(billing.available_credits) > 0;
@@ -377,13 +377,24 @@ function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refr
 
   return (
     <main className="workspaceMain">
-      <WorkspaceHeader title="Create new endpoint" description="Add one client and generate the installation script." />
+      <WorkspaceHeader title="Create new endpoint" description="Choose one paid conversion and generate its installation script." />
       <Progress stage={createState.status === "success" ? 4 : createState.status === "loading" ? 3 : 2} />
       <div className="wizardLayout">
         <form className="wizardCard" onSubmit={submit}>
           <header><h2>Client details</h2><p>The access token is handled securely and never included in the installation script.</p></header>
           <div className="formStack">
-            {!billing.exempt && billing.required ? <Notice tone="success" title="Payment confirmed">{billing.available_credits} endpoint credit{billing.available_credits === 1 ? " is" : "s are"} available. One credit will be redeemed after the endpoint is created.</Notice> : null}
+            {!billing.exempt && billing.required ? <Notice tone="success" title="Payment confirmed">{billing.available_credits} conversion credit{billing.available_credits === 1 ? " is" : "s are"} available. One credit will be redeemed after the endpoint is created.</Notice> : null}
+            <fieldset className="trackingModeField">
+              <legend>Conversion to track</legend>
+              <div className="trackingModeSelector">
+                <button className={form.eventName === "Lead" ? "active" : ""} type="button" aria-pressed={form.eventName === "Lead"} onClick={() => setForm({ ...form, eventName: "Lead" })}>
+                  <FileInput size={19} /><span><strong>Lead</strong><small>$5 one-time setup</small></span>
+                </button>
+                <button className={form.eventName === "Schedule" ? "active" : ""} type="button" aria-pressed={form.eventName === "Schedule"} onClick={() => setForm({ ...form, eventName: "Schedule" })}>
+                  <CalendarCheck2 size={19} /><span><strong>Schedule</strong><small>$5 one-time setup</small></span>
+                </button>
+              </div>
+            </fieldset>
             <Field label="Client or project name" hint="Use a recognizable business name." error={touched && form.clientName.trim().length < 2 ? "Enter at least two characters." : undefined}>
               <InputShell><input value={form.clientName} onChange={(event) => setForm({ ...form, clientName: event.target.value })} placeholder="Acme Home Services" autoComplete="organization" /></InputShell>
             </Field>
@@ -417,7 +428,7 @@ function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refr
           <ol>
             <li><strong>Dataset ID</strong><small>Select the correct client dataset in Meta Events Manager.</small></li>
             <li><strong>Access token</strong><small>Generate the token from that same dataset, not another client.</small></li>
-            <li><strong>Client endpoint</strong><small>Use one endpoint for each client and Meta dataset.</small></li>
+            <li><strong>Conversion type</strong><small>Lead and Schedule are separate $5 endpoints.</small></li>
           </ol>
           <div className="secureNote"><LockKeyhole size={17} /><span>The token is never included in the installation script.</span></div>
         </aside>
@@ -447,37 +458,15 @@ function CodePanel({ title, description, value, copyLabel = "Copy" }) {
 
 function TrackingInstall({ endpoint, settings, setSettings }) {
   const script = trackerTag(endpoint, settings);
-  const confirmationMode = settings.trigger === "page-load";
-
-  function selectMode(mode) {
-    const schedule = mode === "page-load";
-    setSettings({
-      ...settings,
-      trigger: schedule ? "page-load" : "form",
-      eventName: schedule ? "Schedule" : "Lead",
-      formSelector: "form",
-      leadValue: schedule ? "150" : "1.00",
-      source: schedule ? "Appointment Booking" : "Estimate Form",
-      tags: schedule ? "appointment-booked,website-calendar" : "estimate-lead,website-form"
-    });
-  }
+  const confirmationMode = endpoint.event_name === "Schedule";
+  const EventIcon = confirmationMode ? CalendarCheck2 : FileInput;
 
   return (
     <div className="trackingColumns">
       <section className="trackingConfigPanel">
-        <header><h2>Page tracker</h2><p>Choose the conversion and the app will generate the correct page-specific tag.</p></header>
+        <header><h2>{confirmationMode ? "Schedule" : "Lead"} tracking</h2><p>Configure this conversion and copy its installation script.</p></header>
         <div className="formStack">
-          <fieldset className="trackingModeField">
-            <legend>Tracking event</legend>
-            <div className="trackingModeSelector">
-              <button className={!confirmationMode ? "active" : ""} type="button" aria-pressed={!confirmationMode} onClick={() => selectMode("form")}>
-                <FileInput size={19} /><span><strong>Lead form</strong><small>Fire when a form is submitted</small></span>
-              </button>
-              <button className={confirmationMode ? "active" : ""} type="button" aria-pressed={confirmationMode} onClick={() => selectMode("page-load")}>
-                <CalendarCheck2 size={19} /><span><strong>Schedule confirmation</strong><small>Fire after a booking succeeds</small></span>
-              </button>
-            </div>
-          </fieldset>
+          <div className="eventTypeSummary"><span><EventIcon size={20} /></span><div><strong>{confirmationMode ? "Schedule confirmation" : "Lead form"}</strong><small>This endpoint is locked to its purchased conversion type.</small></div></div>
           <div className="twoFields">
             <Field label="Country">
               <InputShell><select value={settings.country} onChange={(event) => setSettings({ ...settings, country: event.target.value })}><option value="US">United States</option><option value="CA">Canada</option><option value="GB">United Kingdom</option><option value="AU">Australia</option><option value="NZ">New Zealand</option><option value="IE">Ireland</option></select></InputShell>
@@ -499,7 +488,7 @@ function TrackingInstall({ endpoint, settings, setSettings }) {
           </Field>
           <Toggle checked={settings.firePixel} onChange={(value) => setSettings({ ...settings, firePixel: value })} label="Complete Meta tracking" description="Recommended when the Meta Pixel is already installed on the page." />
           <Toggle checked={settings.onlyMetaTraffic} onChange={(value) => setSettings({ ...settings, onlyMetaTraffic: value })} label="Meta traffic only" description="Track only visits attributed to Meta campaigns." />
-          <Notice tone="info" title="One client, multiple pages">Reuse this setup across pages for the same client and Meta dataset. Create a new endpoint for a different client or dataset.</Notice>
+          <Notice tone="info" title="One conversion, multiple pages">Reuse this setup across pages for the same client and Meta dataset. Purchase another $5 endpoint to add the other conversion type.</Notice>
           <Notice tone="info" title="Where to paste it">{confirmationMode ? "Use the script only on the page displayed after a successful booking." : "Use the script on the page that contains the form, then publish and submit one real test."}</Notice>
         </div>
       </section>
@@ -544,7 +533,7 @@ function EndpointSettings({ endpoint, onUpdate, onDelete, updateState }) {
       </form>
       <aside className="endpointMetaPanel">
         <h2>Endpoint details</h2>
-        <dl><div><dt>Endpoint ID</dt><dd>{endpoint.id.slice(0, 8)}</dd></div><div><dt>Created</dt><dd>{formatDate(endpoint.created_at)}</dd></div><div><dt>Updated</dt><dd>{formatDate(endpoint.updated_at)}</dd></div><div><dt>State</dt><dd><StatusPill state={endpointState(endpoint)} /></dd></div></dl>
+        <dl><div><dt>Conversion</dt><dd>{endpoint.event_name || "Lead"}</dd></div><div><dt>Endpoint ID</dt><dd>{endpoint.id.slice(0, 8)}</dd></div><div><dt>Created</dt><dd>{formatDate(endpoint.created_at)}</dd></div><div><dt>Updated</dt><dd>{formatDate(endpoint.updated_at)}</dd></div><div><dt>State</dt><dd><StatusPill state={endpointState(endpoint)} /></dd></div></dl>
         <div className="dangerZone"><h3>Delete endpoint</h3><p>Permanently removes this client's tracking setup and stored credentials.</p><button className="button danger" type="button" onClick={() => onDelete(endpoint)}><Trash2 size={17} /> Delete</button></div>
       </aside>
     </div>
@@ -553,11 +542,12 @@ function EndpointSettings({ endpoint, onUpdate, onDelete, updateState }) {
 
 function TrackingPage({ endpoint, user, initialTab, onBack, onVerify, verifyState, onUpdate, updateState, onDelete }) {
   const [tab, setTab] = useState(initialTab === "settings" ? "settings" : "install");
-  const [settings, setSettingsState] = useState(DEFAULT_TRACKING);
+  const [settings, setSettingsState] = useState(() => trackingDefaultsForEvent(endpoint.event_name));
   useEffect(() => {
     const all = loadTrackingSettings(user.id || user.email);
-    setSettingsState({ ...DEFAULT_TRACKING, ...(all[endpoint.id] || {}) });
-  }, [endpoint.id, user.id, user.email]);
+    const defaults = trackingDefaultsForEvent(endpoint.event_name);
+    setSettingsState({ ...defaults, ...(all[endpoint.id] || {}), eventName: defaults.eventName, trigger: defaults.trigger });
+  }, [endpoint.id, endpoint.event_name, user.id, user.email]);
   function setSettings(next) {
     setSettingsState(next);
     saveTrackingSettings(user.id || user.email, endpoint.id, next);
@@ -567,7 +557,7 @@ function TrackingPage({ endpoint, user, initialTab, onBack, onVerify, verifyStat
       <button className="backButton" type="button" onClick={onBack}><ArrowLeft size={17} /> All endpoints</button>
       <WorkspaceHeader
         title={endpoint.client_name}
-        description={`Dataset ${endpoint.dataset_id || "unavailable"} / ${endpoint.graph_version || "v23.0"}`}
+        description={`${endpoint.event_name || "Lead"} / Dataset ${endpoint.dataset_id || "unavailable"} / ${endpoint.graph_version || "v23.0"}`}
         action={<div className="headerActions"><button className="button secondary" type="button" onClick={() => onVerify(endpoint)} disabled={verifyState.status === "loading"}><RefreshCw className={verifyState.status === "loading" ? "spin" : ""} size={17} /> Verify</button></div>}
       />
       <section className="deploymentBanner">

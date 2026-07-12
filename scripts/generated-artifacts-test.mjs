@@ -34,7 +34,8 @@ const sandbox = {
     env: {
       META_DATASET_ID: "123456789012345",
       META_ACCESS_TOKEN: fakeToken,
-      META_GRAPH_API_VERSION: "v23.0"
+      META_GRAPH_API_VERSION: "v23.0",
+      CAPI_EVENT_NAME: "Lead"
     }
   },
   require(name) {
@@ -61,7 +62,7 @@ const result = await handler({
     "x-nf-client-connection-ip": "203.0.113.8"
   },
   body: JSON.stringify({
-    event_name: "Lead",
+    event_name: "Schedule",
     event_id: eventId,
     test_event_code: "TEST_CONTRACT_001",
     first_name: "  JANE ",
@@ -89,6 +90,7 @@ assert(responseBody.event_id === eventId, "Response event_id changed.");
 assert(!result.body.includes(fakeToken), "Access token leaked in the response.");
 assert(metaRequest.url.includes("123456789012345"), "Dataset ID was not used in the Meta URL.");
 assert(sentEvent.event_id === eventId, "Outbound event_id changed.");
+assert(sentEvent.event_name === "Lead" && responseBody.event_name === "Lead", "Lead endpoint accepted a different event type.");
 assert(outbound.test_event_code === "TEST_CONTRACT_001", "Meta test event code was not sent at the payload root.");
 assert(sentEvent.user_data.em[0] === hash("jane@example.com"), "Email normalization or hash is incorrect.");
 assert(sentEvent.user_data.ph[0] === hash("15551234567"), "US phone normalization or hash is incorrect.");
@@ -101,6 +103,18 @@ assert(sentEvent.user_data.fbp === "fb.1.1000.2000", "fbp was not included.");
 assert(sentEvent.user_data.fbc.endsWith(".test-click"), "fbc was not built from fbclid.");
 assert(sentEvent.custom_data.page_variant === "Variant B", "Landing-page variant was not forwarded.");
 assert(sentEvent.custom_data.q1_service === "generator", "Safe extra form fields were not forwarded.");
+
+sandbox.process.env.CAPI_EVENT_NAME = "Schedule";
+const scheduleResult = await handler({
+  httpMethod: "POST",
+  headers: { "content-type": "application/json" },
+  body: JSON.stringify({ event_name: "Lead", event_id: "schedule_contract_001", email: "schedule@example.com" })
+});
+const scheduleBody = JSON.parse(scheduleResult.body);
+const scheduleOutbound = JSON.parse(metaRequest.options.body).data[0];
+assert(scheduleResult.statusCode === 200, "Schedule endpoint did not return 200.");
+assert(scheduleBody.event_name === "Schedule" && scheduleOutbound.event_name === "Schedule", "Schedule endpoint accepted a different event type.");
+sandbox.process.env.CAPI_EVENT_NAME = "Lead";
 
 const invalid = await handler({ httpMethod: "POST", headers: { "content-type": "application/json" }, body: "{" });
 assert(invalid.statusCode === 400, "Invalid JSON did not return 400.");
@@ -126,6 +140,7 @@ const publicEndpoint = __testing.clientEndpointRecord({
   client_name: "Example Client",
   dataset_id: "123456789012345",
   graph_version: "v23.0",
+  event_name: "Schedule",
   tracker_url: "https://simplecapi.com/client/opaque/tracker.js",
   endpoint: "https://simplecapi.com/client/opaque/events",
   billing: { order_id: "sensitive-order-reference" },
@@ -135,6 +150,17 @@ const publicEndpoint = __testing.clientEndpointRecord({
 });
 assert(!("endpoint" in publicEndpoint) && !("billing" in publicEndpoint), "Customer endpoint records expose internal routing or billing metadata.");
 assert(publicEndpoint.tracker_url.endsWith("/tracker.js"), "Customer endpoint record omitted the installation asset.");
+assert(publicEndpoint.event_name === "Schedule", "Customer endpoint record omitted the purchased conversion type.");
+
+let rejectedEvent = false;
+try {
+  __testing.validateClientInput({ clientName: "Test", datasetId: "123456789", accessToken: fakeToken, graphVersion: "v23.0", eventName: "Purchase" });
+} catch {
+  rejectedEvent = true;
+}
+assert(rejectedEvent, "Endpoint creation accepted an unsupported conversion type.");
+const scheduleEnvironment = __testing.envVars("123456789", fakeToken, "v23.0", "Schedule");
+assert(scheduleEnvironment.find((item) => item.key === "CAPI_EVENT_NAME")?.values?.[0]?.value === "Schedule", "Schedule endpoint environment did not lock its conversion type.");
 
 process.env.CAPI_GATEWAY_SECRET = "contract-test-gateway-secret-1234567890";
 const internalSite = "dhc-a1b2c3d4e5f6-example-client-abc123";

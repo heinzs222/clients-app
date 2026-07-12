@@ -306,10 +306,10 @@ async function createLemonCheckout(request, user) {
         attributes: {
           custom_price: price,
           product_options: {
-            name: "Simple CAPI endpoint credit",
-            description: "Creates one isolated Meta Conversions API endpoint.",
+            name: "Simple CAPI conversion credit",
+            description: "Creates one Lead or Schedule conversion endpoint.",
             redirect_url: `${origin}/?view=setup&checkout=success&order_id=[order_id]`,
-            receipt_button_text: "Create your endpoint",
+            receipt_button_text: "Create your conversion",
             receipt_link_url: `${origin}/?view=billing`,
             enabled_variants: [variantId]
           },
@@ -325,7 +325,7 @@ async function createLemonCheckout(request, user) {
             name: cleanString(user.name || user.userMetadata?.full_name),
             custom: {
               capi_owner_key: owner,
-              capi_product: "endpoint_credit"
+              capi_product: "conversion_credit"
             }
           },
           test_mode: booleanEnv("LEMONSQUEEZY_TEST_MODE", true),
@@ -447,6 +447,7 @@ function validateClientInput(input, { tokenRequired = true } = {}) {
   const datasetId = cleanString(input.datasetId).replace(/\D/g, "");
   const accessToken = cleanString(input.accessToken).replace(/\s+/g, "");
   const graphVersion = cleanString(input.graphVersion) || DEFAULT_GRAPH_VERSION;
+  const eventName = cleanString(input.eventName) || "Lead";
 
   if (!/^\d{6,30}$/.test(datasetId)) {
     throw Object.assign(new Error("Enter a valid numeric Meta dataset ID."), { statusCode: 400 });
@@ -460,8 +461,11 @@ function validateClientInput(input, { tokenRequired = true } = {}) {
   if (!/^v\d{1,3}\.\d{1,2}$/.test(graphVersion)) {
     throw Object.assign(new Error("Enter a Graph API version such as v23.0."), { statusCode: 400 });
   }
+  if (!["Lead", "Schedule"].includes(eventName)) {
+    throw Object.assign(new Error("Choose Lead or Schedule for this endpoint."), { statusCode: 400 });
+  }
 
-  return { clientName, datasetId, accessToken, graphVersion };
+  return { clientName, datasetId, accessToken, graphVersion, eventName };
 }
 
 function capiFunctionSource() {
@@ -614,8 +618,7 @@ function numberValue(value) {
   return Number.isFinite(number) ? number : undefined;
 }
 
-function buildPayload(input, event) {
-  const eventName = getString(input.event_name).slice(0, 80) || "Lead";
+function buildPayload(input, event, eventName) {
   const suppliedEventId = getString(input.event_id).slice(0, 200);
   const eventId = suppliedEventId || crypto.randomUUID();
   const timestampMs = Date.now();
@@ -670,6 +673,7 @@ exports.handler = async function(event) {
   const datasetId = getString(process.env.META_DATASET_ID);
   const accessToken = getString(process.env.META_ACCESS_TOKEN);
   const version = getString(process.env.META_GRAPH_API_VERSION) || "v23.0";
+  const eventName = getString(process.env.CAPI_EVENT_NAME) === "Schedule" ? "Schedule" : "Lead";
   if (!datasetId || !accessToken) {
     return json(500, { success: false, error: "Missing required environment variables." });
   }
@@ -681,7 +685,7 @@ exports.handler = async function(event) {
     return json(error.statusCode || 400, { success: false, error: error.message || "Invalid request body" });
   }
 
-  const built = buildPayload(input, event);
+  const built = buildPayload(input, event, eventName);
   const url = "https://graph.facebook.com/" + encodeURIComponent(version) + "/" +
     encodeURIComponent(datasetId) + "/events?access_token=" + encodeURIComponent(accessToken);
   const controller = new AbortController();
@@ -1316,8 +1320,9 @@ ${corePath}
 `, "utf8");
 }
 
-function statusPage(clientName) {
+function statusPage(clientName, eventName) {
   const escaped = cleanString(clientName).replace(/[<>&"]/g, "");
+  const escapedEvent = eventName === "Schedule" ? "Schedule" : "Lead";
   return Buffer.from(`<!doctype html>
 <html lang="en">
 <head>
@@ -1330,20 +1335,21 @@ function statusPage(clientName) {
     main{width:min(620px,100%);background:#fff;border:1px solid #cbd5e1;border-radius:8px;padding:32px}.pill{display:inline-flex;align-items:center;gap:8px;color:#047857;font-weight:700;font-size:13px}.pill:before{content:"";width:9px;height:9px;border-radius:50%;background:#10b981}h1{font-size:30px;line-height:1.2;margin:18px 0 10px}p{color:#475569;line-height:1.6}code{display:block;background:#102238;color:#c8e4ff;padding:14px;border-radius:6px;margin-top:20px;word-break:break-all}
   </style>
 </head>
-<body><main><span class="pill">Endpoint online</span><h1>${escaped || "Client"} CAPI bridge</h1><p>This isolated event service is ready to receive conversion events and forward them to Meta.</p></main></body>
+<body><main><span class="pill">Endpoint online</span><h1>${escaped || "Client"} ${escapedEvent}</h1><p>This conversion endpoint is ready.</p></main></body>
 </html>`, "utf8");
 }
 
-function manifestBuffer({ site, user, clientName, datasetId, graphVersion, createdAt, billing }) {
+function manifestBuffer({ site, user, clientName, datasetId, graphVersion, eventName, createdAt, billing }) {
   return Buffer.from(JSON.stringify({
     product: "capi-launcher",
-    schema_version: 3,
+    schema_version: 4,
     site_id: site.id,
     site_name: site.name,
     owner_key: ownerKey(user),
     client_name: clientName,
     dataset_id: datasetId,
     graph_version: graphVersion,
+    event_name: eventName === "Schedule" ? "Schedule" : "Lead",
     billing: billing || undefined,
     created_at: createdAt || new Date().toISOString(),
     updated_at: new Date().toISOString()
@@ -1360,12 +1366,13 @@ function envVar(key, value, options = {}) {
   return item;
 }
 
-function envVars(datasetId, accessToken, graphVersion, options = {}) {
+function envVars(datasetId, accessToken, graphVersion, eventName, options = {}) {
   const scopes = options.scoped ? ["functions"] : undefined;
   return [
     envVar("META_DATASET_ID", datasetId, { scopes }),
     envVar("META_ACCESS_TOKEN", accessToken, { scopes, isSecret: options.secretToken }),
-    envVar("META_GRAPH_API_VERSION", graphVersion || DEFAULT_GRAPH_VERSION, { scopes })
+    envVar("META_GRAPH_API_VERSION", graphVersion || DEFAULT_GRAPH_VERSION, { scopes }),
+    envVar("CAPI_EVENT_NAME", eventName === "Schedule" ? "Schedule" : "Lead", { scopes })
   ];
 }
 
@@ -1375,13 +1382,13 @@ function canFallbackToStandardEnv(error) {
     (message.includes("specific scopes") || message.includes("post_processing") || message.includes("post-processing"));
 }
 
-async function createSiteEnvVars(accountId, siteId, datasetId, accessToken, graphVersion) {
+async function createSiteEnvVars(accountId, siteId, datasetId, accessToken, graphVersion, eventName) {
   const path = `/accounts/${encodeURIComponent(accountId)}/env?site_id=${encodeURIComponent(siteId)}`;
   try {
     await netlifyFetch(path, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(envVars(datasetId, accessToken, graphVersion, { scoped: true, secretToken: true }))
+      body: JSON.stringify(envVars(datasetId, accessToken, graphVersion, eventName, { scoped: true, secretToken: true }))
     });
     return "functions-scoped-secret";
   } catch (error) {
@@ -1391,7 +1398,7 @@ async function createSiteEnvVars(accountId, siteId, datasetId, accessToken, grap
   await netlifyFetch(path, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(envVars(datasetId, accessToken, graphVersion, { scoped: false, secretToken: false }))
+    body: JSON.stringify(envVars(datasetId, accessToken, graphVersion, eventName, { scoped: false, secretToken: false }))
   });
   return "site-environment";
 }
@@ -1473,14 +1480,14 @@ async function pollDeploy(deployId) {
   return latest;
 }
 
-async function deploySite({ site, user, clientName, datasetId, graphVersion, createdAt, billing }) {
+async function deploySite({ site, user, clientName, datasetId, graphVersion, eventName, createdAt, billing }) {
   const tracker = await trackerAssets();
   const files = {
-    "/index.html": statusPage(clientName),
+    "/index.html": statusPage(clientName, eventName),
     "/tracker.js": tracker.loader,
     [tracker.corePath]: tracker.core,
     "/_headers": trackerHeaders(tracker.corePath),
-    [MANIFEST_PATH]: manifestBuffer({ site, user, clientName, datasetId, graphVersion, createdAt, billing })
+    [MANIFEST_PATH]: manifestBuffer({ site, user, clientName, datasetId, graphVersion, eventName, createdAt, billing })
   };
   const functionZip = await buildFunctionZip();
   const deploy = await netlifyFetch(`/sites/${encodeURIComponent(site.id)}/deploys`, {
@@ -1525,6 +1532,7 @@ function endpointRecord(site, manifest = {}) {
     client_name: cleanString(manifest.client_name) || cleanString(site.name),
     dataset_id: cleanString(manifest.dataset_id),
     graph_version: cleanString(manifest.graph_version) || DEFAULT_GRAPH_VERSION,
+    event_name: cleanString(manifest.event_name) === "Schedule" ? "Schedule" : "Lead",
     billing: manifest.billing && typeof manifest.billing === "object" ? {
       provider: cleanString(manifest.billing.provider),
       order_id: cleanString(manifest.billing.order_id),
@@ -1546,6 +1554,7 @@ function clientEndpointRecord(record) {
     client_name: record.client_name,
     dataset_id: record.dataset_id,
     graph_version: record.graph_version,
+    event_name: record.event_name,
     tracker_url: record.tracker_url,
     state: record.state,
     created_at: record.created_at,
@@ -1638,7 +1647,7 @@ async function createEndpoint(accountSlug, accountId, user, input, request) {
   }
 
   const suffix = payment ? payment.orderHash.slice(0, 10) : Date.now().toString(36);
-  const siteName = `${ownerPrefix(user)}${slugify(client.clientName)}-${suffix}`.slice(0, 63);
+  const siteName = `${ownerPrefix(user)}${slugify(client.clientName)}-${client.eventName.toLowerCase()}-${suffix}`.slice(0, 63);
   let site;
   try {
     site = await netlifyFetch(`/${encodeURIComponent(accountSlug)}/sites`, {
@@ -1651,7 +1660,8 @@ async function createEndpoint(accountSlug, accountId, user, input, request) {
       site.id,
       client.datasetId,
       client.accessToken,
-      client.graphVersion
+      client.graphVersion,
+      client.eventName
     );
     const billing = payment ? {
       provider: "lemonsqueezy",
@@ -1665,6 +1675,7 @@ async function createEndpoint(accountSlug, accountId, user, input, request) {
       client_name: client.clientName,
       dataset_id: client.datasetId,
       graph_version: client.graphVersion,
+      event_name: client.eventName,
       billing,
       created_at: site.created_at,
       updated_at: new Date().toISOString()
@@ -1686,7 +1697,8 @@ async function updateEndpoint(accountId, user, input) {
     clientName: input.clientName || previous.client_name,
     datasetId: input.datasetId || previous.dataset_id,
     accessToken: input.accessToken || "",
-    graphVersion: input.graphVersion || previous.graph_version
+    graphVersion: input.graphVersion || previous.graph_version,
+    eventName: previous.event_name || "Lead"
   }, { tokenRequired: false });
 
   if (client.datasetId !== cleanString(previous.dataset_id)) {
@@ -1698,6 +1710,7 @@ async function updateEndpoint(accountId, user, input) {
   if (client.accessToken) {
     await setEnvValue(accountId, site.id, "META_ACCESS_TOKEN", client.accessToken);
   }
+  await setEnvValue(accountId, site.id, "CAPI_EVENT_NAME", client.eventName);
   const deploy = await deploySite({
     site,
     user,
@@ -1710,6 +1723,7 @@ async function updateEndpoint(accountId, user, input) {
     client_name: client.clientName,
     dataset_id: client.datasetId,
     graph_version: client.graphVersion,
+    event_name: client.eventName,
     updated_at: new Date().toISOString()
   });
   return { ...record, ...(await verifyEndpoint(record.endpoint)) };
@@ -1850,5 +1864,7 @@ export const __testing = {
   billingConfiguration,
   trustedAppOrigin,
   gatewayRoute,
-  clientEndpointRecord
+  clientEndpointRecord,
+  validateClientInput,
+  envVars
 };

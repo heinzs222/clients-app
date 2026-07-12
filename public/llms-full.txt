@@ -1,14 +1,19 @@
 # Simple CAPI
 
-Simple CAPI is a web application for launching and managing secure Meta Conversions API tracking across client accounts.
+Simple CAPI is a self-service web application that helps agencies, freelancers, and businesses launch Meta Lead and Schedule conversion tracking without a complicated setup.
 
-## Product direction
+## Product
 
-Simple CAPI creates isolated server-side conversion endpoints, keeps Meta credentials out of browser code, and supports browser/server event deduplication for Lead and Schedule events.
+A customer creates a client endpoint, chooses one conversion type, and receives a hosted installation script. Each endpoint belongs to one client, one Meta dataset, and one purchased conversion type. It can be reused across that client's compatible pages.
 
-## Endpoint scope
+## Pricing
 
-One endpoint belongs to one client and Meta dataset. It can be used across that client's landing pages, while a different client or dataset requires a separate endpoint.
+- Lead conversion setup: $5 USD one-time.
+- Schedule conversion setup: $5 USD one-time.
+- Lead and Schedule for the same client: $10 USD total.
+- No recurring subscription.
+
+Sensitive Meta credentials are handled securely and do not appear in the installation script. Actual Event Match Quality and advertising performance depend on the customer data available and are not guaranteed.
 
 ## Canonical page
 

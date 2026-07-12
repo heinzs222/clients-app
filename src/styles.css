@@ -2453,6 +2453,46 @@ button:disabled {
   line-height: 1.35;
 }
 
+.eventTypeSummary {
+  min-height: 68px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #edf7ff;
+  border: 1px solid #b9d7f5;
+  border-radius: 7px;
+}
+
+.eventTypeSummary > span {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  color: var(--blue-dark);
+  background: #fff;
+  border: 1px solid #c8def3;
+  border-radius: 6px;
+}
+
+.eventTypeSummary strong,
+.eventTypeSummary small {
+  display: block;
+}
+
+.eventTypeSummary strong {
+  color: var(--ink);
+  font-size: 14px;
+}
+
+.eventTypeSummary small {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .toggleRow {
   position: relative;
   min-height: 58px;

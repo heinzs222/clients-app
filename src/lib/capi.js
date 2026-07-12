@@ -15,6 +15,19 @@ export const DEFAULT_TRACKING = Object.freeze({
   firePixel: true
 });
 
+export function trackingDefaultsForEvent(eventName) {
+  const schedule = eventName === "Schedule";
+  return {
+    ...DEFAULT_TRACKING,
+    eventName: schedule ? "Schedule" : "Lead",
+    trigger: schedule ? "page-load" : "form",
+    formSelector: "form",
+    leadValue: schedule ? "150" : "1.00",
+    source: schedule ? "Appointment Booking" : "Estimate Form",
+    tags: schedule ? "appointment-booked,website-calendar" : "estimate-lead,website-form"
+  };
+}
+
 const SETTINGS_KEY = "capi-launcher:tracking:v2";
 
 export function cleanDatasetId(value) {

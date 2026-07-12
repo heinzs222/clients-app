@@ -261,7 +261,7 @@ function ProductApp() {
         setBilling((current) => ({ ...current, status: "verifying", error: "", message: "Confirming your Lemon Squeezy payment..." }));
         try {
           await capiRequest("checkout-verify", { method: "POST", body: { checkoutOrderId: orderId } });
-          await loadBilling({ message: "Payment confirmed. Your endpoint credit is ready." });
+          await loadBilling({ message: "Payment confirmed. Your conversion credit is ready." });
         } catch (error) {
           setBilling((current) => ({ ...current, status: "error", error: error.message, message: "" }));
         }
@@ -457,7 +457,7 @@ function ProductApp() {
   async function createEndpoint(input) {
     const requiresCredit = billing.required && !billing.exempt;
     if (requiresCredit && !billing.available_order_id) {
-      setCreateState({ status: "error", error: "Purchase a $5 endpoint credit before creating an endpoint." });
+      setCreateState({ status: "error", error: "Purchase a $5 conversion credit before creating an endpoint." });
       return false;
     }
     setCreateState({ status: "loading", error: "" });
