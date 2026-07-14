@@ -19,7 +19,6 @@ import { clearMalformedAuthSession } from "./lib/auth-session.mjs";
 const AuthScreen = lazy(() => import("./components/AuthScreen.jsx"));
 const Workspace = lazy(() => import("./components/Workspace.jsx"));
 const HomePage = lazy(() => import("./components/PublicPages.jsx").then((module) => ({ default: module.HomePage })));
-const ComingSoonPage = lazy(() => import("./components/PublicPages.jsx").then((module) => ({ default: module.ComingSoonPage })));
 const DocsPage = lazy(() => import("./components/PublicPages.jsx").then((module) => ({ default: module.DocsPage })));
 const PrivacyPage = lazy(() => import("./components/PublicPages.jsx").then((module) => ({ default: module.PrivacyPage })));
 const TermsPage = lazy(() => import("./components/PublicPages.jsx").then((module) => ({ default: module.TermsPage })));
@@ -41,9 +40,6 @@ const ROUTE_PATHS = Object.freeze({
   reset: "/reset-password"
 });
 const PATH_ROUTES = Object.freeze(Object.fromEntries(Object.entries(ROUTE_PATHS).map(([route, path]) => [path, route])));
-const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "[::1]"]);
-const PRODUCT_APP_AVAILABLE = LOCAL_HOSTS.has(window.location.hostname.toLowerCase());
-
 function routeFromUrl() {
   const queryRoute = new URLSearchParams(window.location.search).get("view");
   if (ALL_ROUTES.has(queryRoute)) return queryRoute;
@@ -615,24 +611,6 @@ function ProductApp() {
   );
 }
 
-function LockedApp() {
-  useEffect(() => {
-    if (window.location.pathname !== "/" || window.location.search || window.location.hash) {
-      window.history.replaceState({}, "", "/");
-    }
-
-    document.title = "Simple CAPI - Coming Soon";
-    const canonical = document.querySelector('link[rel="canonical"]');
-    const robots = document.querySelector('meta[name="robots"]');
-    const ogUrl = document.querySelector('meta[property="og:url"]');
-    if (canonical) canonical.href = `${window.location.origin}/`;
-    if (ogUrl) ogUrl.content = `${window.location.origin}/`;
-    if (robots) robots.content = "noindex, nofollow";
-  }, []);
-
-  return <ComingSoonPage />;
-}
-
 export default function App() {
-  return PRODUCT_APP_AVAILABLE ? <ProductApp /> : <LockedApp />;
+  return <ProductApp />;
 }

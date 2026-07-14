@@ -75,7 +75,7 @@ The management function uses Netlify's modern function runtime so authenticated 
 
 ## Local development
 
-The deployed Vercel frontend currently shows a link-free coming-soon screen and redirects product, documentation, and authentication routes to `/`. The full product remains available only on localhost while private development continues. The Netlify management API still enforces authentication, origin checks, and the configured email allowlist.
+The production frontend exposes the marketing, documentation, legal, authentication, and authenticated workspace routes. New accounts must confirm their email address before they can sign in. The management API enforces authentication, same-origin checks, payment verification, and the configured endpoint limit.
 
 Create `.env` from `.env.example`, then run:
 

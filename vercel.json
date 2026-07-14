@@ -27,46 +27,6 @@
       ],
       "destination": "https://simplecapi.com/:path*",
       "permanent": true
-    },
-    {
-      "source": "/docs",
-      "destination": "/",
-      "permanent": false
-    },
-    {
-      "source": "/privacy",
-      "destination": "/",
-      "permanent": false
-    },
-    {
-      "source": "/terms",
-      "destination": "/",
-      "permanent": false
-    },
-    {
-      "source": "/status",
-      "destination": "/",
-      "permanent": false
-    },
-    {
-      "source": "/login",
-      "destination": "/",
-      "permanent": false
-    },
-    {
-      "source": "/register",
-      "destination": "/",
-      "permanent": false
-    },
-    {
-      "source": "/forgot-password",
-      "destination": "/",
-      "permanent": false
-    },
-    {
-      "source": "/reset-password",
-      "destination": "/",
-      "permanent": false
     }
   ],
   "rewrites": [
