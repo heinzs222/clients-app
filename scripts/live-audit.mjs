@@ -36,6 +36,8 @@ try {
 
     const response = await page.goto(baseUrl, { waitUntil: "networkidle" });
     assert(response?.status() === 200, `${viewport.name} homepage did not return 200.`);
+    assert((response.headers()["strict-transport-security"] || "").includes("includeSubDomains"), `${viewport.name} HSTS is missing.`);
+    assert((response.headers()["content-security-policy"] || "").includes("upgrade-insecure-requests"), `${viewport.name} Content Security Policy is incomplete.`);
     await page.locator("h1").waitFor({ state: "visible" });
 
     const pageState = await page.evaluate(() => {
@@ -49,7 +51,10 @@ try {
         horizontalOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
         chromeCount: document.querySelectorAll(".publicHeader, .publicFooter").length,
         interactiveCount: document.querySelectorAll("a, button").length,
-        internalLinks: Array.from(document.querySelectorAll('a[href^="/"]')).map((anchor) => anchor.getAttribute("href"))
+        internalLinks: Array.from(document.querySelectorAll('a[href^="/"]')).map((anchor) => anchor.getAttribute("href")),
+        insecureUrls: Array.from(document.querySelectorAll("a[href], script[src], img[src], link[href], form[action]"))
+          .map((node) => node.href || node.src || node.action || "")
+          .filter((value) => value.startsWith("http://"))
       };
     });
 
@@ -60,6 +65,7 @@ try {
     assert(pageState.internalLinks.includes("/login"), `${viewport.name} login link is missing.`);
     assert(pageState.logoReady, `${viewport.name} brand logo did not load.`);
     assert(pageState.canonical === `${baseUrl}/`, `${viewport.name} canonical URL is incorrect.`);
+    assert(pageState.insecureUrls.length === 0, `${viewport.name} contains insecure public URLs: ${pageState.insecureUrls.join(", ")}`);
     assert(pageState.horizontalOverflow <= 1, `${viewport.name} layout has horizontal overflow.`);
 
     await page.screenshot({

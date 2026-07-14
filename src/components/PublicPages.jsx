@@ -53,7 +53,7 @@ export function HomePage({ navigate, user }) {
             <div className="heroTrust">
               <span><Check size={16} /> One script to install</span>
               <span><Check size={16} /> Credentials stay protected</span>
-              <span><Check size={16} /> $5 per conversion</span>
+              <span><Check size={16} /> $5 per event-specific script</span>
             </div>
           </div>
 
@@ -90,7 +90,7 @@ export function HomePage({ navigate, user }) {
             <article>
               <span><Activity size={22} /></span>
               <h3>Lead and Schedule</h3>
-              <p>Purchase either conversion separately and use it across that client's pages.</p>
+              <p>Purchase either conversion separately and maximize the matching data available for that event.</p>
             </article>
             <article>
               <span><Database size={22} /></span>
@@ -109,7 +109,7 @@ export function HomePage({ navigate, user }) {
           <div>
             <span className="eyebrow">Simple pricing</span>
             <h2>$5 for Lead. $5 for Schedule.</h2>
-            <p>Each one-time payment creates one conversion endpoint. A client using both conversions pays $10 total. No subscription.</p>
+            <p>Each one-time payment creates exactly one event-specific script. Lead and Schedule are separate purchases, so using both costs $10 total. No subscription.</p>
           </div>
           <button className="button primary" type="button" onClick={() => navigate(user ? "setup" : "register")}><CreditCard size={18} /> Buy an endpoint</button>
         </section>
@@ -121,6 +121,7 @@ export function HomePage({ navigate, user }) {
           </div>
           <ul>
             <li><Activity size={20} /><span><strong>Fast launch</strong> Go from client credentials to installation code in a few steps.</span></li>
+            <li><ShieldCheck size={20} /><span><strong>High-quality matching</strong> Built to maximize Event Match Quality from the customer data available.</span></li>
             <li><Code2 size={20} /><span><strong>Simple handoff</strong> Give the installer one script, not a technical workflow.</span></li>
             <li><LockKeyhole size={20} /><span><strong>Private by default</strong> Client credentials stay out of page code.</span></li>
           </ul>
@@ -134,12 +135,12 @@ const docsSections = [
   {
     id: "create",
     title: "1. Add the client",
-    body: <p>Purchase one $5 conversion credit, then enter the client name, Meta Dataset ID, and Conversions API access token.</p>
+    body: <p>Purchase one $5 event-specific credit, then enter the client name, Meta Dataset ID, and Conversions API access token.</p>
   },
   {
     id: "event",
     title: "2. Choose the conversion",
-    body: <p>Select Lead for a form page or Schedule for a booking confirmation page. Each endpoint is locked to one purchased conversion. Adding both requires two credits, for a total of $10.</p>
+    body: <p>Select Lead for a form page or Schedule for a booking confirmation page. One $5 credit permanently unlocks one of those events, never both. Adding both requires two purchases, for a total of $10.</p>
   },
   {
     id: "install",

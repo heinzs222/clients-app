@@ -269,6 +269,8 @@ try {
   const unpaidPage = await mockPaidAppPage(0);
   assert(await unpaidPage.getByRole("heading", { name: "Conversion credit" }).isVisible(), "Lemon Squeezy payment gate did not render.");
   assert(await unpaidPage.getByRole("button", { name: /Pay \$5\.00 securely/ }).isVisible(), "Lemon Squeezy Checkout command did not render.");
+  assert(await unpaidPage.getByText("Exactly one Lead or one Schedule script", { exact: true }).isVisible(), "Payment gate does not state the one-payment, one-event rule.");
+  assert(await unpaidPage.getByText("Need both events? Buy two scripts: $5 for Lead plus $5 for Schedule.", { exact: true }).isVisible(), "Payment gate does not show the separate Lead and Schedule prices.");
   await unpaidPage.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-payment.png"), fullPage: true });
   await unpaidPage.goto(`${baseUrl}/?preview=1&view=billing`, { waitUntil: "networkidle" });
   assert(await unpaidPage.getByRole("heading", { name: "Billing" }).isVisible(), "Billing page did not render.");
@@ -283,6 +285,7 @@ try {
   const creditedPage = await mockPaidAppPage(1);
   assert(await creditedPage.getByLabel("Client or project name").isVisible(), "Paid conversion credit did not unlock endpoint creation.");
   assert(await creditedPage.getByText("Payment confirmed", { exact: true }).isVisible(), "Paid credit confirmation did not render.");
+  assert(await creditedPage.getByText(/One credit creates exactly one Lead or one Schedule script\./).isVisible(), "Paid credit does not state its single-event limit.");
   assert(await creditedPage.getByRole("button", { name: /Lead \$5 one-time setup/ }).isVisible(), "Lead purchase option did not render.");
   const scheduleChoice = creditedPage.getByRole("button", { name: /Schedule \$5 one-time setup/ });
   assert(await scheduleChoice.isVisible(), "Schedule purchase option did not render.");

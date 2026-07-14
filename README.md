@@ -12,7 +12,7 @@ For every client, the app:
 4. Deploys a stable `/tracker.js` loader and a content-hashed, minified tracker core for same-document HTML forms.
 5. Returns the endpoint URL, tracker tag, and GHL Custom Webhook JSON mapping.
 
-One endpoint belongs to one client, one Meta dataset, and one purchased conversion type. Lead costs `$5 USD` and Schedule costs `$5 USD`; enabling both requires two endpoints and costs `$10 USD`. Each endpoint can be reused across compatible pages for that same client and dataset.
+One endpoint belongs to one client, one Meta dataset, and exactly one purchased conversion type. Lead costs `$5 USD` and Schedule costs another `$5 USD`; enabling both requires two payments, two endpoints, and costs `$10 USD`. Each endpoint can be reused across compatible pages for that same client and dataset.
 
 The Meta access token is never embedded in the tracker, saved to browser storage, logged by application code, or returned by the provisioning API.
 
@@ -57,7 +57,7 @@ Each Lead or Schedule endpoint costs `$5 USD`. The conversion type is stored wit
 6. Keep `CAPI_BILLING_EXEMPT_EMAILS` empty unless a deliberate internal billing bypass is required.
 7. Complete a test checkout, then replace the test key and IDs and set `LEMONSQUEEZY_TEST_MODE=false` after the live store and product are approved.
 
-The app creates Lemon Squeezy-hosted one-time checkouts. Before provisioning, it retrieves the order server-side and verifies the authenticated email, store, variant, amount, currency, test/live mode, payment status, and refund state. Redemption is tied to a deterministic endpoint name and recorded in the generated endpoint manifest so one order cannot create multiple endpoints.
+The app creates Lemon Squeezy-hosted one-time checkouts. Before provisioning, it retrieves the order server-side and verifies the authenticated email, store, variant, amount, currency, test/live mode, payment status, and refund state. Redemption uses an atomic account-scoped payment claim plus the generated endpoint manifest, so one order cannot create multiple Lead or Schedule endpoints, including under simultaneous requests.
 
 ## Authentication setup
 

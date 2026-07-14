@@ -260,14 +260,14 @@ function PaymentStep({ billing, onCheckout, refreshBilling, onCancel }) {
   const busy = ["loading", "checkout", "verifying"].includes(billing.status);
   return (
     <main className="workspaceMain">
-      <WorkspaceHeader title="Create new endpoint" description="Each Lead or Schedule conversion is a separate one-time purchase." />
+      <WorkspaceHeader title="Create new endpoint" description="One $5 payment unlocks exactly one event-specific script: Lead or Schedule." />
       <Progress stage={1} />
       <div className="wizardLayout paymentLayout">
         <section className="wizardCard paymentCard">
           <header><span className="paymentIcon"><CreditCard size={23} /></span><div><h2>Conversion credit</h2><p>Lemon Squeezy securely processes the payment as merchant of record. Card details never pass through Simple CAPI.</p></div></header>
           <div className="priceLine"><strong>{money(billing.price_cents, billing.currency)}</strong><span>one-time</span></div>
           <ul className="paymentIncludes">
-            <li><CheckCircle2 size={18} /><span>One Lead or Schedule conversion endpoint</span></li>
+            <li><CheckCircle2 size={18} /><span>Exactly one Lead or one Schedule script</span></li>
             <li><CheckCircle2 size={18} /><span>Use it across pages for the same client and dataset</span></li>
             <li><CheckCircle2 size={18} /><span>Secure credential handling and endpoint management</span></li>
           </ul>
@@ -289,8 +289,9 @@ function PaymentStep({ billing, onCheckout, refreshBilling, onCancel }) {
           <ol>
             <li><strong>Secure checkout</strong><small>Lemon Squeezy handles card entry, tax, and required authentication.</small></li>
             <li><strong>Verified credit</strong><small>Your payment is confirmed before the endpoint is created.</small></li>
-            <li><strong>Single redemption</strong><small>One successful payment creates either Lead or Schedule tracking.</small></li>
+            <li><strong>Single redemption</strong><small>One successful payment creates Lead or Schedule tracking, never both.</small></li>
           </ol>
+          <div className="secureNote"><CreditCard size={17} /><span>Need both events? Buy two scripts: $5 for Lead plus $5 for Schedule.</span></div>
           <div className="secureNote"><LockKeyhole size={17} /><span>Closing or cancelling checkout does not create an endpoint or consume a credit.</span></div>
         </aside>
       </div>
@@ -305,14 +306,14 @@ function BillingPage({ billing, onCheckout, refreshBilling, navigate }) {
     <main className="workspaceMain">
       <WorkspaceHeader
         title="Billing"
-        description="Each $5 payment purchases one Lead or Schedule conversion endpoint."
+        description="Each $5 payment purchases exactly one event-specific script. Lead plus Schedule costs $10 total."
         action={<button className="button secondary" type="button" onClick={() => refreshBilling()} disabled={busy}><RefreshCw size={17} /> Refresh</button>}
       />
       <div className="billingOverview">
         <section className="billingMetric">
           <span>Available credits</span>
           <strong>{billing.exempt ? "Development" : available}</strong>
-          <small>{billing.exempt ? "Payment is bypassed only for this local or explicitly exempt environment." : "Lead and Schedule each require one credit."}</small>
+          <small>{billing.exempt ? "Payment is bypassed only for this local or explicitly exempt environment." : "One credit creates one Lead or one Schedule script, never both."}</small>
         </section>
         <section className="billingMetric">
           <span>Conversion price</span>
@@ -377,13 +378,13 @@ function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refr
 
   return (
     <main className="workspaceMain">
-      <WorkspaceHeader title="Create new endpoint" description="Choose one paid conversion and generate its installation script." />
+      <WorkspaceHeader title="Create new endpoint" description="Choose the single conversion this $5 credit will permanently unlock." />
       <Progress stage={createState.status === "success" ? 4 : createState.status === "loading" ? 3 : 2} />
       <div className="wizardLayout">
         <form className="wizardCard" onSubmit={submit}>
           <header><h2>Client details</h2><p>The access token is handled securely and never included in the installation script.</p></header>
           <div className="formStack">
-            {!billing.exempt && billing.required ? <Notice tone="success" title="Payment confirmed">{billing.available_credits} conversion credit{billing.available_credits === 1 ? " is" : "s are"} available. One credit will be redeemed after the endpoint is created.</Notice> : null}
+            {!billing.exempt && billing.required ? <Notice tone="success" title="Payment confirmed">{billing.available_credits} conversion credit{billing.available_credits === 1 ? " is" : "s are"} available. One credit creates exactly one Lead or one Schedule script.</Notice> : null}
             <fieldset className="trackingModeField">
               <legend>Conversion to track</legend>
               <div className="trackingModeSelector">
@@ -428,7 +429,7 @@ function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refr
           <ol>
             <li><strong>Dataset ID</strong><small>Select the correct client dataset in Meta Events Manager.</small></li>
             <li><strong>Access token</strong><small>Generate the token from that same dataset, not another client.</small></li>
-            <li><strong>Conversion type</strong><small>Lead and Schedule are separate $5 endpoints.</small></li>
+            <li><strong>Conversion type</strong><small>Lead is $5. Schedule is another $5. Tracking both costs $10.</small></li>
           </ol>
           <div className="secureNote"><LockKeyhole size={17} /><span>The token is never included in the installation script.</span></div>
         </aside>

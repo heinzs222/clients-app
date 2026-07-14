@@ -229,6 +229,11 @@ assert(paid.amount === 500 && paid.currency === "USD", "Valid Lemon Squeezy endp
 assert(paid.orderHash === hash(`lemon:${paidOrder.id}`), "Lemon Squeezy order redemption hash is incorrect.");
 assert(__testing.checkoutOrderId(paidOrder.id) === paidOrder.id, "Lemon Squeezy order ID validation failed.");
 assert(__testing.checkoutOrderId("not-an-order") === "", "Invalid Lemon Squeezy order ID was accepted.");
+const claimKey = __testing.paymentClaimKey(billingUser, paidOrder.id);
+assert(claimKey.startsWith(`${__testing.ownerKey(billingUser)}/`), "Payment claim is not isolated to the authenticated account.");
+assert(!claimKey.includes(paidOrder.id), "Payment claim exposes the raw order ID.");
+assert(__testing.claimPayment.toString().includes("onlyIfNew: true"), "Payment redemption is not protected by an atomic create-only claim.");
+assert(__testing.completePaymentClaim.toString().includes("onlyIfMatch: claim.etag"), "Payment redemption finalization is not conditionally locked.");
 const orderParams = __testing.lemonOrderSearchParams(billingUser);
 assert(orderParams.get("filter[store_id]") === "1234", "Lemon Squeezy store filter is incorrect.");
 assert(orderParams.get("filter[user_email]") === billingUser.email, "Lemon Squeezy email filter is incorrect.");
@@ -247,7 +252,7 @@ function expectsPaymentFailure(order, message, options) {
 
 expectsPaymentFailure({ ...paidOrder, attributes: { ...paidOrder.attributes, subtotal: 499 } }, "Wrong Lemon Squeezy payment amount was accepted.");
 expectsPaymentFailure({ ...paidOrder, attributes: { ...paidOrder.attributes, user_email: "another@example.com" } }, "Another user's Lemon Squeezy payment was accepted.");
-expectsPaymentFailure(paidOrder, "Reused Lemon Squeezy order was accepted.", { redeemedSiteId: "site-used" });
+expectsPaymentFailure(paidOrder, "A payment already used for Lead was accepted for another Lead or Schedule endpoint.", { redeemedSiteId: "lead-site-used" });
 expectsPaymentFailure({ ...paidOrder, attributes: { ...paidOrder.attributes, refunded: true, refunded_amount: 500, status: "refunded" } }, "Refunded Lemon Squeezy payment was accepted.");
 
 process.stdout.write("Generated contracts passed: tracker, CAPI matching, Lemon Squeezy ownership, amount, refund, and redemption checks.\n");
