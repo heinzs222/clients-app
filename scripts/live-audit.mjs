@@ -99,6 +99,10 @@ try {
   assert(status.ok(), "The provisioner status proxy is unavailable.");
   const statusBody = await status.json();
   assert(statusBody.ready === true, "The production provisioner is not ready.");
+  assert(statusBody.billing?.required === true, "Production payment enforcement is disabled.");
+  assert(statusBody.billing?.configured === true, "Production billing is not configured.");
+  assert(statusBody.billing?.mode === "live", "Production billing is not in live mode.");
+  assert(statusBody.billing?.price_cents === 500 && statusBody.billing?.currency === "USD", "Production billing price is not $5.00 USD.");
 
   const retiredWorkspaceRoute = await context.request.get(`${baseUrl}/api/provisioner?action=status`);
   assert(!(retiredWorkspaceRoute.headers()["content-type"] || "").includes("application/json"), "The retired management route remains exposed.");
