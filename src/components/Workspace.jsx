@@ -302,6 +302,8 @@ function PaymentStep({ billing, onCheckout, refreshBilling, onCancel }) {
 function BillingPage({ billing, onCheckout, refreshBilling, navigate }) {
   const busy = ["loading", "checkout", "verifying"].includes(billing.status);
   const available = Number(billing.available_credits) || 0;
+  const accountExempt = billing.exemption === "account";
+  const developmentExempt = billing.exemption === "development";
   return (
     <main className="workspaceMain">
       <WorkspaceHeader
@@ -312,8 +314,8 @@ function BillingPage({ billing, onCheckout, refreshBilling, navigate }) {
       <div className="billingOverview">
         <section className="billingMetric">
           <span>Available credits</span>
-          <strong>{billing.exempt ? "Development" : available}</strong>
-          <small>{billing.exempt ? "Payment is bypassed only for this local or explicitly exempt environment." : "One credit creates one Lead or one Schedule script, never both."}</small>
+          <strong>{billing.exempt ? (developmentExempt ? "Development" : "Unlimited") : available}</strong>
+          <small>{billing.exempt ? (developmentExempt ? "Payment is bypassed only in this local development environment." : accountExempt ? "This owner account can create endpoints without checkout." : "This service currently allows endpoint creation without checkout.") : "One credit creates one Lead or one Schedule script, never both."}</small>
         </section>
         <section className="billingMetric">
           <span>Conversion price</span>

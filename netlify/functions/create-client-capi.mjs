@@ -77,12 +77,18 @@ function billingRequired() {
   return booleanEnv("CAPI_REQUIRE_PAYMENT", true);
 }
 
-function billingExempt(user, request) {
-  if (request && isLocalRequest(request)) return true;
+function billingExemption(user, request) {
+  if (request && isLocalRequest(request)) return "development";
   const configured = cleanString(process.env.CAPI_BILLING_EXEMPT_EMAILS);
-  if (!configured) return false;
+  if (!configured) return "";
   const email = cleanString(user?.email).toLowerCase();
-  return configured.split(",").map((item) => item.trim().toLowerCase()).filter(Boolean).includes(email);
+  return configured.split(",").map((item) => item.trim().toLowerCase()).filter(Boolean).includes(email)
+    ? "account"
+    : "";
+}
+
+function billingExempt(user, request) {
+  return Boolean(billingExemption(user, request));
 }
 
 function billingConfiguration() {
@@ -443,9 +449,10 @@ function lemonOrderSearchParams(user) {
 
 async function billingStatus(accountSlug, user, request) {
   const config = billingConfiguration();
-  const exempt = billingExempt(user, request) || !config.required;
+  const exemption = billingExemption(user, request) || (!config.required ? "service" : "");
+  const exempt = Boolean(exemption);
   if (exempt) {
-    return { ...config, exempt: true, available_credits: null, payments: [] };
+    return { ...config, exempt: true, exemption, available_credits: null, payments: [] };
   }
   if (!config.configured) {
     return { ...config, exempt: false, available_credits: 0, payments: [] };
@@ -1720,13 +1727,13 @@ async function createEndpoint(accountSlug, accountId, user, input, request) {
   const client = validateClientInput(input);
   const owned = await ownedSiteObjects(accountSlug, user);
   const limit = safeInteger(process.env.CAPI_MAX_ENDPOINTS_PER_USER, DEFAULT_USER_LIMIT);
-  if (owned.length >= limit) {
+  const exempt = billingExempt(user, request) || !billingRequired();
+  if (!exempt && owned.length >= limit) {
     throw Object.assign(new Error(`Endpoint limit reached (${limit}). Remove an endpoint before creating another.`), {
       statusCode: 409
     });
   }
 
-  const exempt = billingExempt(user, request) || !billingRequired();
   let payment = null;
   if (!exempt) {
     if (!billingConfiguration().configured) {
@@ -1961,6 +1968,7 @@ export const __testing = {
   lemonOrderSearchParams,
   validateLemonOrder,
   billingConfiguration,
+  billingExemption,
   trustedAppOrigin,
   gatewayRoute,
   clientEndpointRecord,

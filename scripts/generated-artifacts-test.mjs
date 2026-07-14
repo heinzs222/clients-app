@@ -232,6 +232,12 @@ try {
 }
 
 const billingUser = { id: "payment-contract-user", email: "owner@example.com" };
+process.env.CAPI_BILLING_EXEMPT_EMAILS = "owner@example.com";
+const productionBillingRequest = new Request("https://simplecapi.com/api/workspace");
+assert(__testing.billingExemption(billingUser, productionBillingRequest) === "account", "Configured owner account is not payment exempt.");
+assert(__testing.billingExemption({ id: "customer", email: "customer@example.com" }, productionBillingRequest) === "", "An unconfigured customer account received unlimited access.");
+assert(__testing.billingExemption(billingUser, new Request("http://localhost:8888/api/workspace")) === "development", "Local development exemption was not isolated from account access.");
+delete process.env.CAPI_BILLING_EXEMPT_EMAILS;
 process.env.LEMONSQUEEZY_STORE_ID = "1234";
 process.env.LEMONSQUEEZY_VARIANT_ID = "5678";
 process.env.LEMONSQUEEZY_TEST_MODE = "true";
