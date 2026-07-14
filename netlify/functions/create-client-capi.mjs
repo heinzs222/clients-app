@@ -482,6 +482,50 @@ async function billingStatus(accountSlug, user, request) {
   };
 }
 
+function purchasedGuide() {
+  return {
+    eyebrow: "Included with your purchased script",
+    title: "The 9.3 EMQ Setup Guide",
+    description: "The complete Meta-side launch sequence for high-quality Lead and Schedule event matching with Simple CAPI.",
+    intro_title: "Follow every step",
+    intro_text: "Meta calculates the final score from actual submitted data. Complete the checklist for each client and each purchased conversion event.",
+    sections: [
+      {
+        id: "event",
+        title: "1. Keep Lead and Schedule separate",
+        body: "Use the purchased Lead script on the real lead form page. Use a separately purchased Schedule script only after a successful booking. Each event needs its own script and event ID sequence."
+      },
+      {
+        id: "dataset",
+        title: "2. Confirm the client dataset",
+        body: "Use the Dataset ID, Conversions API token, and browser Pixel from the same client dataset. Never reuse credentials or an installation script from another client."
+      },
+      {
+        id: "data",
+        title: "3. Collect complete customer data",
+        body: "Use clear fields for the customer's real name, email, phone, and relevant location details. Matching quality depends on accurate, consented information that Meta can associate with a customer."
+      },
+      {
+        id: "install",
+        title: "4. Install on the conversion page",
+        body: "Keep the client's normal Meta Pixel base code installed. Paste the generated script into the page that owns the conversion. For an embedded form, place the Lead script inside the form's own code."
+      },
+      {
+        id: "verify",
+        title: "5. Verify the paired event",
+        body: "Publish the page, open Meta Test Events, and complete one real test. Confirm that the browser and server versions appear as one deduplicated event with the same event ID."
+      },
+      {
+        id: "live-data",
+        title: "6. Complete the live launch",
+        body: "Remove the temporary test code, publish again, and confirm the live event. This is the launch sequence used on implementations that consistently reach 9.3 EMQ when the required customer data is available."
+      }
+    ],
+    cta_title: "Configure another conversion",
+    cta_text: "Lead costs $5. Schedule costs $5. Purchase both separately for $10 total."
+  };
+}
+
 function validateClientInput(input, { tokenRequired = true } = {}) {
   const clientName = cleanString(input.clientName).slice(0, 100) || "Client";
   const datasetId = cleanString(input.datasetId).replace(/\D/g, "");
@@ -1816,6 +1860,14 @@ export default async function handler(request) {
     const account = await netlifyFetch(`/accounts/${encodeURIComponent(accountSlug)}`);
     const accountId = cleanString(account?.id) || accountSlug;
 
+    if (request.method === "GET" && action === "guide") {
+      const endpoints = await listOwnedSites(accountSlug, user);
+      if (!endpoints.length) {
+        throw Object.assign(new Error("Create a paid Lead or Schedule script to unlock this guide."), { statusCode: 403 });
+      }
+      return response(request, 200, { success: true, guide: purchasedGuide() });
+    }
+
     if (request.method === "GET" && action === "list") {
       const endpoints = await listOwnedSites(accountSlug, user);
       return response(request, 200, { success: true, endpoints: endpoints.map(clientEndpointRecord), count: endpoints.length });
@@ -1914,5 +1966,6 @@ export const __testing = {
   clientEndpointRecord,
   validateClientInput,
   envVars,
-  identityUserFromBearer
+  identityUserFromBearer,
+  purchasedGuide
 };

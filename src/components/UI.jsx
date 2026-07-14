@@ -51,7 +51,6 @@ export function PublicHeader({ route, navigate, user }) {
         </RouteLink>
         <nav className="publicNav" aria-label="Main navigation">
           <RouteLink className={route === "home" ? "active" : ""} route="home" navigate={navigate}>Home</RouteLink>
-          <RouteLink className={route === "guide" ? "active" : ""} route="guide" navigate={navigate}>Free guide</RouteLink>
           <RouteLink className={route === "docs" ? "active" : ""} route="docs" navigate={navigate}>How it works</RouteLink>
           <RouteLink className={route === "status" ? "active" : ""} route="status" navigate={navigate}>Status</RouteLink>
         </nav>
@@ -78,7 +77,6 @@ export function PublicFooter({ navigate }) {
         <nav aria-label="Legal navigation">
           <RouteLink route="privacy" navigate={navigate}>Privacy Policy</RouteLink>
           <RouteLink route="terms" navigate={navigate}>Terms of Service</RouteLink>
-          <RouteLink route="guide" navigate={navigate}>Free 9.3 EMQ Guide</RouteLink>
           <RouteLink route="docs" navigate={navigate}>Product overview</RouteLink>
           <RouteLink route="status" navigate={navigate}>Status</RouteLink>
         </nav>

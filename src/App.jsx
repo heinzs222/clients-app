@@ -25,10 +25,11 @@ const PrivacyPage = lazy(() => import("./components/PublicPages.jsx").then((modu
 const TermsPage = lazy(() => import("./components/PublicPages.jsx").then((module) => ({ default: module.TermsPage })));
 const StatusPage = lazy(() => import("./components/PublicPages.jsx").then((module) => ({ default: module.StatusPage })));
 
-const PUBLIC_ROUTES = new Set(["home", "guide", "docs", "privacy", "terms", "status"]);
+const PUBLIC_ROUTES = new Set(["home", "docs", "privacy", "terms", "status"]);
+const PURCHASED_ROUTES = new Set(["guide"]);
 const AUTH_ROUTES = new Set(["login", "register", "forgot", "reset"]);
 const WORKSPACE_ROUTES = new Set(["dashboard", "endpoints", "setup", "billing", "tracking", "endpoint-settings"]);
-const ALL_ROUTES = new Set([...PUBLIC_ROUTES, ...AUTH_ROUTES, ...WORKSPACE_ROUTES]);
+const ALL_ROUTES = new Set([...PUBLIC_ROUTES, ...PURCHASED_ROUTES, ...AUTH_ROUTES, ...WORKSPACE_ROUTES]);
 const ROUTE_PATHS = Object.freeze({
   home: "/",
   guide: "/emq-guide",
@@ -57,7 +58,7 @@ function hasAuthHash() {
 function pageTitle(route) {
   const labels = {
     home: "Meta Conversions API Tracking Software - Simple CAPI",
-    guide: "Free 9.3 EMQ Readiness Guide - Simple CAPI",
+    guide: "9.3 EMQ Setup Guide - Simple CAPI",
     login: "Log in - Simple CAPI",
     register: "Create account - Simple CAPI",
     forgot: "Recover access - Simple CAPI",
@@ -108,6 +109,7 @@ function ProductApp() {
   });
   const [endpoints, setEndpoints] = useState([]);
   const [endpointsState, setEndpointsState] = useState({ status: "idle", error: "" });
+  const [guideState, setGuideState] = useState({ status: "idle", data: null, error: "" });
   const [selectedId, setSelectedId] = useState("");
   const [createState, setCreateState] = useState({ status: "idle", error: "" });
   const [verifyState, setVerifyState] = useState({ status: "idle", healthy: false, latency_ms: 0, error: "" });
@@ -156,6 +158,7 @@ function ProductApp() {
     setLocalPreview(false);
     setEndpoints([]);
     setSelectedId("");
+    setGuideState({ status: "idle", data: null, error: "" });
     setBilling((current) => ({ ...current, status: "idle", available_credits: 0, available_order_id: "", payments: [], error: "" }));
     setAuthMessage("Your session expired. Please log in again.");
     navigate("login", { replace: true, keepMessage: true });
@@ -219,6 +222,17 @@ function ProductApp() {
     } catch (error) {
       if (await handleApiAuthError(error)) return;
       setEndpointsState({ status: "error", error: error.message });
+    }
+  }, [handleApiAuthError]);
+
+  const loadGuide = useCallback(async () => {
+    setGuideState({ status: "loading", data: null, error: "" });
+    try {
+      const data = await capiRequest("guide");
+      setGuideState({ status: "success", data: data.guide || null, error: "" });
+    } catch (error) {
+      if (await handleApiAuthError(error)) return;
+      setGuideState({ status: "error", data: null, error: error.message });
     }
   }, [handleApiAuthError]);
 
@@ -301,10 +315,19 @@ function ProductApp() {
   }, [effectiveUser, route, loadBilling, handleApiAuthError]);
 
   useEffect(() => {
-    if (!effectiveUser && WORKSPACE_ROUTES.has(route) && authStatus === "ready") {
+    if (!effectiveUser && (WORKSPACE_ROUTES.has(route) || PURCHASED_ROUTES.has(route)) && authStatus === "ready") {
       navigate("login", { replace: true });
     }
   }, [effectiveUser, route, authStatus, navigate]);
+
+  useEffect(() => {
+    if (!effectiveUser || route !== "guide" || endpointsState.status !== "success") return;
+    if (!endpoints.length) navigate("setup", { replace: true });
+  }, [effectiveUser, route, endpointsState.status, endpoints.length, navigate]);
+
+  useEffect(() => {
+    if (effectiveUser && route === "guide" && endpoints.length && guideState.status === "idle") loadGuide();
+  }, [effectiveUser, route, endpoints.length, guideState.status, loadGuide]);
 
   useEffect(() => {
     if (effectiveUser && AUTH_ROUTES.has(route) && route !== "reset" && authStatus === "ready") {
@@ -474,6 +497,7 @@ function ProductApp() {
       setEndpoints([]);
       setBilling((current) => ({ ...current, status: "idle", available_credits: 0, available_order_id: "", payments: [], message: "", error: "" }));
       setEndpointsState({ status: "idle", error: "" });
+      setGuideState({ status: "idle", data: null, error: "" });
       setSelectedId("");
       setAuthBusy(false);
       window.location.replace("/");
@@ -588,7 +612,6 @@ function ProductApp() {
   }
 
   if (route === "home") return <HomePage navigate={navigate} user={effectiveUser} />;
-  if (route === "guide") return <EmqGuidePage navigate={navigate} user={effectiveUser} />;
   if (route === "docs") return <DocsPage navigate={navigate} user={effectiveUser} />;
   if (route === "privacy") return <PrivacyPage navigate={navigate} user={effectiveUser} />;
   if (route === "terms") return <TermsPage navigate={navigate} user={effectiveUser} />;
@@ -616,6 +639,10 @@ function ProductApp() {
         callbackReady={callbackReady}
       />
     );
+  }
+
+  if (route === "guide" && endpointsState.status === "success" && endpoints.length) {
+    return <EmqGuidePage navigate={navigate} user={effectiveUser} guideState={guideState} onRetry={loadGuide} />;
   }
 
   return (

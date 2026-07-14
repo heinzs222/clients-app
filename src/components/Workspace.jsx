@@ -541,7 +541,7 @@ function EndpointSettings({ endpoint, onUpdate, onDelete, updateState }) {
   );
 }
 
-function TrackingPage({ endpoint, user, initialTab, onBack, onVerify, verifyState, onUpdate, updateState, onDelete }) {
+function TrackingPage({ endpoint, user, initialTab, onBack, onGuide, onVerify, verifyState, onUpdate, updateState, onDelete }) {
   const [tab, setTab] = useState(initialTab === "settings" ? "settings" : "install");
   const [settings, setSettingsState] = useState(() => trackingDefaultsForEvent(endpoint.event_name));
   useEffect(() => {
@@ -559,7 +559,7 @@ function TrackingPage({ endpoint, user, initialTab, onBack, onVerify, verifyStat
       <WorkspaceHeader
         title={endpoint.client_name}
         description={`${endpoint.event_name || "Lead"} / Dataset ${endpoint.dataset_id || "unavailable"} / ${endpoint.graph_version || "v23.0"}`}
-        action={<div className="headerActions"><button className="button secondary" type="button" onClick={() => onVerify(endpoint)} disabled={verifyState.status === "loading"}><RefreshCw className={verifyState.status === "loading" ? "spin" : ""} size={17} /> Verify</button></div>}
+        action={<div className="headerActions"><button className="button secondary" type="button" onClick={onGuide}><BookOpen size={17} /> 9.3 setup guide</button><button className="button secondary" type="button" onClick={() => onVerify(endpoint)} disabled={verifyState.status === "loading"}><RefreshCw className={verifyState.status === "loading" ? "spin" : ""} size={17} /> Verify</button></div>}
       />
       <section className="deploymentBanner">
         <div><span><CheckCircle2 size={23} /></span><div><h2>Tracking ready</h2><p>Your installation script is ready to use.</p></div></div>
@@ -626,7 +626,7 @@ export default function Workspace({
   } else if (route === "billing") {
     page = <BillingPage billing={billing} onCheckout={onCheckout} refreshBilling={refreshBilling} navigate={navigate} />;
   } else if ((route === "tracking" || route === "endpoint-settings") && selectedEndpoint) {
-    page = <TrackingPage endpoint={selectedEndpoint} user={user} initialTab={route === "endpoint-settings" ? "settings" : "install"} onBack={() => navigate("endpoints")} onVerify={onVerify} verifyState={verifyState} onUpdate={onUpdate} updateState={updateState} onDelete={requestDelete} />;
+    page = <TrackingPage endpoint={selectedEndpoint} user={user} initialTab={route === "endpoint-settings" ? "settings" : "install"} onBack={() => navigate("endpoints")} onGuide={() => navigate("guide")} onVerify={onVerify} verifyState={verifyState} onUpdate={onUpdate} updateState={updateState} onDelete={requestDelete} />;
   } else {
     page = <main className="workspaceMain"><WorkspaceHeader title="Tracking" description="Select a client to get its installation script." /><EmptyState icon={Route} title="Choose an endpoint" action={<button className="button primary" type="button" onClick={() => navigate("endpoints")}>View endpoints <ArrowRight size={17} /></button>}>Each client has its own tracking setup.</EmptyState></main>;
   }

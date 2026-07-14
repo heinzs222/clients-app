@@ -152,6 +152,10 @@ assert(!("endpoint" in publicEndpoint) && !("billing" in publicEndpoint), "Custo
 assert(publicEndpoint.tracker_url.endsWith("/tracker.js"), "Customer endpoint record omitted the installation asset.");
 assert(publicEndpoint.event_name === "Schedule", "Customer endpoint record omitted the purchased conversion type.");
 
+const paidGuide = __testing.purchasedGuide();
+assert(paidGuide.sections.length === 6, "The purchased EMQ guide is incomplete.");
+assert(paidGuide.cta_text === "Lead costs $5. Schedule costs $5. Purchase both separately for $10 total.", "The purchased guide has incorrect event pricing.");
+
 const originalIdentityFetch = globalThis.fetch;
 process.env.URL = "https://identity.example";
 let verifiedAuthorization = "";

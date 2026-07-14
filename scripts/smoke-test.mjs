@@ -173,27 +173,22 @@ try {
   await page.goto(`${baseUrl}/`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Launch reliable Meta tracking in minutes." }).isVisible(), "Product home page did not render.");
   assert(await page.getByRole("button", { name: /Launch your first endpoint/ }).isVisible(), "Homepage primary action did not render.");
-  assert(await page.getByRole("button", { name: "Read the free 9.3 guide" }).isVisible(), "Homepage free-guide action did not render.");
+  assert(await page.getByRole("button", { name: "Unlock the 9.3 guide" }).isVisible(), "Homepage paid-guide action did not render.");
   assert(await page.locator(".publicHeader").count() === 1, "Home page header did not render.");
   assert(await page.locator(".publicFooter").count() === 1, "Home page footer did not render.");
   const homeText = await page.locator("body").innerText();
   assert(!/GHL|webhook|SHA-256|fbp|fbc|client IP|user agent|deduplication/i.test(homeText), "Homepage exposes implementation details.");
   assert(!/netlify/i.test(homeText), "Customer-facing homepage exposes the infrastructure provider.");
+  const browserBundles = fs.readdirSync(path.join(process.cwd(), "dist", "assets"))
+    .filter((file) => file.endsWith(".js"))
+    .map((file) => fs.readFileSync(path.join(process.cwd(), "dist", "assets", file), "utf8"))
+    .join("\n");
+  assert(!browserBundles.includes("Verify the paired event"), "The paid guide is compiled into public browser assets.");
   await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-home.png"), fullPage: true });
 
-  await page.getByRole("button", { name: "Read the free 9.3 guide" }).click();
-  await page.getByRole("heading", { name: "The 9.3 EMQ Readiness Guide" }).waitFor({ state: "visible" });
-  assert(await page.getByRole("heading", { name: "The 9.3 EMQ Readiness Guide" }).isVisible(), "Free EMQ guide did not render.");
-  assert(await page.getByRole("heading", { name: "The complete paid setup" }).isVisible(), "Free guide does not explain where the complete setup is delivered.");
-  const publicGuideText = await page.locator("body").innerText();
-  assert(!/access token|browser pixel|test events|deduplicat|paste the generated|page head|confirmation page/i.test(publicGuideText), "Free guide exposes the paid implementation playbook.");
-  assert(page.url().endsWith("/emq-guide"), "Free guide route is not canonical.");
-  await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-emq-guide.png"), fullPage: true });
-  await page.setViewportSize({ width: 390, height: 844 });
-  const guideOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
-  assert(guideOverflow <= 1, `Mobile EMQ guide has ${guideOverflow}px horizontal overflow.`);
-  await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-emq-guide-mobile.png"), fullPage: true });
-  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.getByRole("button", { name: "Unlock the 9.3 guide" }).click();
+  await page.waitForURL(`${baseUrl}/login`);
+  assert(await page.getByRole("heading", { name: "Welcome back" }).isVisible(), "The paid guide is accessible without login.");
 
   await page.goto(`${baseUrl}/docs`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Simple, private event setup." }).isVisible(), "Public product overview did not render.");
@@ -206,6 +201,12 @@ try {
   const dashboardIsEmpty = await page.getByText("No endpoints yet").isVisible().catch(() => false);
   assert(dashboardHasEndpoints || dashboardIsEmpty, "Dashboard endpoint state did not render.");
 
+  await page.route("**/api/workspace?action=guide", async (route) => {
+    await route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ success: true, guide: __testing.purchasedGuide() })
+    });
+  });
   await page.route("**/api/workspace?action=list", async (route) => {
     await route.fulfill({
       contentType: "application/json",
@@ -262,6 +263,19 @@ try {
   assert(await page.locator(".pageTabs button").count() === 2, "Tracking UI exposes unnecessary configuration tabs.");
   assert(!/netlify/i.test(await page.locator("body").innerText()), "Customer-facing workspace exposes the infrastructure provider.");
   await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-install.png"), fullPage: true });
+
+  await page.getByRole("button", { name: "9.3 setup guide" }).click();
+  await page.getByRole("heading", { name: "The 9.3 EMQ Setup Guide" }).waitFor({ state: "visible" });
+  assert(await page.getByRole("heading", { name: "The 9.3 EMQ Setup Guide" }).isVisible(), "A paid endpoint did not unlock the 9.3 setup guide.");
+  assert(await page.getByRole("heading", { name: "5. Verify the paired event" }).isVisible(), "The paid guide is missing the Meta verification sequence.");
+  const paidGuideText = await page.locator("body").innerText();
+  assert(/Lead costs \$5\. Schedule costs \$5\./.test(paidGuideText), "The paid guide does not explain separate Lead and Schedule pricing.");
+  await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-emq-guide.png"), fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const guideOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  assert(guideOverflow <= 1, `Mobile EMQ guide has ${guideOverflow}px horizontal overflow.`);
+  await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-emq-guide-mobile.png"), fullPage: true });
+  await page.setViewportSize({ width: 1280, height: 800 });
 
   await page.goto(`${baseUrl}/?preview=1&view=setup`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Create new endpoint" }).isVisible(), "Setup wizard did not render.");

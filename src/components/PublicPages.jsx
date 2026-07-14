@@ -11,7 +11,7 @@ import {
   Server,
   ShieldCheck
 } from "lucide-react";
-import { Notice, PublicFooter, PublicHeader, StatusPill } from "./UI.jsx";
+import { Notice, PublicFooter, PublicHeader, Spinner, StatusPill } from "./UI.jsx";
 
 function PageFrame({ route, navigate, user, children }) {
   return (
@@ -49,7 +49,7 @@ export function HomePage({ navigate, user }) {
               <button className="button primary" type="button" onClick={() => navigate(user ? "setup" : "register")}>
                 {user ? "Create an endpoint" : "Launch your first endpoint"}<ArrowRight size={18} />
               </button>
-              <button className="button secondary" type="button" onClick={() => navigate("guide")}>Read the free 9.3 guide</button>
+              <button className="button secondary" type="button" onClick={() => navigate("guide")}>Unlock the 9.3 guide</button>
             </div>
             <div className="heroTrust">
               <span><Check size={16} /> One script to install</span>
@@ -118,11 +118,11 @@ export function HomePage({ navigate, user }) {
         <section className="guideBand">
           <div>
             <span className="guideIcon"><FileCheck2 size={24} /></span>
-            <span className="eyebrow">Free readiness guide</span>
-            <h2>Use the setup we follow to reach 9.3 EMQ.</h2>
-            <p>Understand what strong event matching requires and what the complete paid setup includes. The implementation playbook stays inside your private workspace.</p>
+            <span className="eyebrow">Included with every script</span>
+            <h2>Get the complete 9.3 EMQ setup guide.</h2>
+            <p>Purchase one $5 Lead or Schedule script to unlock the private Meta configuration, installation, launch, and verification playbook.</p>
           </div>
-          <button className="button primary" type="button" onClick={() => navigate("guide")}>Read the free guide <ArrowRight size={18} /></button>
+          <button className="button primary" type="button" onClick={() => navigate("guide")}>Unlock with a script <ArrowRight size={18} /></button>
         </section>
 
         <section className="principleBand">
@@ -142,61 +142,43 @@ export function HomePage({ navigate, user }) {
   );
 }
 
-const emqGuideSections = [
-  {
-    id: "quality",
-    title: "Accurate customer data",
-    body: <p>Strong matching starts with complete, accurate information supplied by real customers. The final quality score depends on the data available for each submitted event.</p>
-  },
-  {
-    id: "consistency",
-    title: "Consistent event signals",
-    body: <p>Browser and server activity must describe the same conversion consistently. Simple CAPI is designed to keep that event relationship reliable automatically.</p>
-  },
-  {
-    id: "separation",
-    title: "Client and event separation",
-    body: <p>Every purchased setup is isolated to one client and one conversion type. Lead and Schedule remain separate so each event is configured and measured correctly.</p>
-  },
-  {
-    id: "unlock",
-    title: "The complete paid setup",
-    body: <p>Each $5 event purchase unlocks the event-specific installation, Meta configuration, launch checks, and verification instructions inside your private workspace.</p>
-  }
-];
-
-export function EmqGuidePage({ navigate, user }) {
+export function EmqGuidePage({ navigate, user, guideState, onRetry }) {
+  const guide = guideState.data;
   return (
     <PageFrame route="guide" navigate={navigate} user={user}>
       <main className="contentPage guidePage">
         <header className="contentHero">
-          <span className="eyebrow">Free EMQ readiness guide</span>
-          <h1>The 9.3 EMQ Readiness Guide</h1>
-          <p>A concise look at the principles behind the event quality we consistently target. The complete implementation is delivered with each purchased event.</p>
+          <span className="eyebrow">{guide?.eyebrow || "Purchased setup guide"}</span>
+          <h1>{guide?.title || "Your 9.3 EMQ setup guide"}</h1>
+          <p>{guide?.description || "Loading your private event setup instructions."}</p>
         </header>
-        <div className="contentLayout">
-          <aside>
-            <strong>9.3 readiness overview</strong>
-            {emqGuideSections.map((section) => <a key={section.id} href={`#${section.id}`}>{section.title}</a>)}
-          </aside>
-          <article className="document">
-            <section className="guideIntro">
-              <span><FileCheck2 size={22} /></span>
-              <div><h2>Know what drives the result</h2><p>Meta calculates the final score from actual event data. Simple CAPI provides the event-specific setup, while data completeness and matchability determine the measured result.</p></div>
-            </section>
-            {emqGuideSections.map((section) => (
-              <section id={section.id} key={section.id}>
-                <h2>{section.title}</h2>
-                {section.body}
+        {guideState.status === "loading" || guideState.status === "idle" ? <Spinner label="Loading your private guide" /> : null}
+        {guideState.status === "error" ? <Notice tone="error" title="Could not load guide">{guideState.error}<button className="button secondary small" type="button" onClick={onRetry}>Try again</button></Notice> : null}
+        {guide ? (
+          <div className="contentLayout">
+            <aside>
+              <strong>9.3 setup checklist</strong>
+              {guide.sections.map((section) => <a key={section.id} href={`#${section.id}`}>{section.title}</a>)}
+            </aside>
+            <article className="document">
+              <section className="guideIntro">
+                <span><FileCheck2 size={22} /></span>
+                <div><h2>{guide.intro_title}</h2><p>{guide.intro_text}</p></div>
               </section>
-            ))}
-            <section className="guideCta">
-              <h2>Unlock the complete setup</h2>
-              <p>Purchase a Lead or Schedule event for $5 to receive the private installation and verification playbook.</p>
-              <button className="button primary" type="button" onClick={() => navigate(user ? "setup" : "register")}>{user ? "Buy an event setup" : "Create your account"} <ArrowRight size={18} /></button>
-            </section>
-          </article>
-        </div>
+              {guide.sections.map((section) => (
+                <section id={section.id} key={section.id}>
+                  <h2>{section.title}</h2>
+                  <p>{section.body}</p>
+                </section>
+              ))}
+              <section className="guideCta">
+                <h2>{guide.cta_title}</h2>
+                <p>{guide.cta_text}</p>
+                <button className="button primary" type="button" onClick={() => navigate("setup")}>Buy another script <ArrowRight size={18} /></button>
+              </section>
+            </article>
+          </div>
+        ) : null}
       </main>
     </PageFrame>
   );
