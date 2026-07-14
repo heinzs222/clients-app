@@ -145,6 +145,23 @@ function ProductApp() {
     }
   }, []);
 
+  const handleApiAuthError = useCallback(async (error) => {
+    if (error?.status !== 401) return false;
+    try {
+      await logout();
+    } catch {
+      // The local session is cleared below even if the remote logout call fails.
+    }
+    setAuthUser(null);
+    setLocalPreview(false);
+    setEndpoints([]);
+    setSelectedId("");
+    setBilling((current) => ({ ...current, status: "idle", available_credits: 0, available_order_id: "", payments: [], error: "" }));
+    setAuthMessage("Your session expired. Please log in again.");
+    navigate("login", { replace: true, keepMessage: true });
+    return true;
+  }, [navigate]);
+
   useEffect(() => {
     const url = new URL(window.location.href);
     if (ROUTE_PATHS[route] && url.searchParams.has("view")) {
@@ -184,10 +201,11 @@ function ProductApp() {
       }));
       return data.billing || null;
     } catch (error) {
+      if (await handleApiAuthError(error)) return null;
       setBilling((current) => ({ ...current, status: "error", error: error.message }));
       return null;
     }
-  }, []);
+  }, [handleApiAuthError]);
 
   const loadEndpoints = useCallback(async () => {
     setEndpointsState({ status: "loading", error: "" });
@@ -199,9 +217,10 @@ function ProductApp() {
       setEndpointsState({ status: "success", error: "" });
       setSelectedId((current) => current && items.some((item) => item.id === current) ? current : "");
     } catch (error) {
+      if (await handleApiAuthError(error)) return;
       setEndpointsState({ status: "error", error: error.message });
     }
-  }, []);
+  }, [handleApiAuthError]);
 
   useEffect(() => {
     function onPopState() { setRoute(routeFromUrl()); }
@@ -269,6 +288,7 @@ function ProductApp() {
           await capiRequest("checkout-verify", { method: "POST", body: { checkoutOrderId: orderId } });
           await loadBilling({ message: "Payment confirmed. Your conversion credit is ready." });
         } catch (error) {
+          if (await handleApiAuthError(error)) return;
           setBilling((current) => ({ ...current, status: "error", error: error.message, message: "" }));
         }
       }
@@ -278,7 +298,7 @@ function ProductApp() {
     }
 
     finishCheckout();
-  }, [effectiveUser, route, loadBilling]);
+  }, [effectiveUser, route, loadBilling, handleApiAuthError]);
 
   useEffect(() => {
     if (!effectiveUser && WORKSPACE_ROUTES.has(route) && authStatus === "ready") {
@@ -480,6 +500,7 @@ function ProductApp() {
       navigate("tracking");
       return true;
     } catch (error) {
+      if (await handleApiAuthError(error)) return false;
       setCreateState({ status: "error", error: error.message });
       return false;
     }
@@ -492,6 +513,7 @@ function ProductApp() {
       if (!data.checkout?.url) throw new Error("Lemon Squeezy did not return a checkout link.");
       window.location.assign(data.checkout.url);
     } catch (error) {
+      if (await handleApiAuthError(error)) return;
       setBilling((current) => ({ ...current, status: "error", error: error.message, message: "" }));
     }
   }
@@ -502,6 +524,7 @@ function ProductApp() {
       const data = await capiRequest("verify", { method: "POST", body: { siteId: endpoint.id } });
       setVerifyState({ status: "success", healthy: Boolean(data.healthy), latency_ms: data.latency_ms || 0, error: "" });
     } catch (error) {
+      if (await handleApiAuthError(error)) return;
       setVerifyState({ status: "error", healthy: false, latency_ms: 0, error: error.message });
     }
   }
@@ -518,6 +541,7 @@ function ProductApp() {
       setUpdateState({ status: "success", error: "", success: true });
       return true;
     } catch (error) {
+      if (await handleApiAuthError(error)) return false;
       setUpdateState({ status: "error", error: error.message, success: false });
       return false;
     }
@@ -533,6 +557,7 @@ function ProductApp() {
       navigate("endpoints");
       return true;
     } catch (error) {
+      if (await handleApiAuthError(error)) return false;
       setDeleteState({ status: "error", id: endpoint.id, error: error.message });
       return false;
     }

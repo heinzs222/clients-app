@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { friendlyAuthError } from "../src/lib/auth-errors.mjs";
+import { capiRequest, sessionAccessToken } from "../src/lib/api.js";
 
 assert.equal(
   friendlyAuthError({ message: "invalid_grant" }),
@@ -18,4 +19,25 @@ assert.equal(
   "Authentication failed. Please try again."
 );
 
-console.log("Authentication error messages passed.");
+const testJwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhdXRoLWhhbmRvZmYtdGVzdCJ9.signature";
+assert.equal(sessionAccessToken(`other=value; nf_jwt=${encodeURIComponent(testJwt)}; theme=light`), testJwt);
+assert.equal(sessionAccessToken("nf_jwt=malformed"), "");
+
+const originalDocument = globalThis.document;
+const originalFetch = globalThis.fetch;
+let authorization = "";
+globalThis.document = { cookie: `nf_jwt=${encodeURIComponent(testJwt)}` };
+globalThis.fetch = async (_url, options) => {
+  authorization = options.headers.get("Authorization") || "";
+  return new Response(JSON.stringify({ success: true }), { status: 200, headers: { "Content-Type": "application/json" } });
+};
+
+try {
+  await capiRequest("list");
+  assert.equal(authorization, `Bearer ${testJwt}`);
+} finally {
+  globalThis.document = originalDocument;
+  globalThis.fetch = originalFetch;
+}
+
+console.log("Authentication error messages and API session handoff passed.");

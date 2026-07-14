@@ -172,8 +172,47 @@ function assertAllowedUser(user) {
   }
 }
 
+function identityUserEndpoint(request) {
+  const configured = cleanString(process.env.CAPI_IDENTITY_URL);
+  if (configured) {
+    const base = configured.endsWith("/") ? configured : `${configured}/`;
+    return new URL("user", base).href;
+  }
+
+  const siteUrl = cleanString(process.env.URL) || new URL(request.url).origin;
+  return new URL("/.netlify/identity/user", siteUrl).href;
+}
+
+async function identityUserFromBearer(request) {
+  const authorization = cleanString(request.headers.get("authorization"));
+  const match = authorization.match(/^Bearer\s+([A-Za-z0-9._-]+)$/i);
+  if (!match || match[1].length > 8192) return null;
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  try {
+    const result = await fetch(identityUserEndpoint(request), {
+      headers: { "Authorization": `Bearer ${match[1]}` },
+      signal: controller.signal
+    });
+    if (!result.ok) return null;
+    const data = await result.json().catch(() => null);
+    const id = cleanString(data?.id);
+    if (!id) return null;
+    return {
+      id,
+      email: cleanString(data?.email),
+      name: cleanString(data?.user_metadata?.full_name) || cleanString(data?.user_metadata?.name)
+    };
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function requireUser(request) {
-  const user = await getUser();
+  const user = await getUser() || await identityUserFromBearer(request);
   if (user) {
     assertAllowedUser(user);
     return user;
@@ -1874,5 +1913,6 @@ export const __testing = {
   gatewayRoute,
   clientEndpointRecord,
   validateClientInput,
-  envVars
+  envVars,
+  identityUserFromBearer
 };

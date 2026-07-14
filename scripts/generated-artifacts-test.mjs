@@ -152,6 +152,30 @@ assert(!("endpoint" in publicEndpoint) && !("billing" in publicEndpoint), "Custo
 assert(publicEndpoint.tracker_url.endsWith("/tracker.js"), "Customer endpoint record omitted the installation asset.");
 assert(publicEndpoint.event_name === "Schedule", "Customer endpoint record omitted the purchased conversion type.");
 
+const originalIdentityFetch = globalThis.fetch;
+process.env.URL = "https://identity.example";
+let verifiedAuthorization = "";
+globalThis.fetch = async (url, options = {}) => {
+  assert(String(url) === "https://identity.example/.netlify/identity/user", "Bearer verification used the wrong Identity endpoint.");
+  verifiedAuthorization = options.headers.Authorization;
+  return new Response(JSON.stringify({
+    id: "verified-user-id",
+    email: "verified@example.com",
+    user_metadata: { full_name: "Verified User" }
+  }), { status: 200, headers: { "Content-Type": "application/json" } });
+};
+
+try {
+  const verifiedUser = await __testing.identityUserFromBearer(new Request("https://service.example/api", {
+    headers: { Authorization: "Bearer header.payload.signature" }
+  }));
+  assert(verifiedAuthorization === "Bearer header.payload.signature", "Bearer token was not forwarded for server-side verification.");
+  assert(verifiedUser?.id === "verified-user-id" && verifiedUser?.email === "verified@example.com", "Verified Identity user was not normalized.");
+} finally {
+  globalThis.fetch = originalIdentityFetch;
+  delete process.env.URL;
+}
+
 let rejectedEvent = false;
 try {
   __testing.validateClientInput({ clientName: "Test", datasetId: "123456789", accessToken: fakeToken, graphVersion: "v23.0", eventName: "Purchase" });
