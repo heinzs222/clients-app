@@ -17,7 +17,6 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@netlify/blobs": "^10.1.0",
     "@netlify/identity": "^1.2.0",
     "@vitejs/plugin-react": "^4.3.4",
     "jszip": "^3.10.1",

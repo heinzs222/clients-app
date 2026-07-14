@@ -57,7 +57,7 @@ Each Lead or Schedule endpoint costs `$5 USD`. The conversion type is stored wit
 6. Keep `CAPI_BILLING_EXEMPT_EMAILS` empty unless a deliberate internal billing bypass is required.
 7. Complete a test checkout, then replace the test key and IDs and set `LEMONSQUEEZY_TEST_MODE=false` after the live store and product are approved.
 
-The app creates Lemon Squeezy-hosted one-time checkouts. Before provisioning, it retrieves the order server-side and verifies the authenticated email, store, variant, amount, currency, test/live mode, payment status, and refund state. Redemption uses an atomic account-scoped payment claim plus the generated endpoint manifest, so one order cannot create multiple Lead or Schedule endpoints, including under simultaneous requests.
+The app creates Lemon Squeezy-hosted one-time checkouts. Before provisioning, it retrieves the order server-side and verifies the authenticated email, store, variant, amount, currency, test/live mode, payment status, and refund state. Every paid resource has an account-scoped identity derived only from its order, so simultaneous requests for Lead and Schedule collide before a second endpoint can be created. The endpoint manifest records the completed redemption.
 
 ## Authentication setup
 

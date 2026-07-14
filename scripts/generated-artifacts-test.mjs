@@ -229,11 +229,10 @@ assert(paid.amount === 500 && paid.currency === "USD", "Valid Lemon Squeezy endp
 assert(paid.orderHash === hash(`lemon:${paidOrder.id}`), "Lemon Squeezy order redemption hash is incorrect.");
 assert(__testing.checkoutOrderId(paidOrder.id) === paidOrder.id, "Lemon Squeezy order ID validation failed.");
 assert(__testing.checkoutOrderId("not-an-order") === "", "Invalid Lemon Squeezy order ID was accepted.");
-const claimKey = __testing.paymentClaimKey(billingUser, paidOrder.id);
-assert(claimKey.startsWith(`${__testing.ownerKey(billingUser)}/`), "Payment claim is not isolated to the authenticated account.");
-assert(!claimKey.includes(paidOrder.id), "Payment claim exposes the raw order ID.");
-assert(__testing.claimPayment.toString().includes("onlyIfNew: true"), "Payment redemption is not protected by an atomic create-only claim.");
-assert(__testing.completePaymentClaim.toString().includes("onlyIfMatch: claim.etag"), "Payment redemption finalization is not conditionally locked.");
+const paidLeadSiteName = __testing.endpointSiteName(billingUser, { clientName: "Lead Client", eventName: "Lead" }, paid);
+const paidScheduleSiteName = __testing.endpointSiteName(billingUser, { clientName: "Different Client", eventName: "Schedule" }, paid);
+assert(paidLeadSiteName === paidScheduleSiteName, "The same payment can allocate separate Lead and Schedule resources.");
+assert(!paidLeadSiteName.includes("lead") && !paidLeadSiteName.includes("schedule"), "Paid resource identity depends on the selected event.");
 const orderParams = __testing.lemonOrderSearchParams(billingUser);
 assert(orderParams.get("filter[store_id]") === "1234", "Lemon Squeezy store filter is incorrect.");
 assert(orderParams.get("filter[user_email]") === billingUser.email, "Lemon Squeezy email filter is incorrect.");

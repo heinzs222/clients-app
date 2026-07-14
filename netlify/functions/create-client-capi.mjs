@@ -1,6 +1,5 @@
 import crypto from "node:crypto";
 import JSZip from "jszip";
-import { getStore } from "@netlify/blobs";
 import { getUser } from "@netlify/identity";
 import { minify } from "terser";
 
@@ -11,7 +10,6 @@ const MANIFEST_PATH = "/.well-known/capi-launcher.json";
 const DEFAULT_GRAPH_VERSION = "v23.0";
 const DEFAULT_USER_LIMIT = 25;
 const DEFAULT_ENDPOINT_PRICE_CENTS = 500;
-const PAYMENT_REDEMPTION_STORE = "simple-capi-payment-redemptions";
 
 function cleanString(value) {
   if (typeof value !== "string") return "";
@@ -396,58 +394,6 @@ async function redeemedSiteForOrder(accountSlug, user, orderId) {
   return endpoints.find((endpoint) => cleanString(endpoint.billing?.order_id) === cleanString(orderId))?.id || "";
 }
 
-function paymentClaimKey(user, orderId) {
-  const id = checkoutOrderId(orderId);
-  if (!id) return "";
-  return `${ownerKey(user)}/${sha256(`lemon:${id}`)}`;
-}
-
-function paymentRedemptionStore() {
-  return getStore({ name: PAYMENT_REDEMPTION_STORE, consistency: "strong" });
-}
-
-async function paymentClaim(user, orderId) {
-  const key = paymentClaimKey(user, orderId);
-  if (!key) return null;
-  return paymentRedemptionStore().get(key, { type: "json", consistency: "strong" });
-}
-
-async function claimPayment(user, payment, client) {
-  const key = paymentClaimKey(user, payment?.orderId);
-  if (!key) {
-    throw Object.assign(new Error("Invalid endpoint payment."), { statusCode: 402 });
-  }
-  const result = await paymentRedemptionStore().setJSON(key, {
-    status: "provisioning",
-    event_name: client.eventName,
-    client_name: client.clientName,
-    created_at: new Date().toISOString()
-  }, { onlyIfNew: true });
-  if (!result.modified) {
-    throw Object.assign(new Error("This payment has already been used for an endpoint."), { statusCode: 409 });
-  }
-  return { key, etag: result.etag };
-}
-
-async function completePaymentClaim(claim, client, siteId) {
-  if (!claim?.key || !claim.etag) return;
-  const result = await paymentRedemptionStore().setJSON(claim.key, {
-    status: "redeemed",
-    event_name: client.eventName,
-    client_name: client.clientName,
-    site_id: siteId,
-    redeemed_at: new Date().toISOString()
-  }, { onlyIfMatch: claim.etag });
-  if (!result.modified) {
-    throw Object.assign(new Error("Payment redemption could not be finalized."), { statusCode: 409 });
-  }
-}
-
-async function releasePaymentClaim(claim) {
-  if (!claim?.key) return;
-  await paymentRedemptionStore().delete(claim.key);
-}
-
 function lemonOrderSearchParams(user) {
   return new URLSearchParams({
     "filter[store_id]": String(lemonStoreId()),
@@ -480,11 +426,7 @@ async function billingStatus(accountSlug, user, request) {
       return false;
     }
   });
-  const claims = new Map(await Promise.all(valid.map(async (order) => {
-    const claim = await paymentClaim(user, order.id);
-    return [cleanString(order.id), claim];
-  })));
-  const isRedeemed = (orderId) => redeemed.has(cleanString(orderId)) || Boolean(claims.get(cleanString(orderId)));
+  const isRedeemed = (orderId) => redeemed.has(cleanString(orderId));
   const available = valid.filter((order) => !isRedeemed(order.id));
   return {
     ...config,
@@ -525,6 +467,13 @@ function validateClientInput(input, { tokenRequired = true } = {}) {
   }
 
   return { clientName, datasetId, accessToken, graphVersion, eventName };
+}
+
+function endpointSiteName(user, client, payment = null) {
+  if (payment?.orderHash) {
+    return `${ownerPrefix(user)}paid-${payment.orderHash.slice(0, 20)}`.slice(0, 63);
+  }
+  return `${ownerPrefix(user)}${slugify(client.clientName)}-${client.eventName.toLowerCase()}-${Date.now().toString(36)}`.slice(0, 63);
 }
 
 function capiFunctionSource() {
@@ -1696,7 +1645,6 @@ async function createEndpoint(accountSlug, accountId, user, input, request) {
 
   const exempt = billingExempt(user, request) || !billingRequired();
   let payment = null;
-  let paymentReservation = null;
   if (!exempt) {
     if (!billingConfiguration().configured) {
       throw Object.assign(new Error("Endpoint payments are not configured."), { statusCode: 503 });
@@ -1704,11 +1652,9 @@ async function createEndpoint(accountSlug, accountId, user, input, request) {
     const order = await retrieveLemonOrder(input.checkoutOrderId);
     const redeemedSiteId = await redeemedSiteForOrder(accountSlug, user, order?.id);
     payment = validateLemonOrder(order, user, { redeemedSiteId });
-    paymentReservation = await claimPayment(user, payment, client);
   }
 
-  const suffix = payment ? payment.orderHash.slice(0, 10) : Date.now().toString(36);
-  const siteName = `${ownerPrefix(user)}${slugify(client.clientName)}-${client.eventName.toLowerCase()}-${suffix}`.slice(0, 63);
+  const siteName = endpointSiteName(user, client, payment);
   let site;
   try {
     site = await netlifyFetch(`/${encodeURIComponent(accountSlug)}/sites`, {
@@ -1742,13 +1688,11 @@ async function createEndpoint(accountSlug, accountId, user, input, request) {
       updated_at: new Date().toISOString()
     });
     const health = await verifyEndpoint(record.endpoint);
-    await completePaymentClaim(paymentReservation, client, site.id);
     return { ...record, ...health, env_mode: envMode };
   } catch (error) {
     if (site?.id) {
       try { await netlifyFetch(`/sites/${encodeURIComponent(site.id)}`, { method: "DELETE" }); } catch {}
     }
-    try { await releasePaymentClaim(paymentReservation); } catch {}
     throw error;
   }
 }
@@ -1857,8 +1801,7 @@ export default async function handler(request) {
     if (request.method === "POST" && action === "checkout-verify") {
       const input = await parseJson(request);
       const order = await retrieveLemonOrder(input.checkoutOrderId);
-      const claim = await paymentClaim(user, order?.id);
-      const redeemedSiteId = await redeemedSiteForOrder(accountSlug, user, order?.id) || (claim ? claim.site_id || "payment-claimed" : "");
+      const redeemedSiteId = await redeemedSiteForOrder(accountSlug, user, order?.id);
       const payment = validateLemonOrder(order, user, { allowRedeemed: true, redeemedSiteId });
       return response(request, 200, {
         success: true,
@@ -1923,9 +1866,7 @@ export const __testing = {
   trackerAssets,
   ownerKey,
   checkoutOrderId,
-  paymentClaimKey,
-  claimPayment,
-  completePaymentClaim,
+  endpointSiteName,
   lemonOrderSearchParams,
   validateLemonOrder,
   billingConfiguration,
