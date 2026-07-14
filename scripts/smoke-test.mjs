@@ -173,7 +173,7 @@ try {
   await page.goto(`${baseUrl}/`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Launch reliable Meta tracking in minutes." }).isVisible(), "Product home page did not render.");
   assert(await page.getByRole("button", { name: /Launch your first endpoint/ }).isVisible(), "Homepage primary action did not render.");
-  assert(await page.getByRole("button", { name: "Get the free 9.3 guide" }).isVisible(), "Homepage free-guide action did not render.");
+  assert(await page.getByRole("button", { name: "Read the free 9.3 guide" }).isVisible(), "Homepage free-guide action did not render.");
   assert(await page.locator(".publicHeader").count() === 1, "Home page header did not render.");
   assert(await page.locator(".publicFooter").count() === 1, "Home page footer did not render.");
   const homeText = await page.locator("body").innerText();
@@ -181,10 +181,12 @@ try {
   assert(!/netlify/i.test(homeText), "Customer-facing homepage exposes the infrastructure provider.");
   await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-home.png"), fullPage: true });
 
-  await page.getByRole("button", { name: "Get the free 9.3 guide" }).click();
-  await page.getByRole("heading", { name: "The 9.3 EMQ Setup Guide" }).waitFor({ state: "visible" });
-  assert(await page.getByRole("heading", { name: "The 9.3 EMQ Setup Guide" }).isVisible(), "Free EMQ guide did not render.");
-  assert(await page.getByText(/same checklist we use on implementations that consistently reach 9\.3 EMQ/i).isVisible(), "Free guide does not explain the proven 9.3 setup.");
+  await page.getByRole("button", { name: "Read the free 9.3 guide" }).click();
+  await page.getByRole("heading", { name: "The 9.3 EMQ Readiness Guide" }).waitFor({ state: "visible" });
+  assert(await page.getByRole("heading", { name: "The 9.3 EMQ Readiness Guide" }).isVisible(), "Free EMQ guide did not render.");
+  assert(await page.getByRole("heading", { name: "The complete paid setup" }).isVisible(), "Free guide does not explain where the complete setup is delivered.");
+  const publicGuideText = await page.locator("body").innerText();
+  assert(!/access token|browser pixel|test events|deduplicat|paste the generated|page head|confirmation page/i.test(publicGuideText), "Free guide exposes the paid implementation playbook.");
   assert(page.url().endsWith("/emq-guide"), "Free guide route is not canonical.");
   await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-emq-guide.png"), fullPage: true });
   await page.setViewportSize({ width: 390, height: 844 });
@@ -192,6 +194,11 @@ try {
   assert(guideOverflow <= 1, `Mobile EMQ guide has ${guideOverflow}px horizontal overflow.`);
   await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-emq-guide-mobile.png"), fullPage: true });
   await page.setViewportSize({ width: 1280, height: 800 });
+
+  await page.goto(`${baseUrl}/docs`, { waitUntil: "networkidle" });
+  assert(await page.getByRole("heading", { name: "Simple, private event setup." }).isVisible(), "Public product overview did not render.");
+  const publicDocsText = await page.locator("body").innerText();
+  assert(!/access token|browser pixel|test events|deduplicat|paste the generated|page head|confirmation page/i.test(publicDocsText), "Public product overview exposes the paid implementation playbook.");
 
   await page.goto(`${baseUrl}/?preview=1&view=dashboard`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Dashboard" }).isVisible(), "Dashboard did not render in local preview.");
@@ -335,6 +342,13 @@ try {
 
   await page.goto(`${baseUrl}/?view=status`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Service availability" }).isVisible(), "Status page did not render.");
+
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto(`${baseUrl}/?preview=1&view=dashboard`, { waitUntil: "networkidle" });
+  await page.getByRole("button", { name: "Log out" }).click();
+  await page.waitForURL(`${baseUrl}/`);
+  await page.getByRole("heading", { name: "Launch reliable Meta tracking in minutes." }).waitFor({ state: "visible" });
+  assert(await page.getByRole("heading", { name: "Launch reliable Meta tracking in minutes." }).isVisible(), "Logout did not return to the public home page.");
 
   assert(runtimeErrors.length === 0, runtimeErrors.join("\n"));
   process.stdout.write("Smoke test passed: tracker, simplified product UI, payment gate, dashboard, mobile, auth, and status.\n");

@@ -91,7 +91,7 @@ try {
   }
 
   await page.goto(`${baseUrl}/emq-guide`, { waitUntil: "networkidle" });
-  assert(await page.getByRole("heading", { name: "The 9.3 EMQ Setup Guide" }).isVisible(), "The public 9.3 EMQ guide is unavailable.");
+  assert(await page.getByRole("heading", { name: "The 9.3 EMQ Readiness Guide" }).isVisible(), "The public 9.3 EMQ guide is unavailable.");
   assert(await page.getByRole("button", { name: /Create your account/ }).isVisible(), "The guide is missing its product action.");
 
   await page.goto(`${baseUrl}/?view=login`, { waitUntil: "networkidle" });

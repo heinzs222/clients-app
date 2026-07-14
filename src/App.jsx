@@ -57,7 +57,7 @@ function hasAuthHash() {
 function pageTitle(route) {
   const labels = {
     home: "Meta Conversions API Tracking Software - Simple CAPI",
-    guide: "Free 9.3 EMQ Setup Guide - Simple CAPI",
+    guide: "Free 9.3 EMQ Readiness Guide - Simple CAPI",
     login: "Log in - Simple CAPI",
     register: "Create account - Simple CAPI",
     forgot: "Recover access - Simple CAPI",
@@ -456,7 +456,7 @@ function ProductApp() {
       setEndpointsState({ status: "idle", error: "" });
       setSelectedId("");
       setAuthBusy(false);
-      navigate("login", { replace: true });
+      window.location.replace("/");
     }
   }
 

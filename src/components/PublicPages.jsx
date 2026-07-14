@@ -49,7 +49,7 @@ export function HomePage({ navigate, user }) {
               <button className="button primary" type="button" onClick={() => navigate(user ? "setup" : "register")}>
                 {user ? "Create an endpoint" : "Launch your first endpoint"}<ArrowRight size={18} />
               </button>
-              <button className="button secondary" type="button" onClick={() => navigate("guide")}>Get the free 9.3 guide</button>
+              <button className="button secondary" type="button" onClick={() => navigate("guide")}>Read the free 9.3 guide</button>
             </div>
             <div className="heroTrust">
               <span><Check size={16} /> One script to install</span>
@@ -118,11 +118,11 @@ export function HomePage({ navigate, user }) {
         <section className="guideBand">
           <div>
             <span className="guideIcon"><FileCheck2 size={24} /></span>
-            <span className="eyebrow">Free implementation guide</span>
+            <span className="eyebrow">Free readiness guide</span>
             <h2>Use the setup we follow to reach 9.3 EMQ.</h2>
-            <p>Get the exact Meta-side launch and verification checklist we use with Simple CAPI for high-quality Lead and Schedule events.</p>
+            <p>Understand what strong event matching requires and what the complete paid setup includes. The implementation playbook stays inside your private workspace.</p>
           </div>
-          <button className="button primary" type="button" onClick={() => navigate("guide")}>Open the free guide <ArrowRight size={18} /></button>
+          <button className="button primary" type="button" onClick={() => navigate("guide")}>Read the free guide <ArrowRight size={18} /></button>
         </section>
 
         <section className="principleBand">
@@ -144,34 +144,24 @@ export function HomePage({ navigate, user }) {
 
 const emqGuideSections = [
   {
-    id: "event",
-    title: "1. Separate Lead and Schedule",
-    body: <p>Create a dedicated Simple CAPI script for each conversion. Install Lead on the real form page and Schedule only on the successful booking confirmation page.</p>
+    id: "quality",
+    title: "Accurate customer data",
+    body: <p>Strong matching starts with complete, accurate information supplied by real customers. The final quality score depends on the data available for each submitted event.</p>
   },
   {
-    id: "dataset",
-    title: "2. Match the correct Meta dataset",
-    body: <p>Use the Dataset ID, access token, and browser Pixel from the same client dataset. Never reuse another client's credentials or installation script.</p>
+    id: "consistency",
+    title: "Consistent event signals",
+    body: <p>Browser and server activity must describe the same conversion consistently. Simple CAPI is designed to keep that event relationship reliable automatically.</p>
   },
   {
-    id: "data",
-    title: "3. Collect complete, real customer data",
-    body: <p>Use clear form fields for the customer's name, email, phone, and location details when they are relevant and consented. Meta can only match information the customer actually provides.</p>
+    id: "separation",
+    title: "Client and event separation",
+    body: <p>Every purchased setup is isolated to one client and one conversion type. Lead and Schedule remain separate so each event is configured and measured correctly.</p>
   },
   {
-    id: "install",
-    title: "4. Install on the page that owns the conversion",
-    body: <p>Keep the normal Meta Pixel base code in the page head. Paste the generated Simple CAPI script into the same page as the form. For an embedded form, place it inside the form's own code.</p>
-  },
-  {
-    id: "verify",
-    title: "5. Verify the paired event",
-    body: <p>Publish the page, open Meta Test Events, and complete one real test submission. Confirm that the browser and server versions of the conversion appear as one deduplicated event.</p>
-  },
-  {
-    id: "live-data",
-    title: "6. Let real events establish the score",
-    body: <p>Remove the temporary test code and verify again with live traffic. This is the same checklist we use on implementations that consistently reach 9.3 EMQ when the required customer data is available.</p>
+    id: "unlock",
+    title: "The complete paid setup",
+    body: <p>Each $5 event purchase unlocks the event-specific installation, Meta configuration, launch checks, and verification instructions inside your private workspace.</p>
   }
 ];
 
@@ -180,19 +170,19 @@ export function EmqGuidePage({ navigate, user }) {
     <PageFrame route="guide" navigate={navigate} user={user}>
       <main className="contentPage guidePage">
         <header className="contentHero">
-          <span className="eyebrow">Free Meta setup guide</span>
-          <h1>The 9.3 EMQ Setup Guide</h1>
-          <p>Our field-tested launch sequence for high-quality Lead and Schedule event matching with Simple CAPI.</p>
+          <span className="eyebrow">Free EMQ readiness guide</span>
+          <h1>The 9.3 EMQ Readiness Guide</h1>
+          <p>A concise look at the principles behind the event quality we consistently target. The complete implementation is delivered with each purchased event.</p>
         </header>
         <div className="contentLayout">
           <aside>
-            <strong>9.3 setup checklist</strong>
+            <strong>9.3 readiness overview</strong>
             {emqGuideSections.map((section) => <a key={section.id} href={`#${section.id}`}>{section.title}</a>)}
           </aside>
           <article className="document">
             <section className="guideIntro">
               <span><FileCheck2 size={22} /></span>
-              <div><h2>Follow every step</h2><p>The final score is shown by Meta after it processes actual event data. Skipping required customer fields or mixing client datasets reduces match quality.</p></div>
+              <div><h2>Know what drives the result</h2><p>Meta calculates the final score from actual event data. Simple CAPI provides the event-specific setup, while data completeness and matchability determine the measured result.</p></div>
             </section>
             {emqGuideSections.map((section) => (
               <section id={section.id} key={section.id}>
@@ -201,9 +191,9 @@ export function EmqGuidePage({ navigate, user }) {
               </section>
             ))}
             <section className="guideCta">
-              <h2>Ready to apply the 9.3 setup?</h2>
-              <p>Create the event-specific script, follow this checklist, and verify the result in Meta Test Events.</p>
-              <button className="button primary" type="button" onClick={() => navigate(user ? "setup" : "register")}>{user ? "Create an endpoint" : "Create your account"} <ArrowRight size={18} /></button>
+              <h2>Unlock the complete setup</h2>
+              <p>Purchase a Lead or Schedule event for $5 to receive the private installation and verification playbook.</p>
+              <button className="button primary" type="button" onClick={() => navigate(user ? "setup" : "register")}>{user ? "Buy an event setup" : "Create your account"} <ArrowRight size={18} /></button>
             </section>
           </article>
         </div>
@@ -214,29 +204,24 @@ export function EmqGuidePage({ navigate, user }) {
 
 const docsSections = [
   {
-    id: "create",
-    title: "1. Add the client",
-    body: <p>Purchase one $5 event-specific credit, then enter the client name, Meta Dataset ID, and Conversions API access token.</p>
+    id: "purchase",
+    title: "Event-specific pricing",
+    body: <p>Each $5 one-time purchase unlocks one client-specific Lead or Schedule setup. Lead and Schedule are separate purchases, so both events cost $10 total.</p>
   },
   {
-    id: "event",
-    title: "2. Choose the conversion",
-    body: <p>Select Lead for a form page or Schedule for a booking confirmation page. One $5 credit permanently unlocks one of those events, never both. Adding both requires two purchases, for a total of $10.</p>
+    id: "workspace",
+    title: "Private delivery",
+    body: <p>The purchased setup, installation code, configuration controls, and verification guidance are delivered inside the account workspace.</p>
   },
   {
-    id: "install",
-    title: "3. Paste the script",
-    body: <p>Copy the generated script into the actual page that contains the form. If the form is embedded in an iframe, add the script inside that form's own code. Schedule scripts belong only on the successful booking confirmation page.</p>
+    id: "security",
+    title: "Protected credentials",
+    body: <p>Sensitive client credentials stay protected and do not appear in the installation code provided to the customer.</p>
   },
   {
-    id: "test",
-    title: "4. Publish and test",
-    body: <p>Keep the client's normal Meta Pixel installed, publish the page, and submit one real test while Meta Test Events is open. Remove any temporary test code after verification.</p>
-  },
-  {
-    id: "multiple-pages",
-    title: "Multiple landing pages",
-    body: <p>Reuse the same setup on multiple pages when they belong to the same client and Meta dataset. Add an optional page label for A/B variants. Create a new endpoint when the client or dataset changes.</p>
+    id: "support",
+    title: "Guided launch",
+    body: <p>After purchase, the workspace provides the exact event-specific instructions needed to install, validate, and manage the setup.</p>
   }
 ];
 
@@ -245,9 +230,9 @@ export function DocsPage({ navigate, user }) {
     <PageFrame route="docs" navigate={navigate} user={user}>
       <main className="contentPage">
         <header className="contentHero">
-          <span className="eyebrow">Implementation guide</span>
-          <h1>Install Meta tracking with one script.</h1>
-          <p>Everything needed to go from client credentials to a verified conversion.</p>
+          <span className="eyebrow">Product overview</span>
+          <h1>Simple, private event setup.</h1>
+          <p>What Simple CAPI provides before you choose a Lead or Schedule event.</p>
         </header>
         <div className="contentLayout">
           <aside>
