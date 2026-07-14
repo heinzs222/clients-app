@@ -92,7 +92,8 @@ try {
   assert(legacyAlias.url() === `${baseUrl}/docs`, "The legacy alias does not preserve the canonical route.");
 
   await page.goto("https://capi-tracker-service.netlify.app/#simple-capi-domain-check", { waitUntil: "networkidle" });
-  assert(page.url() === `${baseUrl}/`, "The backend project does not redirect to the branded domain.");
+  const brandedRedirect = new URL(page.url());
+  assert(`${brandedRedirect.origin}${brandedRedirect.pathname}` === `${baseUrl}/`, "The backend project does not redirect to the branded domain.");
 
   const status = await context.request.get(`${baseUrl}/api/workspace?action=status`);
   assert(status.ok(), "The provisioner status proxy is unavailable.");
