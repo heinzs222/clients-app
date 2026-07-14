@@ -142,6 +142,13 @@ function ProductApp() {
     }
   }, []);
 
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (ROUTE_PATHS[route] && url.searchParams.has("view")) {
+      navigate(route, { replace: true, keepHash: hasAuthHash() });
+    }
+  }, [route, navigate]);
+
   const checkBackend = useCallback(async () => {
     setBackend((current) => ({ ...current, status: "checking", ready: false, message: "Checking service availability..." }));
     try {
