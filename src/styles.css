@@ -779,12 +779,13 @@ button:disabled {
 
 .pricingBand .button {
   flex: 0 0 auto;
-  color: #075d4c;
+  color: var(--ink);
   background: #fff;
   border-color: #fff;
 }
 
-.pricingBand .button:hover {
+.pricingBand .button:hover:not(:disabled) {
+  color: var(--ink);
   background: #effbf7;
 }
 
