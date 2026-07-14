@@ -19,17 +19,19 @@ import { clearMalformedAuthSession } from "./lib/auth-session.mjs";
 const AuthScreen = lazy(() => import("./components/AuthScreen.jsx"));
 const Workspace = lazy(() => import("./components/Workspace.jsx"));
 const HomePage = lazy(() => import("./components/PublicPages.jsx").then((module) => ({ default: module.HomePage })));
+const EmqGuidePage = lazy(() => import("./components/PublicPages.jsx").then((module) => ({ default: module.EmqGuidePage })));
 const DocsPage = lazy(() => import("./components/PublicPages.jsx").then((module) => ({ default: module.DocsPage })));
 const PrivacyPage = lazy(() => import("./components/PublicPages.jsx").then((module) => ({ default: module.PrivacyPage })));
 const TermsPage = lazy(() => import("./components/PublicPages.jsx").then((module) => ({ default: module.TermsPage })));
 const StatusPage = lazy(() => import("./components/PublicPages.jsx").then((module) => ({ default: module.StatusPage })));
 
-const PUBLIC_ROUTES = new Set(["home", "docs", "privacy", "terms", "status"]);
+const PUBLIC_ROUTES = new Set(["home", "guide", "docs", "privacy", "terms", "status"]);
 const AUTH_ROUTES = new Set(["login", "register", "forgot", "reset"]);
 const WORKSPACE_ROUTES = new Set(["dashboard", "endpoints", "setup", "billing", "tracking", "endpoint-settings"]);
 const ALL_ROUTES = new Set([...PUBLIC_ROUTES, ...AUTH_ROUTES, ...WORKSPACE_ROUTES]);
 const ROUTE_PATHS = Object.freeze({
   home: "/",
+  guide: "/emq-guide",
   docs: "/docs",
   privacy: "/privacy",
   terms: "/terms",
@@ -55,6 +57,7 @@ function hasAuthHash() {
 function pageTitle(route) {
   const labels = {
     home: "Meta Conversions API Tracking Software - Simple CAPI",
+    guide: "Free 9.3 EMQ Setup Guide - Simple CAPI",
     login: "Log in - Simple CAPI",
     register: "Create account - Simple CAPI",
     forgot: "Recover access - Simple CAPI",
@@ -560,6 +563,7 @@ function ProductApp() {
   }
 
   if (route === "home") return <HomePage navigate={navigate} user={effectiveUser} />;
+  if (route === "guide") return <EmqGuidePage navigate={navigate} user={effectiveUser} />;
   if (route === "docs") return <DocsPage navigate={navigate} user={effectiveUser} />;
   if (route === "privacy") return <PrivacyPage navigate={navigate} user={effectiveUser} />;
   if (route === "terms") return <TermsPage navigate={navigate} user={effectiveUser} />;

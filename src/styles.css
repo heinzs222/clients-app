@@ -788,6 +788,53 @@ button:disabled {
   background: #effbf7;
 }
 
+.guideBand {
+  padding: 58px max(24px, calc((100% - 1280px) / 2));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 48px;
+  background: #fff8e8;
+  border-bottom: 1px solid #eadfbf;
+}
+
+.guideBand > div {
+  max-width: 790px;
+}
+
+.guideBand .guideIcon {
+  width: 44px;
+  height: 44px;
+  margin-bottom: 18px;
+  display: grid;
+  place-items: center;
+  color: #715200;
+  background: #ffdf72;
+  border: 1px solid #e9c750;
+  border-radius: 6px;
+}
+
+.guideBand .eyebrow {
+  display: block;
+  color: #715200;
+}
+
+.guideBand h2 {
+  margin: 10px 0 10px;
+  font-size: 34px;
+  line-height: 1.2;
+}
+
+.guideBand p {
+  margin: 0;
+  color: #5e563f;
+  line-height: 1.65;
+}
+
+.guideBand .button {
+  flex: 0 0 auto;
+}
+
 .principleBand {
   width: min(1280px, calc(100% - 48px));
   margin: 0 auto;
@@ -934,6 +981,38 @@ button:disabled {
 
 .document ol {
   padding-left: 24px;
+}
+
+.guidePage .guideIntro {
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 14px;
+  padding: 22px 0 28px;
+  border-top: 3px solid #ffcf3f;
+}
+
+.guidePage .guideIntro > span {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  color: #715200;
+  background: #fff1bd;
+  border-radius: 5px;
+}
+
+.guidePage .guideIntro h2,
+.guidePage .guideIntro p {
+  margin-top: 0;
+}
+
+.guidePage .guideCta {
+  padding-top: 34px;
+  border-top: 3px solid var(--blue);
+}
+
+.guidePage .guideCta .button {
+  margin-top: 8px;
 }
 
 .inlineFlow {
@@ -2948,6 +3027,13 @@ button:disabled {
     gap: 24px;
   }
 
+  .guideBand {
+    padding: 44px 24px;
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 24px;
+  }
+
   .registerMain {
     grid-template-columns: 1fr;
     gap: 40px;
@@ -3162,6 +3248,7 @@ button:disabled {
 
   .sectionHeading h2,
   .pricingBand h2,
+  .guideBand h2,
   .principleBand h2 {
     font-size: 29px;
   }

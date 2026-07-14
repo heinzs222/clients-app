@@ -6,6 +6,7 @@ import {
   Code2,
   CreditCard,
   Database,
+  FileCheck2,
   LockKeyhole,
   Server,
   ShieldCheck
@@ -48,7 +49,7 @@ export function HomePage({ navigate, user }) {
               <button className="button primary" type="button" onClick={() => navigate(user ? "setup" : "register")}>
                 {user ? "Create an endpoint" : "Launch your first endpoint"}<ArrowRight size={18} />
               </button>
-              <button className="button secondary" type="button" onClick={() => navigate("docs")}>Read the setup guide</button>
+              <button className="button secondary" type="button" onClick={() => navigate("guide")}>Get the free 9.3 guide</button>
             </div>
             <div className="heroTrust">
               <span><Check size={16} /> One script to install</span>
@@ -114,6 +115,16 @@ export function HomePage({ navigate, user }) {
           <button className="button primary" type="button" onClick={() => navigate(user ? "setup" : "register")}><CreditCard size={18} /> Buy an endpoint</button>
         </section>
 
+        <section className="guideBand">
+          <div>
+            <span className="guideIcon"><FileCheck2 size={24} /></span>
+            <span className="eyebrow">Free implementation guide</span>
+            <h2>Use the setup we follow to reach 9.3 EMQ.</h2>
+            <p>Get the exact Meta-side launch and verification checklist we use with Simple CAPI for high-quality Lead and Schedule events.</p>
+          </div>
+          <button className="button primary" type="button" onClick={() => navigate("guide")}>Open the free guide <ArrowRight size={18} /></button>
+        </section>
+
         <section className="principleBand">
           <div>
             <span className="eyebrow">Built for real client work</span>
@@ -126,6 +137,76 @@ export function HomePage({ navigate, user }) {
             <li><LockKeyhole size={20} /><span><strong>Private by default</strong> Client credentials stay out of page code.</span></li>
           </ul>
         </section>
+      </main>
+    </PageFrame>
+  );
+}
+
+const emqGuideSections = [
+  {
+    id: "event",
+    title: "1. Separate Lead and Schedule",
+    body: <p>Create a dedicated Simple CAPI script for each conversion. Install Lead on the real form page and Schedule only on the successful booking confirmation page.</p>
+  },
+  {
+    id: "dataset",
+    title: "2. Match the correct Meta dataset",
+    body: <p>Use the Dataset ID, access token, and browser Pixel from the same client dataset. Never reuse another client's credentials or installation script.</p>
+  },
+  {
+    id: "data",
+    title: "3. Collect complete, real customer data",
+    body: <p>Use clear form fields for the customer's name, email, phone, and location details when they are relevant and consented. Meta can only match information the customer actually provides.</p>
+  },
+  {
+    id: "install",
+    title: "4. Install on the page that owns the conversion",
+    body: <p>Keep the normal Meta Pixel base code in the page head. Paste the generated Simple CAPI script into the same page as the form. For an embedded form, place it inside the form's own code.</p>
+  },
+  {
+    id: "verify",
+    title: "5. Verify the paired event",
+    body: <p>Publish the page, open Meta Test Events, and complete one real test submission. Confirm that the browser and server versions of the conversion appear as one deduplicated event.</p>
+  },
+  {
+    id: "live-data",
+    title: "6. Let real events establish the score",
+    body: <p>Remove the temporary test code and verify again with live traffic. This is the same checklist we use on implementations that consistently reach 9.3 EMQ when the required customer data is available.</p>
+  }
+];
+
+export function EmqGuidePage({ navigate, user }) {
+  return (
+    <PageFrame route="guide" navigate={navigate} user={user}>
+      <main className="contentPage guidePage">
+        <header className="contentHero">
+          <span className="eyebrow">Free Meta setup guide</span>
+          <h1>The 9.3 EMQ Setup Guide</h1>
+          <p>Our field-tested launch sequence for high-quality Lead and Schedule event matching with Simple CAPI.</p>
+        </header>
+        <div className="contentLayout">
+          <aside>
+            <strong>9.3 setup checklist</strong>
+            {emqGuideSections.map((section) => <a key={section.id} href={`#${section.id}`}>{section.title}</a>)}
+          </aside>
+          <article className="document">
+            <section className="guideIntro">
+              <span><FileCheck2 size={22} /></span>
+              <div><h2>Follow every step</h2><p>The final score is shown by Meta after it processes actual event data. Skipping required customer fields or mixing client datasets reduces match quality.</p></div>
+            </section>
+            {emqGuideSections.map((section) => (
+              <section id={section.id} key={section.id}>
+                <h2>{section.title}</h2>
+                {section.body}
+              </section>
+            ))}
+            <section className="guideCta">
+              <h2>Ready to apply the 9.3 setup?</h2>
+              <p>Create the event-specific script, follow this checklist, and verify the result in Meta Test Events.</p>
+              <button className="button primary" type="button" onClick={() => navigate(user ? "setup" : "register")}>{user ? "Create an endpoint" : "Create your account"} <ArrowRight size={18} /></button>
+            </section>
+          </article>
+        </div>
       </main>
     </PageFrame>
   );

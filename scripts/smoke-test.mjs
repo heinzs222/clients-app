@@ -173,12 +173,25 @@ try {
   await page.goto(`${baseUrl}/`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Launch reliable Meta tracking in minutes." }).isVisible(), "Product home page did not render.");
   assert(await page.getByRole("button", { name: /Launch your first endpoint/ }).isVisible(), "Homepage primary action did not render.");
+  assert(await page.getByRole("button", { name: "Get the free 9.3 guide" }).isVisible(), "Homepage free-guide action did not render.");
   assert(await page.locator(".publicHeader").count() === 1, "Home page header did not render.");
   assert(await page.locator(".publicFooter").count() === 1, "Home page footer did not render.");
   const homeText = await page.locator("body").innerText();
   assert(!/GHL|webhook|SHA-256|fbp|fbc|client IP|user agent|deduplication/i.test(homeText), "Homepage exposes implementation details.");
   assert(!/netlify/i.test(homeText), "Customer-facing homepage exposes the infrastructure provider.");
   await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-home.png"), fullPage: true });
+
+  await page.getByRole("button", { name: "Get the free 9.3 guide" }).click();
+  await page.getByRole("heading", { name: "The 9.3 EMQ Setup Guide" }).waitFor({ state: "visible" });
+  assert(await page.getByRole("heading", { name: "The 9.3 EMQ Setup Guide" }).isVisible(), "Free EMQ guide did not render.");
+  assert(await page.getByText(/same checklist we use on implementations that consistently reach 9\.3 EMQ/i).isVisible(), "Free guide does not explain the proven 9.3 setup.");
+  assert(page.url().endsWith("/emq-guide"), "Free guide route is not canonical.");
+  await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-emq-guide.png"), fullPage: true });
+  await page.setViewportSize({ width: 390, height: 844 });
+  const guideOverflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+  assert(guideOverflow <= 1, `Mobile EMQ guide has ${guideOverflow}px horizontal overflow.`);
+  await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-emq-guide-mobile.png"), fullPage: true });
+  await page.setViewportSize({ width: 1280, height: 800 });
 
   await page.goto(`${baseUrl}/?preview=1&view=dashboard`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Dashboard" }).isVisible(), "Dashboard did not render in local preview.");

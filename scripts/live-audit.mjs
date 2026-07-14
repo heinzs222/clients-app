@@ -83,12 +83,16 @@ try {
     if (message.type() === "error") errors.push(`routes console: ${message.text()}`);
   });
 
-  for (const route of ["docs", "privacy", "terms", "status", "login", "register", "forgot-password", "reset-password"]) {
+  for (const route of ["emq-guide", "docs", "privacy", "terms", "status", "login", "register", "forgot-password", "reset-password"]) {
     const response = await page.goto(`${baseUrl}/${route}`, { waitUntil: "networkidle" });
     assert(response?.status() === 200, `/${route} did not return 200.`);
     assert(page.url() === `${baseUrl}/${route}`, `/${route} did not remain on its public route.`);
     assert((await page.title()).includes("Simple CAPI"), `/${route} has an incorrect title.`);
   }
+
+  await page.goto(`${baseUrl}/emq-guide`, { waitUntil: "networkidle" });
+  assert(await page.getByRole("heading", { name: "The 9.3 EMQ Setup Guide" }).isVisible(), "The public 9.3 EMQ guide is unavailable.");
+  assert(await page.getByRole("button", { name: /Create your account/ }).isVisible(), "The guide is missing its product action.");
 
   await page.goto(`${baseUrl}/?view=login`, { waitUntil: "networkidle" });
   assert(page.url() === `${baseUrl}/login`, "The login route was not normalized to its canonical path.");
