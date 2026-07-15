@@ -18,11 +18,13 @@ export default function AuthScreen({
   authForm,
   patchAuthForm,
   onLogin,
+  onGoogleLogin,
   onRegister,
   onForgot,
   onReset,
   onPreview,
   busy,
+  googleLoginEnabled,
   error,
   message,
   callbackReady
@@ -42,6 +44,16 @@ export default function AuthScreen({
     else if (isReset) onReset();
   }
 
+  const googleChoice = googleLoginEnabled ? (
+    <>
+      <button className="button oauthButton full" type="button" onClick={onGoogleLogin} disabled={busy}>
+        <span className="googleMark" aria-hidden="true">G</span>
+        Continue with Google
+      </button>
+      <div className="authDivider"><span>or continue with email</span></div>
+    </>
+  ) : null;
+
   if (isRegister) {
     return (
       <div className="publicPage authPage">
@@ -53,6 +65,7 @@ export default function AuthScreen({
               <h1>Create your account</h1>
               <p>Create and manage client Meta tracking from one workspace.</p>
             </div>
+            {googleChoice}
             <form className="authForm" onSubmit={submit}>
               <Field label="Full name">
                 <InputShell>
@@ -125,6 +138,7 @@ export default function AuthScreen({
             <h1>{title}</h1>
             <p>{description}</p>
           </header>
+          {isLogin ? <div className="oauthPanel">{googleChoice}</div> : null}
           <form className="authForm" onSubmit={submit}>
             {!isReset ? (
               <Field label="Email address">

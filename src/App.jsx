@@ -2,11 +2,13 @@ import React, { lazy, useCallback, useEffect, useMemo, useState } from "react";
 import {
   AUTH_EVENTS,
   acceptInvite,
+  getSettings,
   getUser,
   handleAuthCallback,
   login,
   logout,
   onAuthChange,
+  oauthLogin,
   requestPasswordRecovery,
   signup,
   updateUser
@@ -86,6 +88,7 @@ function ProductApp() {
     return localHost && new URLSearchParams(window.location.search).get("preview") === "1";
   });
   const [authBusy, setAuthBusy] = useState(false);
+  const [googleLoginEnabled, setGoogleLoginEnabled] = useState(false);
   const [authError, setAuthError] = useState("");
   const [authMessage, setAuthMessage] = useState("");
   const [callbackReady, setCallbackReady] = useState(false);
@@ -259,6 +262,9 @@ function ProductApp() {
   useEffect(() => {
     checkBackend();
     initializeAuth();
+    getSettings()
+      .then((settings) => setGoogleLoginEnabled(Boolean(settings?.providers?.google)))
+      .catch(() => setGoogleLoginEnabled(false));
   }, [checkBackend]);
 
   useEffect(() => {
@@ -504,6 +510,17 @@ function ProductApp() {
     }
   }
 
+  function submitGoogleLogin() {
+    resetAuthFeedback();
+    setAuthBusy(true);
+    try {
+      oauthLogin("google");
+    } catch (error) {
+      setAuthError(friendlyAuthError(error));
+      setAuthBusy(false);
+    }
+  }
+
   async function createEndpoint(input) {
     const requiresCredit = billing.required && !billing.exempt;
     if (requiresCredit && !billing.available_order_id) {
@@ -625,6 +642,7 @@ function ProductApp() {
         authForm={authForm}
         patchAuthForm={patchAuthForm}
         onLogin={submitLogin}
+        onGoogleLogin={submitGoogleLogin}
         onRegister={submitRegister}
         onForgot={submitForgotPassword}
         onReset={submitResetPassword}
@@ -634,6 +652,7 @@ function ProductApp() {
           navigate("dashboard", { replace: true });
         }}
         busy={authBusy}
+        googleLoginEnabled={googleLoginEnabled}
         error={authError}
         message={authMessage}
         callbackReady={callbackReady}

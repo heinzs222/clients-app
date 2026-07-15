@@ -33,6 +33,12 @@ page.on("console", (message) => {
   }
 });
 
+await page.route("**/api/auth/settings", (route) => route.fulfill({
+  status: 200,
+  contentType: "application/json",
+  body: JSON.stringify({ external: { google: true, email: true }, disable_signup: false, autoconfirm: false })
+}));
+
 try {
   const trackerPage = await context.newPage();
   const trackerRequests = [];
@@ -189,6 +195,7 @@ try {
   await page.getByRole("button", { name: "Unlock the 9.3 guide" }).click();
   await page.waitForURL(`${baseUrl}/login`);
   assert(await page.getByRole("heading", { name: "Welcome back" }).isVisible(), "The paid guide is accessible without login.");
+  assert(await page.getByRole("button", { name: "Continue with Google" }).isVisible(), "Enabled Google sign-in did not render.");
 
   await page.goto(`${baseUrl}/docs`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Simple, private event setup." }).isVisible(), "Public product overview did not render.");
