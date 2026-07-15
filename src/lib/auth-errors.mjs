@@ -42,3 +42,7 @@ export function friendlyAuthError(error) {
 
   return details || "Authentication failed. Please try again.";
 }
+
+export function isOAuthRedirectSignal(error) {
+  return /redirecting to oauth provider/i.test(errorDetails(error));
+}

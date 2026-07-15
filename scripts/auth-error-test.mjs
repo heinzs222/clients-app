@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { friendlyAuthError } from "../src/lib/auth-errors.mjs";
+import { friendlyAuthError, isOAuthRedirectSignal } from "../src/lib/auth-errors.mjs";
 import { capiRequest, sessionAccessToken } from "../src/lib/api.js";
 
 assert.equal(
@@ -18,6 +18,8 @@ assert.equal(
   friendlyAuthError(null),
   "Authentication failed. Please try again."
 );
+assert.equal(isOAuthRedirectSignal({ message: "Redirecting to OAuth provider" }), true);
+assert.equal(isOAuthRedirectSignal({ message: "Google provider is unavailable" }), false);
 
 const testJwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhdXRoLWhhbmRvZmYtdGVzdCJ9.signature";
 assert.equal(sessionAccessToken(`other=value; nf_jwt=${encodeURIComponent(testJwt)}; theme=light`), testJwt);

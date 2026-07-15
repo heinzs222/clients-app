@@ -15,7 +15,7 @@ import {
 } from "@netlify/identity";
 import { Brand, PublicFooter } from "./components/UI.jsx";
 import { capiRequest } from "./lib/api.js";
-import { friendlyAuthError } from "./lib/auth-errors.mjs";
+import { friendlyAuthError, isOAuthRedirectSignal } from "./lib/auth-errors.mjs";
 import { clearMalformedAuthSession } from "./lib/auth-session.mjs";
 
 const AuthScreen = lazy(() => import("./components/AuthScreen.jsx"));
@@ -516,6 +516,7 @@ function ProductApp() {
     try {
       oauthLogin("google");
     } catch (error) {
+      if (isOAuthRedirectSignal(error)) return;
       setAuthError(friendlyAuthError(error));
       setAuthBusy(false);
     }
