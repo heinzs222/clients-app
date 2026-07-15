@@ -44,12 +44,16 @@ export default function AuthScreen({
     else if (isReset) onReset();
   }
 
+  const googleButton = googleLoginEnabled ? (
+    <button className="button oauthButton full" type="button" onClick={onGoogleLogin} disabled={busy}>
+      <span className="googleMark" aria-hidden="true">G</span>
+      Continue with Google
+    </button>
+  ) : null;
+
   const googleChoice = googleLoginEnabled ? (
     <>
-      <button className="button oauthButton full" type="button" onClick={onGoogleLogin} disabled={busy}>
-        <span className="googleMark" aria-hidden="true">G</span>
-        Continue with Google
-      </button>
+      {googleButton}
       <div className="authDivider"><span>or continue with email</span></div>
     </>
   ) : null;
@@ -138,7 +142,6 @@ export default function AuthScreen({
             <h1>{title}</h1>
             <p>{description}</p>
           </header>
-          {isLogin ? <div className="oauthPanel">{googleChoice}</div> : null}
           <form className="authForm" onSubmit={submit}>
             {!isReset ? (
               <Field label="Email address">
@@ -173,14 +176,31 @@ export default function AuthScreen({
             {message ? <Notice tone="success">{message}</Notice> : null}
             {isReset && !callbackReady ? <Notice tone="warning">Open this page from the secure recovery or invitation email link.</Notice> : null}
 
-            <button className="button primary full" type="submit" disabled={busy || (isReset && !callbackReady)}>
-              {busy ? "Working..." : isForgot ? "Send recovery link" : isReset ? "Update password" : "Log in"}
-              {!busy ? <ArrowRight size={18} /> : null}
-            </button>
+            {isLogin ? (
+              <div className="loginActions">
+                <button className="button primary" type="submit" disabled={busy}>
+                  {busy ? "Working..." : "Log in"}{!busy ? <ArrowRight size={18} /> : null}
+                </button>
+                <button className="button secondary" type="button" onClick={() => navigate("register")} disabled={busy}>
+                  Create account <ArrowRight size={18} />
+                </button>
+              </div>
+            ) : (
+              <button className="button primary full" type="submit" disabled={busy || (isReset && !callbackReady)}>
+                {busy ? "Working..." : isForgot ? "Send recovery link" : "Update password"}
+                {!busy ? <ArrowRight size={18} /> : null}
+              </button>
+            )}
           </form>
 
+          {isLogin && googleLoginEnabled ? (
+            <div className="loginOAuthPanel">
+              <div className="authDivider"><span>or continue with</span></div>
+              {googleButton}
+            </div>
+          ) : null}
+
           <div className="authFineprint">
-            {isLogin ? <p>Need an account? <button type="button" onClick={() => navigate("register")}>Create one</button></p> : null}
             {isForgot || isReset ? <p><button type="button" onClick={() => navigate("login")}>Back to login</button></p> : null}
           </div>
           {canPreview && isLogin ? <button className="previewButton" type="button" onClick={onPreview}>Preview the local workspace</button> : null}

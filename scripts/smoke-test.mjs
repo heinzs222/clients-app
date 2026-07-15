@@ -195,7 +195,17 @@ try {
   await page.getByRole("button", { name: "Unlock the 9.3 guide" }).click();
   await page.waitForURL(`${baseUrl}/login`);
   assert(await page.getByRole("heading", { name: "Welcome back" }).isVisible(), "The paid guide is accessible without login.");
-  assert(await page.getByRole("button", { name: "Continue with Google" }).isVisible(), "Enabled Google sign-in did not render.");
+  const loginButton = page.getByRole("button", { name: "Log in" });
+  const registerButton = page.getByRole("button", { name: "Create account" });
+  const googleButton = page.getByRole("button", { name: "Continue with Google" });
+  assert(await googleButton.isVisible(), "Enabled Google sign-in did not render.");
+  assert(await registerButton.isVisible(), "Login page registration CTA did not render.");
+  const loginBox = await loginButton.boundingBox();
+  const registerBox = await registerButton.boundingBox();
+  const googleBox = await googleButton.boundingBox();
+  assert(Math.abs(loginBox.y - registerBox.y) < 4, "Login and registration CTAs are not aligned.");
+  assert(googleBox.y > loginBox.y + loginBox.height, "Google sign-in is not positioned below the primary login actions.");
+  assert(googleBox.width > loginBox.width, "Google sign-in is not visually prominent enough.");
 
   await page.goto(`${baseUrl}/docs`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Simple, private event setup." }).isVisible(), "Public product overview did not render.");
@@ -357,7 +367,10 @@ try {
   assert(await page.getByRole("heading", { name: "Welcome back" }).isVisible(), "Login page did not recover from a malformed session.");
   assert(await page.evaluate(() => window.localStorage.getItem("gotrue.user")) === null, "Malformed auth session was not cleared.");
 
-  await page.getByRole("button", { name: "Create one" }).click();
+  const mobileLoginBox = await page.getByRole("button", { name: "Log in" }).boundingBox();
+  const mobileRegisterBox = await page.getByRole("button", { name: "Create account" }).boundingBox();
+  assert(mobileRegisterBox.y > mobileLoginBox.y + mobileLoginBox.height, "Mobile login actions did not stack cleanly.");
+  await page.getByRole("button", { name: "Create account" }).click();
   assert(await page.getByRole("heading", { name: "Create your account" }).isVisible(), "Registration page did not render.");
   assert(await page.getByText("Preview the local workspace").count() === 0, "Local preview control should only render on login.");
 
