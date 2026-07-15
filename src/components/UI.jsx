@@ -58,7 +58,10 @@ export function PublicHeader({ route, navigate, user }) {
           {user ? (
             <button className="button primary small" type="button" onClick={() => navigate("dashboard")}>Open dashboard</button>
           ) : (
-            <RouteLink className="button ghost small" route="login" navigate={navigate}>Log in</RouteLink>
+            <>
+              <RouteLink className="button ghost small" route="login" navigate={navigate}>Log in</RouteLink>
+              <RouteLink className="button primary small" route="register" navigate={navigate}>Register</RouteLink>
+            </>
           )}
         </div>
       </div>

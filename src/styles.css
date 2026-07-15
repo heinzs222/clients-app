@@ -1204,18 +1204,6 @@ button:disabled {
   padding: 32px 34px 22px;
 }
 
-.loginActions {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.loginActions .button {
-  min-width: 0;
-  min-height: 46px;
-  padding: 0 14px;
-}
-
 .loginOAuthPanel {
   padding: 0 34px 30px;
 }
@@ -3359,10 +3347,6 @@ button:disabled {
   .loginOAuthPanel {
     padding-left: 22px;
     padding-right: 22px;
-  }
-
-  .loginActions {
-    grid-template-columns: 1fr;
   }
 
   .registerMain {

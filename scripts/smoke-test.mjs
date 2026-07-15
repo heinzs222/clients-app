@@ -180,6 +180,8 @@ try {
   assert(await page.getByRole("heading", { name: "Launch reliable Meta tracking in minutes." }).isVisible(), "Product home page did not render.");
   assert(await page.getByRole("button", { name: /Launch your first endpoint/ }).isVisible(), "Homepage primary action did not render.");
   assert(await page.getByRole("button", { name: "Unlock the 9.3 guide" }).isVisible(), "Homepage paid-guide action did not render.");
+  assert(await page.getByRole("link", { name: "Log in" }).isVisible(), "Homepage login action did not render.");
+  assert(await page.getByRole("link", { name: "Register" }).isVisible(), "Homepage registration CTA did not render.");
   assert(await page.locator(".publicHeader").count() === 1, "Home page header did not render.");
   assert(await page.locator(".publicFooter").count() === 1, "Home page footer did not render.");
   const homeText = await page.locator("body").innerText();
@@ -196,16 +198,13 @@ try {
   await page.waitForURL(`${baseUrl}/login`);
   assert(await page.getByRole("heading", { name: "Welcome back" }).isVisible(), "The paid guide is accessible without login.");
   const loginButton = page.getByRole("button", { name: "Log in" });
-  const registerButton = page.getByRole("button", { name: "Create account" });
   const googleButton = page.getByRole("button", { name: "Continue with Google" });
   assert(await googleButton.isVisible(), "Enabled Google sign-in did not render.");
-  assert(await registerButton.isVisible(), "Login page registration CTA did not render.");
+  assert(await page.getByRole("button", { name: "Create one" }).isVisible(), "Login page registration link did not render.");
   const loginBox = await loginButton.boundingBox();
-  const registerBox = await registerButton.boundingBox();
   const googleBox = await googleButton.boundingBox();
-  assert(Math.abs(loginBox.y - registerBox.y) < 4, "Login and registration CTAs are not aligned.");
   assert(googleBox.y > loginBox.y + loginBox.height, "Google sign-in is not positioned below the primary login actions.");
-  assert(googleBox.width > loginBox.width, "Google sign-in is not visually prominent enough.");
+  assert(Math.abs(googleBox.width - loginBox.width) < 4, "Google sign-in and email login are not consistently sized.");
 
   await page.goto(`${baseUrl}/docs`, { waitUntil: "networkidle" });
   assert(await page.getByRole("heading", { name: "Simple, private event setup." }).isVisible(), "Public product overview did not render.");
@@ -367,10 +366,7 @@ try {
   assert(await page.getByRole("heading", { name: "Welcome back" }).isVisible(), "Login page did not recover from a malformed session.");
   assert(await page.evaluate(() => window.localStorage.getItem("gotrue.user")) === null, "Malformed auth session was not cleared.");
 
-  const mobileLoginBox = await page.getByRole("button", { name: "Log in" }).boundingBox();
-  const mobileRegisterBox = await page.getByRole("button", { name: "Create account" }).boundingBox();
-  assert(mobileRegisterBox.y > mobileLoginBox.y + mobileLoginBox.height, "Mobile login actions did not stack cleanly.");
-  await page.getByRole("button", { name: "Create account" }).click();
+  await page.getByRole("button", { name: "Create one" }).click();
   assert(await page.getByRole("heading", { name: "Create your account" }).isVisible(), "Registration page did not render.");
   assert(await page.getByText("Preview the local workspace").count() === 0, "Local preview control should only render on login.");
 
