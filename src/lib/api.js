@@ -1,6 +1,19 @@
 import { refreshSession } from "@netlify/identity";
 
 const API_PATH = "/api/workspace";
+const DEVICE_KEY = "simple-capi-device";
+
+function deviceToken() {
+  if (typeof window === "undefined") return "";
+  let value = window.localStorage.getItem(DEVICE_KEY) || "";
+  if (!/^[A-Za-z0-9_-]{16,128}$/.test(value)) {
+    const bytes = new Uint8Array(24);
+    window.crypto.getRandomValues(bytes);
+    value = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    window.localStorage.setItem(DEVICE_KEY, value);
+  }
+  return value;
+}
 
 export function sessionAccessToken(cookieHeader = typeof document === "undefined" ? "" : document.cookie) {
   const match = String(cookieHeader || "").match(/(?:^|;\s*)nf_jwt=([^;]+)/);
@@ -17,6 +30,8 @@ async function sendRequest(action, { method, body }, accessToken) {
   const headers = new Headers();
   if (body) headers.set("Content-Type", "application/json");
   if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
+  const device = deviceToken();
+  if (device) headers.set("X-CAPI-Device", device);
 
   return fetch(`${API_PATH}?action=${encodeURIComponent(action)}`, {
     method,

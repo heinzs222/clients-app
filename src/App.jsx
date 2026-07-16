@@ -19,6 +19,7 @@ import { friendlyAuthError, isOAuthRedirectSignal } from "./lib/auth-errors.mjs"
 import { clearMalformedAuthSession } from "./lib/auth-session.mjs";
 
 const AuthScreen = lazy(() => import("./components/AuthScreen.jsx"));
+const AccountSecurity = lazy(() => import("./components/AccountSecurity.jsx"));
 const Workspace = lazy(() => import("./components/Workspace.jsx"));
 const HomePage = lazy(() => import("./components/PublicPages.jsx").then((module) => ({ default: module.HomePage })));
 const EmqGuidePage = lazy(() => import("./components/PublicPages.jsx").then((module) => ({ default: module.EmqGuidePage })));
@@ -104,6 +105,8 @@ function ProductApp() {
     price_cents: 500,
     currency: "USD",
     mode: "unconfigured",
+    free_script_available: false,
+    free_script_blocked_reason: "",
     available_credits: 0,
     available_order_id: "",
     payments: [],
@@ -118,6 +121,7 @@ function ProductApp() {
   const [verifyState, setVerifyState] = useState({ status: "idle", healthy: false, latency_ms: 0, error: "" });
   const [updateState, setUpdateState] = useState({ status: "idle", error: "", success: false });
   const [deleteState, setDeleteState] = useState({ status: "idle", id: "", error: "" });
+  const [security, setSecurity] = useState({ status: "idle", required: true, complete: false, secret: "", uri: "", error: "" });
 
   const effectiveUser = useMemo(() => authUser || (localPreview ? {
     id: "local-development",
@@ -162,7 +166,8 @@ function ProductApp() {
     setEndpoints([]);
     setSelectedId("");
     setGuideState({ status: "idle", data: null, error: "" });
-    setBilling((current) => ({ ...current, status: "idle", available_credits: 0, available_order_id: "", payments: [], error: "" }));
+    setSecurity({ status: "idle", required: true, complete: false, secret: "", uri: "", error: "" });
+    setBilling((current) => ({ ...current, status: "idle", free_script_available: false, free_script_blocked_reason: "", available_credits: 0, available_order_id: "", payments: [], error: "" }));
     setAuthMessage("Your session expired. Please log in again.");
     navigate("login", { replace: true, keepMessage: true });
     return true;
@@ -193,6 +198,45 @@ function ProductApp() {
       setBackend({ status: "offline", ready: false, message: error.message, userLimit: 0 });
     }
   }, []);
+
+  const loadSecurity = useCallback(async () => {
+    setSecurity((current) => ({ ...current, status: "loading", error: "" }));
+    try {
+      const data = await capiRequest("security-status");
+      setSecurity((current) => ({ ...current, ...(data.security || {}), status: "ready", error: "" }));
+      return data.security || null;
+    } catch (error) {
+      if (await handleApiAuthError(error)) return null;
+      setSecurity((current) => ({ ...current, status: "error", error: error.message }));
+      return null;
+    }
+  }, [handleApiAuthError]);
+
+  const startAuthenticator = useCallback(async () => {
+    setSecurity((current) => ({ ...current, status: "loading", error: "" }));
+    try {
+      const data = await capiRequest("security-authenticator-start", { method: "POST", body: {} });
+      setSecurity((current) => ({ ...current, ...(data.security || {}), status: "ready", error: "" }));
+    } catch (error) {
+      if (await handleApiAuthError(error)) return;
+      setSecurity((current) => ({ ...current, status: "error", error: error.message }));
+    }
+  }, [handleApiAuthError]);
+
+  const verifyAuthenticator = useCallback(async (code) => {
+    setSecurity((current) => ({ ...current, status: "loading", error: "" }));
+    try {
+      const data = await capiRequest("security-authenticator-verify", { method: "POST", body: { code } });
+      setSecurity((current) => ({ ...current, ...(data.security || {}), secret: "", uri: "", status: "ready", error: "" }));
+      setEndpointsState({ status: "idle", error: "" });
+      setBilling((current) => ({ ...current, status: "idle" }));
+      return true;
+    } catch (error) {
+      if (await handleApiAuthError(error)) return false;
+      setSecurity((current) => ({ ...current, status: "ready", error: error.message }));
+      return false;
+    }
+  }, [handleApiAuthError]);
 
   const loadBilling = useCallback(async ({ message = "" } = {}) => {
     setBilling((current) => ({ ...current, status: "loading", error: "", message: message || current.message }));
@@ -285,12 +329,16 @@ function ProductApp() {
   }, [navigate]);
 
   useEffect(() => {
-    if (effectiveUser && endpointsState.status === "idle") loadEndpoints();
-  }, [effectiveUser, endpointsState.status, loadEndpoints]);
+    if (effectiveUser && security.status === "idle") loadSecurity();
+  }, [effectiveUser, security.status, loadSecurity]);
 
   useEffect(() => {
-    if (effectiveUser && billing.status === "idle") loadBilling();
-  }, [effectiveUser, billing.status, loadBilling]);
+    if (effectiveUser && security.complete && endpointsState.status === "idle") loadEndpoints();
+  }, [effectiveUser, security.complete, endpointsState.status, loadEndpoints]);
+
+  useEffect(() => {
+    if (effectiveUser && security.complete && billing.status === "idle") loadBilling();
+  }, [effectiveUser, security.complete, billing.status, loadBilling]);
 
   useEffect(() => {
     if (!effectiveUser || route !== "setup") return;
@@ -501,7 +549,8 @@ function ProductApp() {
       setAuthUser(null);
       setLocalPreview(false);
       setEndpoints([]);
-      setBilling((current) => ({ ...current, status: "idle", available_credits: 0, available_order_id: "", payments: [], message: "", error: "" }));
+      setBilling((current) => ({ ...current, status: "idle", free_script_available: false, free_script_blocked_reason: "", available_credits: 0, available_order_id: "", payments: [], message: "", error: "" }));
+      setSecurity({ status: "idle", required: true, complete: false, secret: "", uri: "", error: "" });
       setEndpointsState({ status: "idle", error: "" });
       setGuideState({ status: "idle", data: null, error: "" });
       setSelectedId("");
@@ -523,7 +572,7 @@ function ProductApp() {
   }
 
   async function createEndpoint(input) {
-    const requiresCredit = billing.required && !billing.exempt;
+    const requiresCredit = billing.required && !billing.exempt && !billing.free_script_available;
     if (requiresCredit && !billing.available_order_id) {
       setCreateState({ status: "error", error: "Purchase a $5 conversion credit before creating an endpoint." });
       return false;
@@ -659,6 +708,10 @@ function ProductApp() {
         callbackReady={callbackReady}
       />
     );
+  }
+
+  if (effectiveUser && !security.complete) {
+    return <AccountSecurity user={effectiveUser} security={security} onStart={startAuthenticator} onVerify={verifyAuthenticator} onLogout={submitLogout} busy={authBusy || security.status === "loading"} />;
   }
 
   if (route === "guide" && endpointsState.status === "success" && endpoints.length) {

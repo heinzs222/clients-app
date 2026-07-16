@@ -1,4 +1,5 @@
 import crypto from "node:crypto";
+import { getStore } from "@netlify/blobs";
 import JSZip from "jszip";
 import { getUser } from "@netlify/identity";
 import { minify } from "terser";
@@ -10,6 +11,8 @@ const MANIFEST_PATH = "/.well-known/capi-launcher.json";
 const DEFAULT_GRAPH_VERSION = "v23.0";
 const DEFAULT_USER_LIMIT = 25;
 const DEFAULT_ENDPOINT_PRICE_CENTS = 500;
+const SECURITY_STORE = "simple-capi-security";
+const TOTP_ISSUER = "Simple CAPI";
 
 function cleanString(value) {
   if (typeof value !== "string") return "";
@@ -47,6 +50,132 @@ function ownerKey(user) {
 
 function ownerPrefix(user) {
   return `${SITE_PREFIX}-${ownerKey(user)}-`;
+}
+
+function securityStore() {
+  return getStore({ name: SECURITY_STORE, consistency: "strong" });
+}
+
+function securityKey() {
+  const secret = cleanString(process.env.CAPI_VERIFICATION_SECRET) ||
+    cleanString(process.env.CAPI_GATEWAY_SECRET) ||
+    cleanString(process.env.NETLIFY_AUTH_TOKEN);
+  if (secret.length < 20) {
+    throw Object.assign(new Error("Account verification is not configured."), { statusCode: 503 });
+  }
+  return crypto.createHash("sha256").update(`simple-capi-verification-v1:${secret}`).digest();
+}
+
+function accountSecurityKey(user) {
+  return `accounts/${ownerKey(user)}`;
+}
+
+function sourceIp(request) {
+  for (const header of ["x-nf-client-connection-ip", "cf-connecting-ip", "x-real-ip", "x-forwarded-for"]) {
+    const value = cleanString(request.headers.get(header));
+    if (value) return value.split(",")[0].trim().toLowerCase();
+  }
+  return "";
+}
+
+function deviceToken(request) {
+  const value = cleanString(request.headers.get("x-capi-device"));
+  return /^[A-Za-z0-9_-]{16,128}$/.test(value) ? value : "";
+}
+
+function claimHash(type, value) {
+  return crypto.createHmac("sha256", securityKey()).update(`${type}:${value}`).digest("hex");
+}
+
+function encryptSecret(value) {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv("aes-256-gcm", securityKey(), iv);
+  const encrypted = Buffer.concat([cipher.update(value, "utf8"), cipher.final()]);
+  return Buffer.concat([iv, cipher.getAuthTag(), encrypted]).toString("base64url");
+}
+
+function decryptSecret(value) {
+  try {
+    const packed = Buffer.from(cleanString(value), "base64url");
+    if (packed.length < 29) return "";
+    const decipher = crypto.createDecipheriv("aes-256-gcm", securityKey(), packed.subarray(0, 12));
+    decipher.setAuthTag(packed.subarray(12, 28));
+    return Buffer.concat([decipher.update(packed.subarray(28)), decipher.final()]).toString("utf8");
+  } catch {
+    return "";
+  }
+}
+
+function base32Encode(buffer) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let bits = 0;
+  let value = 0;
+  let output = "";
+  for (const byte of buffer) {
+    value = (value << 8) | byte;
+    bits += 8;
+    while (bits >= 5) {
+      output += alphabet[(value >>> (bits - 5)) & 31];
+      bits -= 5;
+    }
+  }
+  if (bits) output += alphabet[(value << (5 - bits)) & 31];
+  return output;
+}
+
+function base32Decode(value) {
+  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+  let bits = 0;
+  let packed = 0;
+  const bytes = [];
+  for (const character of cleanString(value).toUpperCase().replace(/=+$/, "")) {
+    const index = alphabet.indexOf(character);
+    if (index < 0) return Buffer.alloc(0);
+    packed = (packed << 5) | index;
+    bits += 5;
+    if (bits >= 8) {
+      bytes.push((packed >>> (bits - 8)) & 255);
+      bits -= 8;
+    }
+  }
+  return Buffer.from(bytes);
+}
+
+function totpCode(secret, timestamp = Date.now()) {
+  const key = base32Decode(secret);
+  if (!key.length) return "";
+  const counter = Buffer.alloc(8);
+  counter.writeBigUInt64BE(BigInt(Math.floor(timestamp / 30000)));
+  const digest = crypto.createHmac("sha1", key).update(counter).digest();
+  const offset = digest[digest.length - 1] & 15;
+  const number = (digest.readUInt32BE(offset) & 0x7fffffff) % 1000000;
+  return String(number).padStart(6, "0");
+}
+
+function validTotp(secret, code, timestamp = Date.now()) {
+  const candidate = cleanString(code).replace(/\s+/g, "");
+  if (!/^\d{6}$/.test(candidate)) return false;
+  return [-30000, 0, 30000].some((offset) => {
+    const expected = totpCode(secret, timestamp + offset);
+    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(candidate));
+  });
+}
+
+async function accountSecurity(user) {
+  return await securityStore().get(accountSecurityKey(user), { type: "json", consistency: "strong" }) || {};
+}
+
+async function updateAccountSecurity(user, patch) {
+  const store = securityStore();
+  const key = accountSecurityKey(user);
+  for (let attempt = 0; attempt < 5; attempt += 1) {
+    const current = await store.getWithMetadata(key, { type: "json", consistency: "strong" });
+    const result = await store.setJSON(key, { ...(current?.data || {}), ...patch }, current?.etag
+      ? { onlyIfMatch: current.etag }
+      : { onlyIfNew: true });
+    if (result.modified) return;
+  }
+  throw Object.assign(new Error("Account security state changed. Please try again."), { statusCode: 409 });
 }
 
 function booleanEnv(name, fallback) {
@@ -229,6 +358,61 @@ async function requireUser(request) {
   }
 
   throw Object.assign(new Error("Login required."), { statusCode: 401 });
+}
+
+async function securityStatus(user, request) {
+  if (isLocalRequest(request)) {
+    return { required: false, complete: true, authenticator_verified: true };
+  }
+  securityKey();
+  const state = await accountSecurity(user);
+  return {
+    required: true,
+    complete: Boolean(state.authenticator_verified_at),
+    authenticator_verified: Boolean(state.authenticator_verified_at)
+  };
+}
+
+async function startAuthenticator(user, request) {
+  if (isLocalRequest(request)) return { ...(await securityStatus(user, request)), secret: "", uri: "" };
+  const state = await accountSecurity(user);
+  if (state.authenticator_verified_at) return securityStatus(user, request);
+  const secret = base32Encode(crypto.randomBytes(20));
+  await updateAccountSecurity(user, {
+    pending_authenticator_secret: encryptSecret(secret),
+    pending_authenticator_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString()
+  });
+  const label = `${TOTP_ISSUER}:${cleanString(user.email) || ownerKey(user)}`;
+  const params = new URLSearchParams({ secret, issuer: TOTP_ISSUER, algorithm: "SHA1", digits: "6", period: "30" });
+  return { ...(await securityStatus(user, request)), secret, uri: `otpauth://totp/${encodeURIComponent(label)}?${params}` };
+}
+
+async function verifyAuthenticator(user, request, code) {
+  if (isLocalRequest(request)) return securityStatus(user, request);
+  const state = await accountSecurity(user);
+  if (state.authenticator_verified_at) return securityStatus(user, request);
+  const expiresAt = Date.parse(cleanString(state.pending_authenticator_expires_at));
+  const secret = decryptSecret(state.pending_authenticator_secret);
+  if (!secret || !expiresAt || expiresAt < Date.now()) {
+    throw Object.assign(new Error("Authenticator setup expired. Start again."), { statusCode: 400 });
+  }
+  if (!validTotp(secret, code)) {
+    throw Object.assign(new Error("That authenticator code is invalid. Try the current 6-digit code."), { statusCode: 400 });
+  }
+  await updateAccountSecurity(user, {
+    authenticator_secret: encryptSecret(secret),
+    authenticator_verified_at: new Date().toISOString(),
+    pending_authenticator_secret: null,
+    pending_authenticator_expires_at: null
+  });
+  return securityStatus(user, request);
+}
+
+async function assertVerifiedAccount(user, request) {
+  const status = await securityStatus(user, request);
+  if (!status.complete) {
+    throw Object.assign(new Error("Set up an authenticator app before using the workspace."), { statusCode: 403 });
+  }
 }
 
 function provisionerStatus() {
@@ -452,15 +636,16 @@ async function billingStatus(accountSlug, user, request) {
   const exemption = billingExemption(user, request) || (!config.required ? "service" : "");
   const exempt = Boolean(exemption);
   if (exempt) {
-    return { ...config, exempt: true, exemption, available_credits: null, payments: [] };
+    return { ...config, exempt: true, exemption, free_script_available: false, free_script_blocked_reason: "", available_credits: null, payments: [] };
   }
+  const endpoints = await listOwnedSites(accountSlug, user);
+  const free = await freeScriptStatus(user, request, endpoints);
   if (!config.configured) {
-    return { ...config, exempt: false, available_credits: 0, payments: [] };
+    return { ...config, ...free, exempt: false, available_credits: 0, payments: [] };
   }
 
   const params = lemonOrderSearchParams(user);
   const orders = await lemonFetch(`/orders?${params}`);
-  const endpoints = await listOwnedSites(accountSlug, user);
   const redeemed = new Map(endpoints
     .filter((endpoint) => endpoint.billing?.order_id)
     .map((endpoint) => [cleanString(endpoint.billing.order_id), endpoint.id]));
@@ -476,6 +661,7 @@ async function billingStatus(accountSlug, user, request) {
   const available = valid.filter((order) => !isRedeemed(order.id));
   return {
     ...config,
+    ...free,
     exempt: false,
     available_credits: available.length,
     available_order_id: available[0]?.id || "",
@@ -557,6 +743,27 @@ function validateClientInput(input, { tokenRequired = true } = {}) {
   }
 
   return { clientName, datasetId, accessToken, graphVersion, eventName };
+}
+
+async function assertDatasetAccess(client) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
+  try {
+    const params = new URLSearchParams({ fields: "id", access_token: client.accessToken });
+    const result = await fetch(`https://graph.facebook.com/${encodeURIComponent(client.graphVersion)}/${encodeURIComponent(client.datasetId)}?${params}`, {
+      signal: controller.signal,
+      headers: { Accept: "application/json" }
+    });
+    const data = await result.json().catch(() => ({}));
+    if (!result.ok || cleanString(data?.id) !== client.datasetId) {
+      throw Object.assign(new Error("The Meta access token cannot access this dataset."), { statusCode: 400 });
+    }
+  } catch (error) {
+    if (error?.statusCode) throw error;
+    throw Object.assign(new Error(error?.name === "AbortError" ? "Meta dataset verification timed out." : "The Meta dataset could not be verified."), { statusCode: 502 });
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function endpointSiteName(user, client, payment = null) {
@@ -1711,6 +1918,98 @@ async function listOwnedSites(accountSlug, user) {
   return Promise.all(sites.map(async (site) => endpointRecord(site, await readManifest(site))));
 }
 
+async function claimOwner(key) {
+  const value = await securityStore().get(key, { type: "json", consistency: "strong" });
+  return cleanString(value?.owner_key);
+}
+
+async function reserveClaim(key, user, errorMessage, { allowSameOwner = false } = {}) {
+  const owner = ownerKey(user);
+  const result = await securityStore().setJSON(key, {
+    owner_key: owner,
+    claimed_at: new Date().toISOString()
+  }, { onlyIfNew: true });
+  if (result.modified) return true;
+  if (allowSameOwner && await claimOwner(key) === owner) return false;
+  throw Object.assign(new Error(errorMessage), { statusCode: 409 });
+}
+
+async function markFreeConsumed(user, request) {
+  const owner = ownerKey(user);
+  const claims = [`free/accounts/${owner}`];
+  const ip = sourceIp(request);
+  const device = deviceToken(request);
+  if (ip) claims.push(`free/networks/${claimHash("network", ip)}`);
+  if (device) claims.push(`free/devices/${claimHash("device", device)}`);
+  await Promise.all(claims.map((key) => securityStore().setJSON(key, {
+    owner_key: owner,
+    claimed_at: new Date().toISOString()
+  }, { onlyIfNew: true })));
+}
+
+async function freeScriptStatus(user, request, endpoints) {
+  if (billingExempt(user, request) || !billingRequired()) {
+    return { free_script_available: false, free_script_blocked_reason: "" };
+  }
+  const owner = ownerKey(user);
+  if (endpoints.length) await markFreeConsumed(user, request);
+  if (endpoints.length || await claimOwner(`free/accounts/${owner}`)) {
+    return { free_script_available: false, free_script_blocked_reason: "used" };
+  }
+  const ip = sourceIp(request);
+  const device = deviceToken(request);
+  if (!ip || !device) return { free_script_available: false, free_script_blocked_reason: "device" };
+  const networkOwner = await claimOwner(`free/networks/${claimHash("network", ip)}`);
+  const deviceOwner = await claimOwner(`free/devices/${claimHash("device", device)}`);
+  if ((networkOwner && networkOwner !== owner) || (deviceOwner && deviceOwner !== owner)) {
+    return { free_script_available: false, free_script_blocked_reason: "claimed" };
+  }
+  return { free_script_available: true, free_script_blocked_reason: "" };
+}
+
+async function reserveFreeScript(user, request) {
+  const owner = ownerKey(user);
+  const ip = sourceIp(request);
+  const device = deviceToken(request);
+  if (!ip || !device) {
+    throw Object.assign(new Error("This browser could not be verified for a free script."), { statusCode: 403 });
+  }
+  const keys = [
+    `free/accounts/${owner}`,
+    `free/networks/${claimHash("network", ip)}`,
+    `free/devices/${claimHash("device", device)}`
+  ];
+  const reserved = [];
+  try {
+    for (const key of keys) {
+      const created = await reserveClaim(key, user, "A free script has already been claimed by this account, network, or device.");
+      if (created) reserved.push(key);
+    }
+    return reserved;
+  } catch (error) {
+    await Promise.all(reserved.map((key) => securityStore().delete(key)));
+    throw error;
+  }
+}
+
+async function reserveDatasetClaim(user, datasetId, allSites) {
+  const owner = ownerKey(user);
+  const manifests = await Promise.all(allSites
+    .filter((site) => cleanString(site.name).startsWith(`${SITE_PREFIX}-`))
+    .map((site) => readManifest(site)));
+  const activeElsewhere = manifests.some((manifest) =>
+    cleanString(manifest.dataset_id) === datasetId && cleanString(manifest.owner_key) !== owner);
+  if (activeElsewhere) {
+    throw Object.assign(new Error("This dataset is active on a different account and cannot be added here."), { statusCode: 409 });
+  }
+  return reserveClaim(
+    `datasets/${claimHash("dataset", datasetId)}`,
+    user,
+    "This dataset is active on a different account and cannot be added here.",
+    { allowSameOwner: true }
+  );
+}
+
 async function requireOwnedSite(siteId, user) {
   const id = cleanString(siteId);
   if (!/^[a-f0-9-]{20,}$/i.test(id)) {
@@ -1725,7 +2024,9 @@ async function requireOwnedSite(siteId, user) {
 
 async function createEndpoint(accountSlug, accountId, user, input, request) {
   const client = validateClientInput(input);
-  const owned = await ownedSiteObjects(accountSlug, user);
+  await assertDatasetAccess(client);
+  const allSites = await listAccountSites(accountSlug);
+  const owned = allSites.filter((site) => cleanString(site.name).startsWith(ownerPrefix(user)));
   const limit = safeInteger(process.env.CAPI_MAX_ENDPOINTS_PER_USER, DEFAULT_USER_LIMIT);
   const exempt = billingExempt(user, request) || !billingRequired();
   if (!exempt && owned.length >= limit) {
@@ -1734,8 +2035,9 @@ async function createEndpoint(accountSlug, accountId, user, input, request) {
     });
   }
 
+  const free = !exempt && (await freeScriptStatus(user, request, owned)).free_script_available;
   let payment = null;
-  if (!exempt) {
+  if (!exempt && !free) {
     if (!billingConfiguration().configured) {
       throw Object.assign(new Error("Endpoint payments are not configured."), { statusCode: 503 });
     }
@@ -1744,9 +2046,13 @@ async function createEndpoint(accountSlug, accountId, user, input, request) {
     payment = validateLemonOrder(order, user, { redeemedSiteId });
   }
 
+  let freeClaims = [];
+  let datasetClaimCreated = false;
   const siteName = endpointSiteName(user, client, payment);
   let site;
   try {
+    freeClaims = free ? await reserveFreeScript(user, request) : [];
+    datasetClaimCreated = await reserveDatasetClaim(user, client.datasetId, allSites);
     site = await netlifyFetch(`/${encodeURIComponent(accountSlug)}/sites`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -1766,6 +2072,11 @@ async function createEndpoint(accountSlug, accountId, user, input, request) {
       amount: payment.amount,
       currency: payment.currency,
       paid_at: payment.paidAt
+    } : free ? {
+      provider: "free",
+      amount: 0,
+      currency: "USD",
+      paid_at: new Date().toISOString()
     } : undefined;
     const deploy = await deploySite({ site, user, ...client, billing });
     const record = endpointRecord({ ...site, published_deploy: deploy }, {
@@ -1783,11 +2094,13 @@ async function createEndpoint(accountSlug, accountId, user, input, request) {
     if (site?.id) {
       try { await netlifyFetch(`/sites/${encodeURIComponent(site.id)}`, { method: "DELETE" }); } catch {}
     }
+    if (datasetClaimCreated) await securityStore().delete(`datasets/${claimHash("dataset", client.datasetId)}`);
+    await Promise.all(freeClaims.map((key) => securityStore().delete(key)));
     throw error;
   }
 }
 
-async function updateEndpoint(accountId, user, input) {
+async function updateEndpoint(accountSlug, accountId, user, input) {
   const site = await requireOwnedSite(input.siteId, user);
   const previous = await readManifest(site);
   const client = validateClientInput({
@@ -1797,33 +2110,44 @@ async function updateEndpoint(accountId, user, input) {
     graphVersion: input.graphVersion || previous.graph_version,
     eventName: previous.event_name || "Lead"
   }, { tokenRequired: false });
+  const datasetChanged = client.datasetId !== cleanString(previous.dataset_id);
+  let datasetClaimCreated = false;
 
-  if (client.datasetId !== cleanString(previous.dataset_id)) {
-    await setEnvValue(accountId, site.id, "META_DATASET_ID", client.datasetId);
+  if (datasetChanged) {
+    if (!client.accessToken) {
+      throw Object.assign(new Error("Enter the Meta access token when changing the Dataset ID."), { statusCode: 400 });
+    }
+    await assertDatasetAccess(client);
+    datasetClaimCreated = await reserveDatasetClaim(user, client.datasetId, await listAccountSites(accountSlug));
   }
-  if (client.graphVersion !== cleanString(previous.graph_version)) {
-    await setEnvValue(accountId, site.id, "META_GRAPH_API_VERSION", client.graphVersion);
+
+  try {
+    if (datasetChanged) await setEnvValue(accountId, site.id, "META_DATASET_ID", client.datasetId);
+    if (client.graphVersion !== cleanString(previous.graph_version)) {
+      await setEnvValue(accountId, site.id, "META_GRAPH_API_VERSION", client.graphVersion);
+    }
+    if (client.accessToken) await setEnvValue(accountId, site.id, "META_ACCESS_TOKEN", client.accessToken);
+    await setEnvValue(accountId, site.id, "CAPI_EVENT_NAME", client.eventName);
+    const deploy = await deploySite({
+      site,
+      user,
+      ...client,
+      createdAt: previous.created_at || site.created_at,
+      billing: previous.billing
+    });
+    const record = endpointRecord({ ...site, published_deploy: deploy }, {
+      ...previous,
+      client_name: client.clientName,
+      dataset_id: client.datasetId,
+      graph_version: client.graphVersion,
+      event_name: client.eventName,
+      updated_at: new Date().toISOString()
+    });
+    return { ...record, ...(await verifyEndpoint(record.endpoint)) };
+  } catch (error) {
+    if (datasetClaimCreated) await securityStore().delete(`datasets/${claimHash("dataset", client.datasetId)}`);
+    throw error;
   }
-  if (client.accessToken) {
-    await setEnvValue(accountId, site.id, "META_ACCESS_TOKEN", client.accessToken);
-  }
-  await setEnvValue(accountId, site.id, "CAPI_EVENT_NAME", client.eventName);
-  const deploy = await deploySite({
-    site,
-    user,
-    ...client,
-    createdAt: previous.created_at || site.created_at,
-    billing: previous.billing
-  });
-  const record = endpointRecord({ ...site, published_deploy: deploy }, {
-    ...previous,
-    client_name: client.clientName,
-    dataset_id: client.datasetId,
-    graph_version: client.graphVersion,
-    event_name: client.eventName,
-    updated_at: new Date().toISOString()
-  });
-  return { ...record, ...(await verifyEndpoint(record.endpoint)) };
 }
 
 async function parseJson(request) {
@@ -1841,7 +2165,7 @@ async function parseJson(request) {
 export default async function handler(request) {
   if (request.method === "OPTIONS") {
     const result = response(request, 204, null);
-    result.headers.set("Access-Control-Allow-Headers", "Content-Type");
+    result.headers.set("Access-Control-Allow-Headers", "Content-Type, X-CAPI-Device");
     result.headers.set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS");
     return result;
   }
@@ -1859,6 +2183,19 @@ export default async function handler(request) {
     }
     if (request.method !== "GET") assertSameOrigin(request);
     const user = await requireUser(request);
+
+    if (request.method === "GET" && action === "security-status") {
+      return response(request, 200, { success: true, security: await securityStatus(user, request) });
+    }
+    if (request.method === "POST" && action === "security-authenticator-start") {
+      return response(request, 200, { success: true, security: await startAuthenticator(user, request) });
+    }
+    if (request.method === "POST" && action === "security-authenticator-verify") {
+      const input = await parseJson(request);
+      return response(request, 200, { success: true, security: await verifyAuthenticator(user, request, input.code) });
+    }
+
+    await assertVerifiedAccount(user, request);
     const accountSlug = cleanString(process.env.NETLIFY_ACCOUNT_SLUG);
     if (!accountSlug) {
       throw Object.assign(new Error("Server provisioning account is missing."), { statusCode: 500 });
@@ -1927,13 +2264,18 @@ export default async function handler(request) {
     }
 
     if (request.method === "PATCH" && action === "update") {
-      const endpoint = await updateEndpoint(accountId, user, await parseJson(request));
+      const endpoint = await updateEndpoint(accountSlug, accountId, user, await parseJson(request));
       return response(request, 200, { success: true, endpoint: clientEndpointRecord(endpoint) });
     }
 
     if (request.method === "DELETE" && action === "delete") {
       const input = await parseJson(request);
       const site = await requireOwnedSite(input.siteId, user);
+      const manifest = await readManifest(site);
+      await markFreeConsumed(user, request);
+      if (cleanString(manifest.dataset_id)) {
+        await reserveDatasetClaim(user, cleanString(manifest.dataset_id), await listAccountSites(accountSlug));
+      }
       await netlifyFetch(`/sites/${encodeURIComponent(site.id)}`, { method: "DELETE" });
       return response(request, 200, { success: true, deleted: site.id });
     }
@@ -1975,5 +2317,9 @@ export const __testing = {
   validateClientInput,
   envVars,
   identityUserFromBearer,
-  purchasedGuide
+  purchasedGuide,
+  base32Encode,
+  base32Decode,
+  totpCode,
+  validTotp
 };
