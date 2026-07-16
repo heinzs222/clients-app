@@ -3,10 +3,13 @@ import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import BlogIndex from "./components/BlogIndex.jsx";
 import SeoPage, { SEO_PATHS } from "./components/SeoPages.jsx";
+import { installPublicCopy } from "./lib/public-copy.js";
 import "./styles.css";
 import "./seo-pages.css";
 import "./blog-index.css";
 import "./mobile-navigation-fixes.css";
+
+installPublicCopy();
 
 const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
 const content = normalizedPath === "/blogs"
