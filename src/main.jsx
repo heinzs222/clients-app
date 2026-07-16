@@ -6,6 +6,7 @@ import SeoPage, { SEO_PATHS } from "./components/SeoPages.jsx";
 import "./styles.css";
 import "./seo-pages.css";
 import "./blog-index.css";
+import "./mobile-navigation-fixes.css";
 
 const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
 const content = normalizedPath === "/blogs"
