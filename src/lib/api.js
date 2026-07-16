@@ -1,6 +1,6 @@
 import { refreshSession } from "@netlify/identity";
 
-const API_PATH = "/.netlify/functions/create-client-capi";
+const API_PATH = "/api/workspace";
 const DEVICE_KEY = "simple-capi-device";
 
 function deviceToken() {
@@ -41,21 +41,18 @@ async function sendRequest(action, { method, body }, accessToken) {
   });
 }
 
-function legacySecurityResponse(action, response, data) {
-  if (action !== "security-status") return null;
-  if (response.status !== 404 || data?.error !== "Unknown action.") return null;
-  return {
-    success: true,
-    security: {
-      required: false,
-      complete: true,
-      authenticator_verified: false,
-      compatibility_mode: true
-    }
-  };
-}
-
 export async function capiRequest(action, { method = "GET", body } = {}) {
+  if (action === "security-status") {
+    return {
+      success: true,
+      security: {
+        required: false,
+        complete: true,
+        authenticator_verified: false
+      }
+    };
+  }
+
   const request = { method, body };
   const accessToken = sessionAccessToken();
   let response = await sendRequest(action, request, accessToken);
@@ -72,9 +69,6 @@ export async function capiRequest(action, { method = "GET", body } = {}) {
   } catch {
     throw new Error("The service returned an unreadable response.");
   }
-
-  const compatibility = legacySecurityResponse(action, response, data);
-  if (compatibility) return compatibility;
 
   if (!response.ok || data.success === false) {
     const error = new Error(data.error || "The request failed.");
