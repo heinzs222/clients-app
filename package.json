@@ -8,9 +8,10 @@
     "dev:local": "npm run build && node scripts/local-server.mjs",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "check": "npm run build && node --check netlify/functions/create-client-capi.mjs && node scripts/auth-error-test.mjs",
+    "check": "npm run build && node --check netlify/functions/create-client-capi.mjs && node --check netlify/functions/client-gateway.mjs && node --check netlify/functions/script-binding.mjs && node --check netlify/functions/identity-signup.mjs && node scripts/auth-error-test.mjs && node scripts/binding-test.mjs",
     "test:smoke": "node scripts/smoke-test.mjs",
-    "test:generated": "node scripts/generated-artifacts-test.mjs",
+    "test:generated": "CAPI_BINDING_ENFORCEMENT=false node scripts/generated-artifacts-test.mjs",
+    "test:binding": "node scripts/binding-test.mjs",
     "test:live": "node scripts/live-audit.mjs"
   },
   "engines": {
