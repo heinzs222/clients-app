@@ -1,6 +1,7 @@
 import { refreshSession } from "@netlify/identity";
 
 const API_PATH = "/api/workspace";
+const BINDING_PATH = "/api/bindings";
 const DEVICE_KEY = "simple-capi-device";
 
 function deviceToken() {
@@ -26,19 +27,60 @@ export function sessionAccessToken(cookieHeader = typeof document === "undefined
   }
 }
 
-async function sendRequest(action, { method, body }, accessToken) {
+async function rawRequest(path, action, { method = "GET", body, query = {} } = {}, accessToken = "") {
   const headers = new Headers();
   if (body) headers.set("Content-Type", "application/json");
   if (accessToken) headers.set("Authorization", `Bearer ${accessToken}`);
   const device = deviceToken();
   if (device) headers.set("X-CAPI-Device", device);
-
-  return fetch(`${API_PATH}?action=${encodeURIComponent(action)}`, {
+  const params = new URLSearchParams({ action, ...query });
+  return fetch(`${path}?${params}`, {
     method,
     credentials: "same-origin",
     headers,
     body: body ? JSON.stringify(body) : undefined
   });
+}
+
+async function parsedRequest(path, action, options = {}) {
+  const accessToken = sessionAccessToken();
+  let response = await rawRequest(path, action, options, accessToken);
+  if (response.status === 401 && accessToken) {
+    const refreshedToken = await refreshSession();
+    if (refreshedToken) response = await rawRequest(path, action, options, refreshedToken);
+  }
+
+  const text = await response.text();
+  let data = {};
+  try {
+    data = text ? JSON.parse(text) : {};
+  } catch {
+    throw new Error("The service returned an unreadable response.");
+  }
+  if (!response.ok || data.success === false) {
+    const error = new Error(data.error || "The request failed.");
+    error.status = response.status;
+    throw error;
+  }
+  return data;
+}
+
+export async function bindingRequest(action, { method = "GET", body, siteId } = {}) {
+  return parsedRequest(BINDING_PATH, action, {
+    method,
+    body,
+    query: siteId ? { siteId } : {}
+  });
+}
+
+async function bindingForEndpoint(endpoint) {
+  try {
+    const data = await bindingRequest("get", { siteId: endpoint.id });
+    return { ...endpoint, binding: data.binding || null, binding_error: "" };
+  } catch (error) {
+    if (error.status === 404) return { ...endpoint, binding: null, binding_error: "" };
+    return { ...endpoint, binding: null, binding_error: error.message };
+  }
 }
 
 export async function capiRequest(action, { method = "GET", body } = {}) {
@@ -53,27 +95,34 @@ export async function capiRequest(action, { method = "GET", body } = {}) {
     };
   }
 
-  const request = { method, body };
-  const accessToken = sessionAccessToken();
-  let response = await sendRequest(action, request, accessToken);
+  const data = await parsedRequest(API_PATH, action, { method, body });
 
-  if (response.status === 401 && accessToken) {
-    const refreshedToken = await refreshSession();
-    if (refreshedToken) response = await sendRequest(action, request, refreshedToken);
+  if (action === "list" && Array.isArray(data.endpoints)) {
+    data.endpoints = await Promise.all(data.endpoints.map(bindingForEndpoint));
   }
 
-  const text = await response.text();
-  let data = {};
-  try {
-    data = text ? JSON.parse(text) : {};
-  } catch {
-    throw new Error("The service returned an unreadable response.");
+  if (action === "create" && data.endpoint) {
+    try {
+      const binding = await bindingRequest("lock", {
+        method: "POST",
+        body: {
+          siteId: data.endpoint.id,
+          allowedPageUrl: body?.allowedPageUrl,
+          formSelector: body?.formSelector
+        }
+      });
+      data.endpoint = { ...data.endpoint, binding: binding.binding || null, binding_error: "" };
+    } catch (error) {
+      data.endpoint = { ...data.endpoint, binding: null, binding_error: error.message };
+    }
   }
 
-  if (!response.ok || data.success === false) {
-    const error = new Error(data.error || "The request failed.");
-    error.status = response.status;
-    throw error;
+  if (action === "delete" && body?.siteId) {
+    try {
+      await bindingRequest("delete", { method: "DELETE", siteId: body.siteId });
+    } catch {
+      // The tracking setup is already deleted. Binding cleanup can be retried separately.
+    }
   }
 
   return data;

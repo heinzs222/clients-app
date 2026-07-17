@@ -34,18 +34,22 @@ import {
   X
 } from "lucide-react";
 import {
+  canonicalPageUrl,
   cleanAccessToken,
   cleanDatasetId,
   endpointState,
   formatDate,
+  isExactFormSelector,
   isValidAccessToken,
   isValidDatasetId,
+  isValidPageUrl,
   loadTrackingSettings,
   removeTrackingSettings,
   saveTrackingSettings,
   trackingDefaultsForEvent,
   trackerTag
 } from "../lib/capi.js";
+import { bindingRequest } from "../lib/api.js";
 import {
   Brand,
   CopyButton,
@@ -134,9 +138,9 @@ function EndpointTable({ endpoints, onOpen, onManage, onDelete, compact = false,
             const state = endpointState(endpoint);
             return (
               <tr key={endpoint.id}>
-                <td data-label="Client"><button className="clientLink" type="button" onClick={() => onOpen(endpoint)}>{endpoint.client_name}</button><small>{endpoint.event_name || "Lead"} / Endpoint {endpoint.id.slice(0, 8)}</small></td>
+                <td data-label="Client"><button className="clientLink" type="button" onClick={() => onOpen(endpoint)}>{endpoint.client_name}</button><small>{endpoint.event_name || "Lead"} / {endpoint.binding ? "Locked" : "Lock required"}</small></td>
                 <td data-label="Dataset"><code>{endpoint.dataset_id || "Unavailable"}</code></td>
-                <td data-label="Status"><StatusPill state={state} label={state === "active" ? "Active" : state === "pending" ? "Pending" : "Check"} /></td>
+                <td data-label="Status"><StatusPill state={endpoint.binding ? state : "pending"} label={endpoint.binding ? (state === "active" ? "Active" : state === "pending" ? "Pending" : "Check") : "Lock required"} /></td>
                 <td data-label="Updated">{formatDate(endpoint.updated_at)}</td>
                 <td className="rowActions">
                   <button className="iconOnly" type="button" onClick={() => onOpen(endpoint)} aria-label={`Open ${endpoint.client_name} tracking`} title="Open tracking"><Eye size={18} /></button>
@@ -177,7 +181,7 @@ function EndpointDeleteModal({ endpoint, open, onClose, onConfirm, busy }) {
 }
 
 function Dashboard({ endpoints, loading, error, navigate, onNew, onOpen, onManage, onDelete, busyId, refresh }) {
-  const active = endpoints.filter((item) => endpointState(item) === "active").length;
+  const active = endpoints.filter((item) => endpointState(item) === "active" && item.binding).length;
   const newest = [...endpoints].sort((a, b) => new Date(b.updated_at || 0) - new Date(a.updated_at || 0))[0];
   return (
     <main className="workspaceMain">
@@ -198,7 +202,7 @@ function Dashboard({ endpoints, loading, error, navigate, onNew, onOpen, onManag
           <EndpointTable endpoints={endpoints.slice(0, 5)} onOpen={onOpen} onManage={onManage} onDelete={onDelete} busyId={busyId} compact />
         ) : (
           <EmptyState icon={Server} title="No endpoints yet" action={<button className="button primary" type="button" onClick={onNew}><Plus size={18} /> Create endpoint</button>}>
-            Start with a client name, Meta Dataset ID, and access token.
+            Start with a client name, Meta Dataset ID, access token, and the exact page to track.
           </EmptyState>
         )}
       </section>
@@ -211,7 +215,7 @@ function EndpointsPage({ endpoints, loading, error, onNew, onOpen, onManage, onD
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
     if (!query) return endpoints;
-    return endpoints.filter((item) => [item.client_name, item.dataset_id, item.event_name, item.id].some((value) => String(value || "").toLowerCase().includes(query)));
+    return endpoints.filter((item) => [item.client_name, item.dataset_id, item.event_name, item.id, item.binding?.allowed_page_url].some((value) => String(value || "").toLowerCase().includes(query)));
   }, [endpoints, search]);
   return (
     <main className="workspaceMain">
@@ -260,7 +264,7 @@ function PaymentStep({ billing, onCheckout, refreshBilling, onCancel }) {
   const busy = ["loading", "checkout", "verifying"].includes(billing.status);
   return (
     <main className="workspaceMain">
-      <WorkspaceHeader title="Create new endpoint" description="One $5 payment unlocks exactly one event-specific script: Lead or Schedule." />
+      <WorkspaceHeader title="Create new endpoint" description="One $5 payment unlocks one Lead or Schedule script for one exact page." />
       <Progress stage={1} />
       <div className="wizardLayout paymentLayout">
         <section className="wizardCard paymentCard">
@@ -268,7 +272,7 @@ function PaymentStep({ billing, onCheckout, refreshBilling, onCancel }) {
           <div className="priceLine"><strong>{money(billing.price_cents, billing.currency)}</strong><span>one-time</span></div>
           <ul className="paymentIncludes">
             <li><CheckCircle2 size={18} /><span>Exactly one Lead or one Schedule script</span></li>
-            <li><CheckCircle2 size={18} /><span>Use it across pages for the same client and dataset</span></li>
+            <li><CheckCircle2 size={18} /><span>Locked to one exact page and form</span></li>
             <li><CheckCircle2 size={18} /><span>Secure credential handling and endpoint management</span></li>
           </ul>
           {billing.mode === "test" ? <Notice tone="warning" title="Lemon Squeezy test mode">Use Lemon Squeezy's test checkout. No real charge will be made.</Notice> : null}
@@ -289,9 +293,9 @@ function PaymentStep({ billing, onCheckout, refreshBilling, onCancel }) {
           <ol>
             <li><strong>Secure checkout</strong><small>Lemon Squeezy handles card entry, tax, and required authentication.</small></li>
             <li><strong>Verified credit</strong><small>Your payment is confirmed before the endpoint is created.</small></li>
-            <li><strong>Single redemption</strong><small>One successful payment creates Lead or Schedule tracking, never both.</small></li>
+            <li><strong>Permanent lock</strong><small>The page and form cannot be changed after the script is created.</small></li>
           </ol>
-          <div className="secureNote"><CreditCard size={17} /><span>Need both events? Buy two scripts: $5 for Lead plus $5 for Schedule.</span></div>
+          <div className="secureNote"><CreditCard size={17} /><span>Need another page or the other event? Create another script.</span></div>
           <div className="secureNote"><LockKeyhole size={17} /><span>Closing or cancelling checkout does not create an endpoint or consume a credit.</span></div>
         </aside>
       </div>
@@ -308,14 +312,14 @@ function BillingPage({ billing, onCheckout, refreshBilling, navigate }) {
     <main className="workspaceMain">
       <WorkspaceHeader
         title="Billing"
-        description="Each $5 payment purchases exactly one event-specific script. Lead plus Schedule costs $10 total."
+        description="Each $5 payment purchases one event-specific script locked to one page."
         action={<button className="button secondary" type="button" onClick={() => refreshBilling()} disabled={busy}><RefreshCw size={17} /> Refresh</button>}
       />
       <div className="billingOverview">
         <section className="billingMetric">
           <span>Available credits</span>
           <strong>{billing.exempt ? (developmentExempt ? "Development" : "Unlimited") : available}</strong>
-          <small>{billing.exempt ? (developmentExempt ? "Payment is bypassed only in this local development environment." : accountExempt ? "This owner account can create endpoints without checkout." : "This service currently allows endpoint creation without checkout.") : "One credit creates one Lead or one Schedule script, never both."}</small>
+          <small>{billing.exempt ? (developmentExempt ? "Payment is bypassed only in this local development environment." : accountExempt ? "This owner account can create endpoints without checkout." : "This service currently allows endpoint creation without checkout.") : "One credit creates one Lead or one Schedule script for one page."}</small>
         </section>
         <section className="billingMetric">
           <span>Conversion price</span>
@@ -361,9 +365,11 @@ function BillingPage({ billing, onCheckout, refreshBilling, navigate }) {
 
 function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refreshBilling, onCancel }) {
   const [showToken, setShowToken] = useState(false);
-  const [form, setForm] = useState({ clientName: "", datasetId: "", accessToken: "", graphVersion: "v23.0", eventName: "Lead" });
+  const [form, setForm] = useState({ clientName: "", datasetId: "", accessToken: "", graphVersion: "v23.0", eventName: "Lead", allowedPageUrl: "", formSelector: "" });
   const [touched, setTouched] = useState(false);
-  const valid = form.clientName.trim().length >= 2 && isValidDatasetId(form.datasetId) && isValidAccessToken(form.accessToken);
+  const pageValid = isValidPageUrl(form.allowedPageUrl);
+  const selectorValid = form.eventName === "Schedule" || isExactFormSelector(form.formSelector);
+  const valid = form.clientName.trim().length >= 2 && isValidDatasetId(form.datasetId) && isValidAccessToken(form.accessToken) && pageValid && selectorValid;
   const hasCredit = billing.exempt || !billing.required || Number(billing.available_credits) > 0;
 
   if (!hasCredit) {
@@ -374,13 +380,18 @@ function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refr
     event.preventDefault();
     setTouched(true);
     if (!valid || !backend.ready) return;
-    const success = await onCreate({ ...form, clientName: form.clientName.trim() });
+    const success = await onCreate({
+      ...form,
+      clientName: form.clientName.trim(),
+      allowedPageUrl: canonicalPageUrl(form.allowedPageUrl),
+      formSelector: form.eventName === "Schedule" ? "" : form.formSelector.trim()
+    });
     if (success) setForm((current) => ({ ...current, accessToken: "" }));
   }
 
   return (
     <main className="workspaceMain">
-      <WorkspaceHeader title="Create new endpoint" description="Choose the single conversion this $5 credit will permanently unlock." />
+      <WorkspaceHeader title="Create new endpoint" description="Choose the conversion, page, and exact form this script will permanently track." />
       <Progress stage={createState.status === "success" ? 4 : createState.status === "loading" ? 3 : 2} />
       <div className="wizardLayout">
         <form className="wizardCard" onSubmit={submit}>
@@ -393,7 +404,7 @@ function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refr
                 <button className={form.eventName === "Lead" ? "active" : ""} type="button" aria-pressed={form.eventName === "Lead"} onClick={() => setForm({ ...form, eventName: "Lead" })}>
                   <FileInput size={19} /><span><strong>Lead</strong><small>$5 one-time setup</small></span>
                 </button>
-                <button className={form.eventName === "Schedule" ? "active" : ""} type="button" aria-pressed={form.eventName === "Schedule"} onClick={() => setForm({ ...form, eventName: "Schedule" })}>
+                <button className={form.eventName === "Schedule" ? "active" : ""} type="button" aria-pressed={form.eventName === "Schedule"} onClick={() => setForm({ ...form, eventName: "Schedule", formSelector: "" })}>
                   <CalendarCheck2 size={19} /><span><strong>Schedule</strong><small>$5 one-time setup</small></span>
                 </button>
               </div>
@@ -401,6 +412,14 @@ function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refr
             <Field label="Client or project name" hint="Use a recognizable business name." error={touched && form.clientName.trim().length < 2 ? "Enter at least two characters." : undefined}>
               <InputShell><input value={form.clientName} onChange={(event) => setForm({ ...form, clientName: event.target.value })} placeholder="Acme Home Services" autoComplete="organization" /></InputShell>
             </Field>
+            <Field label={form.eventName === "Schedule" ? "Booking confirmation page URL" : "Form page URL"} hint="The script will reject events from every other page." error={touched && !pageValid ? "Enter the full page URL, including https://." : undefined}>
+              <InputShell code><input value={form.allowedPageUrl} onChange={(event) => setForm({ ...form, allowedPageUrl: event.target.value })} placeholder={form.eventName === "Schedule" ? "https://example.com/booking-confirmed" : "https://example.com/free-estimate"} autoComplete="url" /></InputShell>
+            </Field>
+            {form.eventName === "Lead" ? (
+              <Field label="Exact form selector" hint="Use a unique selector such as #estimate-form. Generic selectors like form are blocked." error={touched && !selectorValid ? "Enter a selector that targets one exact form." : undefined}>
+                <InputShell code><input value={form.formSelector} onChange={(event) => setForm({ ...form, formSelector: event.target.value })} placeholder="#estimate-form" autoComplete="off" /></InputShell>
+              </Field>
+            ) : null}
             <Field label="Meta Dataset ID (Pixel ID)" hint="Numeric ID from Meta Events Manager." error={touched && !isValidDatasetId(form.datasetId) ? "Enter a valid numeric Dataset ID." : undefined}>
               <InputShell icon={Database}><input inputMode="numeric" value={form.datasetId} onChange={(event) => setForm({ ...form, datasetId: cleanDatasetId(event.target.value) })} placeholder="123456789012345" autoComplete="off" /></InputShell>
             </Field>
@@ -417,6 +436,7 @@ function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refr
             </details>
             {!backend.ready ? <Notice tone={backend.status === "checking" ? "info" : "error"} title="Service unavailable">{backend.status === "checking" ? "Checking availability..." : "Endpoint creation is temporarily unavailable."}</Notice> : null}
             {createState.error ? <Notice tone="error" title="Endpoint was not created">{createState.error}</Notice> : null}
+            <Notice tone="warning" title="The page and form lock is permanent">Creating another page, another form, or the other conversion requires another script.</Notice>
             <div className="wizardActions">
               <button className="button ghost" type="button" onClick={onCancel} disabled={createState.status === "loading"}>Cancel</button>
               <button className="button primary" type="submit" disabled={createState.status === "loading" || !backend.ready}>
@@ -429,9 +449,9 @@ function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refr
           <span><ShieldCheck size={23} /></span>
           <h2>Before you continue</h2>
           <ol>
-            <li><strong>Dataset ID</strong><small>Select the correct client dataset in Meta Events Manager.</small></li>
-            <li><strong>Access token</strong><small>Generate the token from that same dataset, not another client.</small></li>
-            <li><strong>Conversion type</strong><small>Lead is $5. Schedule is another $5. Tracking both costs $10.</small></li>
+            <li><strong>Exact page</strong><small>Use the final live URL, without temporary preview domains.</small></li>
+            <li><strong>Exact form</strong><small>For Lead, give the form a unique ID and use that selector.</small></li>
+            <li><strong>Conversion type</strong><small>Lead and Schedule need separate scripts.</small></li>
           </ol>
           <div className="secureNote"><LockKeyhole size={17} /><span>The token is never included in the installation script.</span></div>
         </aside>
@@ -453,23 +473,73 @@ function Toggle({ checked, onChange, label, description }) {
 function CodePanel({ title, description, value, copyLabel = "Copy" }) {
   return (
     <section className="codePanel">
-      <header><div><h3>{title}</h3><p>{description}</p></div><CopyButton value={value} label={copyLabel} /></header>
-      <pre><code>{value}</code></pre>
+      <header><div><h3>{title}</h3><p>{description}</p></div>{value ? <CopyButton value={value} label={copyLabel} /> : null}</header>
+      <pre><code>{value || "Lock this script to a page before copying it."}</code></pre>
     </section>
   );
 }
 
-function TrackingInstall({ endpoint, settings, setSettings }) {
-  const script = trackerTag(endpoint, settings);
+function BindingSetup({ endpoint, onBound }) {
+  const confirmationMode = endpoint.event_name === "Schedule";
+  const [form, setForm] = useState({ allowedPageUrl: "", formSelector: "" });
+  const [state, setState] = useState({ status: "idle", error: "" });
+  const valid = isValidPageUrl(form.allowedPageUrl) && (confirmationMode || isExactFormSelector(form.formSelector));
+
+  async function submit(event) {
+    event.preventDefault();
+    if (!valid) return;
+    setState({ status: "loading", error: "" });
+    try {
+      const data = await bindingRequest("lock", {
+        method: "POST",
+        body: {
+          siteId: endpoint.id,
+          allowedPageUrl: canonicalPageUrl(form.allowedPageUrl),
+          formSelector: confirmationMode ? "" : form.formSelector.trim()
+        }
+      });
+      onBound(data.binding);
+      setState({ status: "success", error: "" });
+    } catch (error) {
+      setState({ status: "error", error: error.message });
+    }
+  }
+
+  return (
+    <section className="wizardCard bindingCard">
+      <header><h2>Lock this existing script</h2><p>Older scripts must be assigned to one page before they can send events again.</p></header>
+      <form className="formStack" onSubmit={submit}>
+        <Field label={confirmationMode ? "Booking confirmation page URL" : "Form page URL"} hint="This cannot be changed after saving.">
+          <InputShell code><input value={form.allowedPageUrl} onChange={(event) => setForm({ ...form, allowedPageUrl: event.target.value })} placeholder="https://example.com/conversion-page" autoComplete="url" /></InputShell>
+        </Field>
+        {!confirmationMode ? (
+          <Field label="Exact form selector" hint="Example: #estimate-form. Generic form selectors are not accepted.">
+            <InputShell code><input value={form.formSelector} onChange={(event) => setForm({ ...form, formSelector: event.target.value })} placeholder="#estimate-form" autoComplete="off" /></InputShell>
+          </Field>
+        ) : null}
+        <Notice tone="warning" title="Permanent lock">A different page or form requires another script.</Notice>
+        {endpoint.binding_error ? <Notice tone="error">{endpoint.binding_error}</Notice> : null}
+        {state.error ? <Notice tone="error">{state.error}</Notice> : null}
+        <button className="button primary alignStart" type="submit" disabled={!valid || state.status === "loading"}>{state.status === "loading" ? <Spinner label="Locking script" /> : "Lock and generate script"}</button>
+      </form>
+    </section>
+  );
+}
+
+function TrackingInstall({ endpoint, settings, setSettings, onBound }) {
   const confirmationMode = endpoint.event_name === "Schedule";
   const EventIcon = confirmationMode ? CalendarCheck2 : FileInput;
+  if (!endpoint.binding) return <BindingSetup endpoint={endpoint} onBound={onBound} />;
+  const script = trackerTag(endpoint, settings);
 
   return (
     <div className="trackingColumns">
       <section className="trackingConfigPanel">
-        <header><h2>{confirmationMode ? "Schedule" : "Lead"} tracking</h2><p>Configure this conversion and copy its installation script.</p></header>
+        <header><h2>{confirmationMode ? "Schedule" : "Lead"} tracking</h2><p>Configure this conversion and copy its page-locked installation script.</p></header>
         <div className="formStack">
-          <div className="eventTypeSummary"><span><EventIcon size={20} /></span><div><strong>{confirmationMode ? "Schedule confirmation" : "Lead form"}</strong><small>This endpoint is locked to its purchased conversion type.</small></div></div>
+          <div className="eventTypeSummary"><span><EventIcon size={20} /></span><div><strong>{confirmationMode ? "Schedule confirmation" : "Lead form"}</strong><small>This endpoint is locked to its purchased conversion type, page, and form.</small></div></div>
+          <Field label="Locked page"><InputShell code><input value={endpoint.binding.allowed_page_url} readOnly /></InputShell></Field>
+          {!confirmationMode ? <Field label="Locked form"><InputShell code><input value={endpoint.binding.form_selector} readOnly /></InputShell></Field> : null}
           <div className="twoFields">
             <Field label="Country">
               <InputShell><select value={settings.country} onChange={(event) => setSettings({ ...settings, country: event.target.value })}><option value="US">United States</option><option value="CA">Canada</option><option value="GB">United Kingdom</option><option value="AU">Australia</option><option value="NZ">New Zealand</option><option value="IE">Ireland</option></select></InputShell>
@@ -482,7 +552,6 @@ function TrackingInstall({ endpoint, settings, setSettings }) {
             <Field label="Meta event"><InputShell><input value={settings.eventName} readOnly /></InputShell></Field>
             <Field label="Event value"><InputShell><input type="number" min="0" step="0.01" value={settings.leadValue} onChange={(event) => setSettings({ ...settings, leadValue: event.target.value })} /></InputShell></Field>
           </div>
-          {!confirmationMode ? <Field label="Form selector" hint="The default tracks every standard form on the page."><InputShell code><input value={settings.formSelector} onChange={(event) => setSettings({ ...settings, formSelector: event.target.value || "form" })} placeholder="form" /></InputShell></Field> : null}
           <Field label="Landing page label" hint="Optional. Use labels such as Control or Variant B when this client runs an A/B test.">
             <InputShell code><input value={settings.pageVariant} onChange={(event) => setSettings({ ...settings, pageVariant: event.target.value.trimStart().slice(0, 80) })} placeholder="Control" autoComplete="off" /></InputShell>
           </Field>
@@ -491,15 +560,15 @@ function TrackingInstall({ endpoint, settings, setSettings }) {
           </Field>
           <Toggle checked={settings.firePixel} onChange={(value) => setSettings({ ...settings, firePixel: value })} label="Complete Meta tracking" description="Recommended when the Meta Pixel is already installed on the page." />
           <Toggle checked={settings.onlyMetaTraffic} onChange={(value) => setSettings({ ...settings, onlyMetaTraffic: value })} label="Meta traffic only" description="Track only visits attributed to Meta campaigns." />
-          <Notice tone="info" title="One conversion, multiple pages">Reuse this setup across pages for the same client and Meta dataset. Purchase another $5 endpoint to add the other conversion type.</Notice>
-          <Notice tone="info" title="Where to paste it">{confirmationMode ? "Use the script only on the page displayed after a successful booking." : "Use the script on the page that contains the form, then publish and submit one real test."}</Notice>
+          <Notice tone="success" title="Page and form protected">The gateway checks the page URL before accepting an event. The tracker also forces the saved form selector.</Notice>
+          <Notice tone="info" title="Where to paste it">{confirmationMode ? "Paste it only on the saved booking confirmation page." : "Paste it on the saved page containing the saved form."}</Notice>
         </div>
       </section>
       <div className="trackingCodeStack">
-        <CodePanel title={confirmationMode ? "Schedule installation script" : "Lead installation script"} description={confirmationMode ? "Paste it into the booking thank-you or confirmation page." : "Paste it into the page that contains the form."} value={script} />
+        <CodePanel title={confirmationMode ? "Schedule installation script" : "Lead installation script"} description="This exact script will be rejected on a different page or form." value={script} />
         {confirmationMode
-          ? <Notice tone="warning" title="Confirmation page only">Installing this tag globally would record Schedule before an appointment is completed.</Notice>
-          : <Notice tone="warning" title="Embedded forms">If the form is inside an iframe, place the script inside the form's own code rather than on the outer page.</Notice>}
+          ? <Notice tone="warning" title="Confirmation page only">Installing this tag globally will not work and could cause incorrect browser events.</Notice>
+          : <Notice tone="warning" title="Embedded forms">If the form is inside an iframe, the locked page URL and selector must refer to the page inside that iframe.</Notice>}
       </div>
     </div>
   );
@@ -529,6 +598,7 @@ function EndpointSettings({ endpoint, onUpdate, onDelete, updateState }) {
               <input type={showToken ? "text" : "password"} value={form.accessToken} onChange={(event) => setForm({ ...form, accessToken: cleanAccessToken(event.target.value) })} placeholder="Only required when rotating credentials" autoComplete="off" />
             </InputShell>
           </Field>
+          {endpoint.binding ? <Notice tone="info" title="Page lock cannot be edited">{endpoint.binding.allowed_page_url}{endpoint.binding.form_selector ? ` / ${endpoint.binding.form_selector}` : ""}</Notice> : null}
           {updateState.error ? <Notice tone="error">{updateState.error}</Notice> : null}
           {updateState.success ? <Notice tone="success">Endpoint settings were updated.</Notice> : null}
           <button className="button primary alignStart" type="submit" disabled={!valid || updateState.status === "loading"}>{updateState.status === "loading" ? <Spinner label="Updating" /> : "Save changes"}</button>
@@ -536,7 +606,7 @@ function EndpointSettings({ endpoint, onUpdate, onDelete, updateState }) {
       </form>
       <aside className="endpointMetaPanel">
         <h2>Endpoint details</h2>
-        <dl><div><dt>Conversion</dt><dd>{endpoint.event_name || "Lead"}</dd></div><div><dt>Endpoint ID</dt><dd>{endpoint.id.slice(0, 8)}</dd></div><div><dt>Created</dt><dd>{formatDate(endpoint.created_at)}</dd></div><div><dt>Updated</dt><dd>{formatDate(endpoint.updated_at)}</dd></div><div><dt>State</dt><dd><StatusPill state={endpointState(endpoint)} /></dd></div></dl>
+        <dl><div><dt>Conversion</dt><dd>{endpoint.event_name || "Lead"}</dd></div><div><dt>Endpoint ID</dt><dd>{endpoint.id.slice(0, 8)}</dd></div><div><dt>Page lock</dt><dd>{endpoint.binding ? "Active" : "Required"}</dd></div><div><dt>Created</dt><dd>{formatDate(endpoint.created_at)}</dd></div><div><dt>Updated</dt><dd>{formatDate(endpoint.updated_at)}</dd></div><div><dt>State</dt><dd><StatusPill state={endpoint.binding ? endpointState(endpoint) : "pending"} /></dd></div></dl>
         <div className="dangerZone"><h3>Delete endpoint</h3><p>Permanently removes this client's tracking setup and stored credentials.</p><button className="button danger" type="button" onClick={() => onDelete(endpoint)}><Trash2 size={17} /> Delete</button></div>
       </aside>
     </div>
@@ -546,15 +616,18 @@ function EndpointSettings({ endpoint, onUpdate, onDelete, updateState }) {
 function TrackingPage({ endpoint, user, initialTab, onBack, onGuide, onVerify, verifyState, onUpdate, updateState, onDelete }) {
   const [tab, setTab] = useState(initialTab === "settings" ? "settings" : "install");
   const [settings, setSettingsState] = useState(() => trackingDefaultsForEvent(endpoint.event_name));
+  const [binding, setBinding] = useState(endpoint.binding || null);
+  useEffect(() => setBinding(endpoint.binding || null), [endpoint.id, endpoint.binding]);
   useEffect(() => {
     const all = loadTrackingSettings(user.id || user.email);
     const defaults = trackingDefaultsForEvent(endpoint.event_name);
-    setSettingsState({ ...defaults, ...(all[endpoint.id] || {}), eventName: defaults.eventName, trigger: defaults.trigger });
+    setSettingsState({ ...defaults, ...(all[endpoint.id] || {}), eventName: defaults.eventName, trigger: defaults.trigger, formSelector: "" });
   }, [endpoint.id, endpoint.event_name, user.id, user.email]);
   function setSettings(next) {
     setSettingsState(next);
     saveTrackingSettings(user.id || user.email, endpoint.id, next);
   }
+  const boundEndpoint = { ...endpoint, binding };
   return (
     <main className="workspaceMain">
       <button className="backButton" type="button" onClick={onBack}><ArrowLeft size={17} /> All endpoints</button>
@@ -564,16 +637,16 @@ function TrackingPage({ endpoint, user, initialTab, onBack, onGuide, onVerify, v
         action={<div className="headerActions"><button className="button secondary" type="button" onClick={onGuide}><BookOpen size={17} /> 9.3 setup guide</button><button className="button secondary" type="button" onClick={() => onVerify(endpoint)} disabled={verifyState.status === "loading"}><RefreshCw className={verifyState.status === "loading" ? "spin" : ""} size={17} /> Verify</button></div>}
       />
       <section className="deploymentBanner">
-        <div><span><CheckCircle2 size={23} /></span><div><h2>Tracking ready</h2><p>Your installation script is ready to use.</p></div></div>
-        {verifyState.status === "success" ? <StatusPill state={verifyState.healthy ? "active" : "error"} label={verifyState.healthy ? `Healthy / ${verifyState.latency_ms} ms` : "Unavailable"} /> : <StatusPill state={endpointState(endpoint)} label={endpointState(endpoint) === "active" ? "Ready" : "Check"} />}
+        <div><span>{binding ? <CheckCircle2 size={23} /> : <AlertTriangle size={23} />}</span><div><h2>{binding ? "Tracking ready" : "Page lock required"}</h2><p>{binding ? "Your protected installation script is ready to use." : "Lock this existing endpoint before copying its script."}</p></div></div>
+        {binding ? (verifyState.status === "success" ? <StatusPill state={verifyState.healthy ? "active" : "error"} label={verifyState.healthy ? `Healthy / ${verifyState.latency_ms} ms` : "Unavailable"} /> : <StatusPill state={endpointState(endpoint)} label={endpointState(endpoint) === "active" ? "Ready" : "Check"} />) : <StatusPill state="pending" label="Lock required" />}
       </section>
       {verifyState.error ? <Notice tone="error">{verifyState.error}</Notice> : null}
       <div className="pageTabs" role="tablist">
         <button className={tab === "install" ? "active" : ""} type="button" onClick={() => setTab("install")}><Code2 size={18} /> Install</button>
         <button className={tab === "settings" ? "active" : ""} type="button" onClick={() => setTab("settings")}><Settings size={18} /> Settings</button>
       </div>
-      {tab === "install" ? <TrackingInstall endpoint={endpoint} settings={settings} setSettings={setSettings} /> : null}
-      {tab === "settings" ? <EndpointSettings endpoint={endpoint} onUpdate={onUpdate} onDelete={onDelete} updateState={updateState} /> : null}
+      {tab === "install" ? <TrackingInstall endpoint={boundEndpoint} settings={settings} setSettings={setSettings} onBound={setBinding} /> : null}
+      {tab === "settings" ? <EndpointSettings endpoint={boundEndpoint} onUpdate={onUpdate} onDelete={onDelete} updateState={updateState} /> : null}
     </main>
   );
 }

@@ -1,7 +1,7 @@
 export const DEFAULT_TRACKING = Object.freeze({
   eventName: "Lead",
   trigger: "form",
-  formSelector: "form",
+  formSelector: "",
   country: "US",
   currency: "USD",
   leadValue: "1.00",
@@ -21,7 +21,7 @@ export function trackingDefaultsForEvent(eventName) {
     ...DEFAULT_TRACKING,
     eventName: schedule ? "Schedule" : "Lead",
     trigger: schedule ? "page-load" : "form",
-    formSelector: "form",
+    formSelector: "",
     leadValue: schedule ? "150" : "1.00",
     source: schedule ? "Appointment Booking" : "Estimate Form",
     tags: schedule ? "appointment-booked,website-calendar" : "estimate-lead,website-form"
@@ -48,6 +48,34 @@ export function isValidAccessToken(value) {
   return /^EAA[A-Za-z0-9_-]{20,}$/.test(cleanAccessToken(value));
 }
 
+export function canonicalPageUrl(value) {
+  try {
+    const url = new URL(String(value || "").trim());
+    if (!["http:", "https:"].includes(url.protocol)) return "";
+    url.hash = "";
+    url.search = "";
+    url.username = "";
+    url.password = "";
+    url.hostname = url.hostname.toLowerCase();
+    url.pathname = url.pathname.replace(/\/{2,}/g, "/");
+    if (url.pathname.length > 1) url.pathname = url.pathname.replace(/\/+$/, "");
+    return `${url.origin}${url.pathname}`;
+  } catch {
+    return "";
+  }
+}
+
+export function isValidPageUrl(value) {
+  return Boolean(canonicalPageUrl(value));
+}
+
+export function isExactFormSelector(value) {
+  const selector = String(value || "").trim();
+  if (!selector || selector.length > 180) return false;
+  if (["form", "*", "body", "html"].includes(selector.toLowerCase())) return false;
+  return /^[#.[\]="'():_\-a-zA-Z0-9\s>+~*^$|]+$/.test(selector);
+}
+
 export function escapeAttribute(value) {
   return String(value || "")
     .replace(/&/g, "&amp;")
@@ -57,12 +85,15 @@ export function escapeAttribute(value) {
 }
 
 export function trackerTag(endpoint, settings = DEFAULT_TRACKING) {
+  const binding = endpoint?.binding;
+  if (!binding?.allowed_page_url) return "";
   const config = { ...DEFAULT_TRACKING, ...settings };
+  const eventName = endpoint.event_name === "Schedule" ? "Schedule" : "Lead";
   const attributes = [
     ["src", endpoint.tracker_url],
-    ["data-event-name", config.eventName || "Lead"],
-    ["data-trigger", config.trigger || "form"],
-    ["data-form-selector", config.trigger === "page-load" ? "" : (config.formSelector || "form")],
+    ["data-event-name", eventName],
+    ["data-trigger", eventName === "Schedule" ? "page-load" : "form"],
+    ["data-form-selector", eventName === "Schedule" ? "" : binding.form_selector],
     ["data-country", config.country || "US"],
     ["data-currency", config.currency || "USD"],
     ["data-value", config.leadValue || "1.00"],
