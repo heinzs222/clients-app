@@ -11,6 +11,9 @@ function assert(condition, message) {
 const ui = read("../src/components/UI.jsx");
 const blogIndex = read("../src/components/BlogIndex.jsx");
 const blogArticle = read("../src/components/GhlBlogPage.jsx");
+const seoShell = read("../src/components/SeoPublicShell.jsx");
+const seoShellStyles = read("../src/seo-public-shell.css");
+const main = read("../src/main.jsx");
 const homeEnhancements = read("../src/lib/home-enhancements.js");
 const fullLogoStyles = read("../src/full-logo.css");
 
@@ -32,8 +35,15 @@ for (const [name, source] of [["blog index", blogIndex], ["blog article", blogAr
   assert(!source.includes('className="blogFooter"'), `${name} still contains a custom blog footer.`);
 }
 
+assert(seoShell.includes('import { PublicFooter, PublicHeader } from "./UI.jsx";'), "SEO guides do not import the shared homepage layout.");
+assert(seoShell.includes('<PublicHeader route="blogs" />'), "SEO guides do not render the shared homepage header.");
+assert(seoShell.includes('<PublicFooter />'), "SEO guides do not render the shared homepage footer.");
+assert(main.includes('<SeoPublicShell path={normalizedPath} />'), "SEO routes bypass the shared public shell.");
+assert(!main.includes('<SeoPage path={normalizedPath} />'), "SEO routes still render their legacy page chrome directly.");
+assert(seoShellStyles.includes(".seoHeader") && seoShellStyles.includes(".seoFooter") && seoShellStyles.includes("display: none !important"), "Legacy SEO chrome is not suppressed inside the shared shell.");
+
 assert(homeEnhancements.includes('pageFooter.insertAdjacentElement("beforebegin", section)'), "Beginner guide section is not placed immediately before the homepage footer.");
 assert(!homeEnhancements.includes('hero.insertAdjacentElement("afterend", section)'), "Beginner guide section is still placed below the hero.");
 assert(homeEnhancements.includes("New to Meta CAPI?"), "Beginner guide section copy is missing.");
 
-console.log("Validated full-image branding, native blog navigation, shared public layout, and homepage beginner-section placement.");
+console.log("Validated full-image branding and one shared public header/footer across home, blogs, and SEO guides.");

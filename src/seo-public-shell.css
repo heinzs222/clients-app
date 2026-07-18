@@ -1,0 +1,13 @@
+.seoPublicShell > .seoPublicContent {
+  min-width: 0;
+  flex: 1;
+}
+
+.seoPublicShell .seoPublicContent > .seoPage {
+  min-height: 0;
+}
+
+.seoPublicShell .seoPublicContent .seoHeader,
+.seoPublicShell .seoPublicContent .seoFooter {
+  display: none !important;
+}

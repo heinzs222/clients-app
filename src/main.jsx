@@ -3,13 +3,15 @@ import { createRoot } from "react-dom/client";
 import App from "./App.jsx";
 import BlogIndex from "./components/BlogIndex.jsx";
 import GhlBlogPage from "./components/GhlBlogPage.jsx";
-import SeoPage, { SEO_PATHS } from "./components/SeoPages.jsx";
+import SeoPublicShell from "./components/SeoPublicShell.jsx";
+import { SEO_PATHS } from "./components/SeoPages.jsx";
 import { ALL_BLOG_PATHS } from "./content/blogPosts.js";
 import { initializeAnalytics } from "./lib/analytics.js";
 import "./styles.css";
 import "./full-logo.css";
 import "./home-beginner-seo.css";
 import "./seo-pages.css";
+import "./seo-public-shell.css";
 import "./blog-index.css";
 import "./ghl-blog-pages.css";
 import "./mobile-navigation-fixes.css";
@@ -24,7 +26,7 @@ const content = normalizedPath === "/blogs"
   : ALL_BLOG_PATHS.has(normalizedPath)
     ? <GhlBlogPage path={normalizedPath} />
     : SEO_PATHS.has(normalizedPath)
-      ? <SeoPage path={normalizedPath} />
+      ? <SeoPublicShell path={normalizedPath} />
       : <App />;
 
 createRoot(document.getElementById("root")).render(

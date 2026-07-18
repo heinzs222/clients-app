@@ -1,4 +1,5 @@
 const beginnerGuides = [
+  ["What is Meta CAPI?", "/what-is-meta-capi", "The plain-English definition, purpose, Pixel difference, and gateway meaning."],
   ["How does Meta CAPI work?", "/how-does-meta-capi-work", "A plain-English explanation of browser and server tracking."],
   ["How to set up Meta CAPI", "/how-to-set-up-meta-capi", "The full setup in a simple step-by-step checklist."],
   ["How to install Meta CAPI", "/how-to-install-meta-capi", "Where the script goes on a website or GoHighLevel page."],

@@ -151,7 +151,7 @@ export default function GhlBlogPage({ path }) {
           <article className="ghlArticleContent">
             <section className="ghlQuickAnswer" aria-labelledby="quick-answer">
               <span><CheckCircle2 /></span>
-              <div><small>Quick answer</small><h2 id="quick-answer">What to do</h2><p>{post.quickAnswer}</p></div>
+              <div><small>{post.quickAnswerLabel || "Quick answer"}</small><h2 id="quick-answer">{post.quickAnswerTitle || "What to do"}</h2><p>{post.quickAnswer}</p></div>
             </section>
 
             {post.sections.map((section) => (
@@ -165,7 +165,7 @@ export default function GhlBlogPage({ path }) {
             ))}
 
             <section className="ghlChecklist" id="checklist">
-              <header><ListChecks /><div><small>Before you publish</small><h2>{post.checklistTitle || "GoHighLevel Meta CAPI check"}</h2></div></header>
+              <header><ListChecks /><div><small>{post.checklistEyebrow || "Before you publish"}</small><h2>{post.checklistTitle || "GoHighLevel Meta CAPI check"}</h2></div></header>
               <div>{post.checklist.map((item, index) => <p key={item}><span>{String(index + 1).padStart(2, "0")}</span>{item}</p>)}</div>
             </section>
 
