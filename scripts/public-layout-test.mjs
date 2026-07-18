@@ -16,6 +16,8 @@ const seoShellStyles = read("../src/seo-public-shell.css");
 const main = read("../src/main.jsx");
 const homeEnhancements = read("../src/lib/home-enhancements.js");
 const fullLogoStyles = read("../src/full-logo.css");
+const boundaryStyles = read("../src/client-boundaries-visual.css");
+const boundaryIllustration = read("../public/client-workspace-boundaries.svg");
 
 assert(ui.includes('blogs: "/blogs"'), "Shared public navigation is missing the blogs route.");
 assert(ui.includes('route === "blogs" ? "active"'), "Shared public header cannot mark Blogs as active.");
@@ -45,5 +47,10 @@ assert(seoShellStyles.includes(".seoHeader") && seoShellStyles.includes(".seoFoo
 assert(homeEnhancements.includes('pageFooter.insertAdjacentElement("beforebegin", section)'), "Beginner guide section is not placed immediately before the homepage footer.");
 assert(!homeEnhancements.includes('hero.insertAdjacentElement("afterend", section)'), "Beginner guide section is still placed below the hero.");
 assert(homeEnhancements.includes("New to Meta CAPI?"), "Beginner guide section copy is missing.");
+assert(homeEnhancements.includes('image.src = "/client-workspace-boundaries.svg"'), "Client boundaries illustration is not added below the homepage principle heading.");
+assert(homeEnhancements.includes('image.alt = "Four separate client setups connected to one protected Simple CAPI workspace."'), "Client boundaries illustration needs useful alternative text.");
+assert(main.includes('import "./client-boundaries-visual.css";'), "Client boundaries illustration styles are not loaded.");
+assert(boundaryStyles.includes(".clientBoundaryFigure"), "Client boundaries illustration sizing is missing.");
+assert(boundaryIllustration.includes("CLIENT DATA STAYS SEPARATE"), "Client boundaries illustration does not communicate the section message.");
 
-console.log("Validated full-image branding and one shared public header/footer across home, blogs, and SEO guides.");
+console.log("Validated shared public layout, homepage guide placement, and the client boundaries illustration.");
