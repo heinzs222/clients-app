@@ -17,7 +17,7 @@ import {
   TestTube2,
   Workflow
 } from "lucide-react";
-import { Brand } from "./UI.jsx";
+import { PublicFooter, PublicHeader } from "./UI.jsx";
 import { ALL_BLOG_POSTS, getBlogPost } from "../content/blogPosts.js";
 
 const ROOT = "https://simplecapi.com";
@@ -124,42 +124,6 @@ function useArticleMetadata(post) {
   }, [post]);
 }
 
-function ArticleHeader() {
-  return (
-    <header className="blogHeader">
-      <div className="blogHeaderInner">
-        <a className="brandButton" href="/" aria-label="Simple CAPI home"><Brand compact /></a>
-        <nav aria-label="Main navigation">
-          <a href="/">Home</a>
-          <a href="/docs">How it works</a>
-          <a className="active" href="/blogs">Blogs</a>
-          <a href="/status">Status</a>
-        </nav>
-        <div className="blogHeaderActions">
-          <a className="button ghost small" href="/login">Log in</a>
-          <a className="button primary small" href="/register">Start free</a>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-function ArticleFooter() {
-  return (
-    <footer className="blogFooter">
-      <div><Brand compact /><p>Clear Meta Conversions API guides for beginners, GoHighLevel forms, calendars, workflows, and client accounts.</p></div>
-      <nav aria-label="Footer navigation">
-        <a href="/blogs">Blogs</a>
-        <a href="/how-does-meta-capi-work">Meta CAPI basics</a>
-        <a href="/gohighlevel-meta-capi">GHL Meta CAPI</a>
-        <a href="/docs">How it works</a>
-        <a href="/privacy">Privacy</a>
-        <a href="/terms">Terms</a>
-      </nav>
-    </footer>
-  );
-}
-
 export default function GhlBlogPage({ path }) {
   const post = getBlogPost(path);
   const Icon = iconMap[post.icon] || BookOpen;
@@ -167,8 +131,8 @@ export default function GhlBlogPage({ path }) {
   useArticleMetadata(post);
 
   return (
-    <div className="ghlArticlePage">
-      <ArticleHeader />
+    <div className="ghlArticlePage publicPage">
+      <PublicHeader route="blogs" />
       <main>
         <section className="ghlArticleHero">
           <div className="ghlArticleGrid" aria-hidden="true" />
@@ -250,7 +214,7 @@ export default function GhlBlogPage({ path }) {
           <a className="button primary" href="/register">Create your script <ArrowRight /></a>
         </section>
       </main>
-      <ArticleFooter />
+      <PublicFooter />
     </div>
   );
 }
