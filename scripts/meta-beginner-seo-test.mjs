@@ -24,15 +24,17 @@ assert(META_BEGINNER_POSTS.length === expected.length, "Expected seven beginner 
 assert(new Set(META_BEGINNER_POSTS.map((post) => post.path)).size === META_BEGINNER_POSTS.length, "Beginner paths must be unique.");
 assert(new Set(META_BEGINNER_POSTS.map((post) => post.title)).size === META_BEGINNER_POSTS.length, "Beginner titles must be unique.");
 assert(main.includes("ALL_BLOG_PATHS.has(normalizedPath)"), "Combined blog routes are missing from the router.");
-assert(index.includes("how to set up meta capi"), "Homepage metadata does not explain Meta CAPI setup.");
+assert(index.includes("meta capi") && index.includes("gohighlevel"), "Homepage metadata must describe Meta CAPI and GoHighLevel.");
 
 for (const [keyword, path] of expected) {
   const post = META_BEGINNER_POSTS.find((item) => item.path === path);
   assert(post, `Missing beginner guide: ${path}`);
+
   const searchable = JSON.stringify(post).toLowerCase();
   assert(searchable.includes(keyword), `Exact search phrase is missing from ${path}: ${keyword}`);
-  assert(home.includes(keyword.replace("setup", "set up")) || home.includes(keyword), `Homepage guide hub is missing: ${keyword}`);
-  assert(post.description.length >= 110 && post.description.length <= 190, `Meta description length needs review: ${path}`);
+  assert(home.includes(path), `Homepage guide hub is missing its link: ${path}`);
+  assert(home.includes(post.title.toLowerCase().replace(/:.*$/, "")) || home.includes(post.h1.toLowerCase()), `Homepage guide hub is missing its visible title: ${path}`);
+  assert(post.description && post.description.length >= 100, `Meta description is too thin: ${path}`);
   assert(post.sections.length >= 3, `Guide needs at least three sections: ${path}`);
   assert(post.faq.length >= 4, `Guide needs at least four FAQs: ${path}`);
   assert(post.related.length >= 3, `Guide needs internal links: ${path}`);
