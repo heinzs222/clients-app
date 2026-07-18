@@ -4,21 +4,23 @@ import App from "./App.jsx";
 import BlogIndex from "./components/BlogIndex.jsx";
 import GhlBlogPage from "./components/GhlBlogPage.jsx";
 import SeoPage, { SEO_PATHS } from "./components/SeoPages.jsx";
-import { GHL_BLOG_PATHS } from "./content/ghlBlogData.js";
+import { ALL_BLOG_PATHS } from "./content/blogPosts.js";
 import { initializeAnalytics } from "./lib/analytics.js";
 import "./styles.css";
+import "./home-beginner-seo.css";
 import "./seo-pages.css";
 import "./blog-index.css";
 import "./ghl-blog-pages.css";
 import "./mobile-navigation-fixes.css";
 import "./lib/public-copy.js";
+import "./lib/home-enhancements.js";
 
 initializeAnalytics();
 
 const normalizedPath = window.location.pathname.replace(/\/+$/, "") || "/";
 const content = normalizedPath === "/blogs"
   ? <BlogIndex />
-  : GHL_BLOG_PATHS.has(normalizedPath)
+  : ALL_BLOG_PATHS.has(normalizedPath)
     ? <GhlBlogPage path={normalizedPath} />
     : SEO_PATHS.has(normalizedPath)
       ? <SeoPage path={normalizedPath} />

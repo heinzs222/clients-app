@@ -18,7 +18,7 @@ import {
   Workflow
 } from "lucide-react";
 import { Brand } from "./UI.jsx";
-import { GHL_BLOG_POSTS, getGhlBlogPost } from "../content/ghlBlogData.js";
+import { ALL_BLOG_POSTS, getBlogPost } from "../content/blogPosts.js";
 
 const ROOT = "https://simplecapi.com";
 const PUBLISHED = "2026-07-18";
@@ -45,7 +45,7 @@ const fallbackRelated = {
 };
 
 function relatedTitle(path) {
-  return GHL_BLOG_POSTS.find((post) => post.path === path)?.title || fallbackRelated[path] || "Meta CAPI guide";
+  return ALL_BLOG_POSTS.find((post) => post.path === path)?.title || fallbackRelated[path] || "Meta CAPI guide";
 }
 
 function setMeta(selector, attribute, key, value) {
@@ -80,7 +80,7 @@ function useArticleMetadata(post) {
     }
     canonical.href = url;
 
-    const schemaId = "simplecapi-ghl-blog-schema";
+    const schemaId = "simplecapi-meta-blog-schema";
     let schema = document.getElementById(schemaId);
     if (!schema) {
       schema = document.createElement("script");
@@ -101,7 +101,7 @@ function useArticleMetadata(post) {
           author: { "@type": "Organization", name: "Simple CAPI", url: ROOT },
           publisher: { "@type": "Organization", name: "Simple CAPI", url: ROOT },
           mainEntityOfPage: url,
-          keywords: ["GoHighLevel", "GHL", "Meta CAPI", "Facebook Conversions API", post.category]
+          keywords: post.keywords || ["GoHighLevel", "GHL", "Meta CAPI", "Facebook Conversions API", post.category]
         },
         {
           "@type": "BreadcrumbList",
@@ -147,9 +147,10 @@ function ArticleHeader() {
 function ArticleFooter() {
   return (
     <footer className="blogFooter">
-      <div><Brand compact /><p>Clear Meta Conversions API guides for GoHighLevel forms, calendars, workflows, and client accounts.</p></div>
+      <div><Brand compact /><p>Clear Meta Conversions API guides for beginners, GoHighLevel forms, calendars, workflows, and client accounts.</p></div>
       <nav aria-label="Footer navigation">
         <a href="/blogs">Blogs</a>
+        <a href="/how-does-meta-capi-work">Meta CAPI basics</a>
         <a href="/gohighlevel-meta-capi">GHL Meta CAPI</a>
         <a href="/docs">How it works</a>
         <a href="/privacy">Privacy</a>
@@ -160,8 +161,9 @@ function ArticleFooter() {
 }
 
 export default function GhlBlogPage({ path }) {
-  const post = getGhlBlogPost(path);
+  const post = getBlogPost(path);
   const Icon = iconMap[post.icon] || BookOpen;
+  const eyebrow = post.eyebrow || "GoHighLevel + Meta CAPI";
   useArticleMetadata(post);
 
   return (
@@ -174,7 +176,7 @@ export default function GhlBlogPage({ path }) {
             <nav className="ghlBreadcrumbs" aria-label="Breadcrumb">
               <a href="/">Home</a><span>/</span><a href="/blogs">Blogs</a><span>/</span><strong>{post.category}</strong>
             </nav>
-            <span className="ghlArticleEyebrow"><Icon /> GoHighLevel + Meta CAPI</span>
+            <span className="ghlArticleEyebrow"><Icon /> {eyebrow}</span>
             <h1>{post.h1}</h1>
             <p>{post.intro}</p>
             <div className="ghlArticleMeta"><span>Updated July 2026</span><i /> <span>{post.readTime}</span><i /> <span>Practical setup guide</span></div>
@@ -199,7 +201,7 @@ export default function GhlBlogPage({ path }) {
             ))}
 
             <section className="ghlChecklist" id="checklist">
-              <header><ListChecks /><div><small>Before you publish</small><h2>GoHighLevel Meta CAPI check</h2></div></header>
+              <header><ListChecks /><div><small>Before you publish</small><h2>{post.checklistTitle || "GoHighLevel Meta CAPI check"}</h2></div></header>
               <div>{post.checklist.map((item, index) => <p key={item}><span>{String(index + 1).padStart(2, "0")}</span>{item}</p>)}</div>
             </section>
 
@@ -229,23 +231,23 @@ export default function GhlBlogPage({ path }) {
             </div>
             <div className="ghlSidebarCta">
               <ShieldCheck />
-              <strong>Need a controlled endpoint?</strong>
-              <p>Create a protected Lead or Schedule setup for one exact page and form.</p>
+              <strong>Need the setup done simply?</strong>
+              <p>Create a protected Lead or Schedule script for one exact page and form.</p>
               <a className="button primary" href="/register">Start free <ArrowRight /></a>
             </div>
           </aside>
         </div>
 
         <section className="ghlRelated">
-          <div><span className="ghlSectionLabel">Keep troubleshooting</span><h2>Related GoHighLevel Meta CAPI guides</h2></div>
+          <div><span className="ghlSectionLabel">Keep learning</span><h2>Related Meta CAPI guides</h2></div>
           <div className="ghlRelatedGrid">
             {post.related.map((href) => <a href={href} key={href}><span><BookOpen /></span><strong>{relatedTitle(href)}</strong><small>Read guide</small><ArrowRight /></a>)}
           </div>
         </section>
 
         <section className="blogCta ghlArticleCta">
-          <div><span>Simple CAPI workspace</span><h2>Turn the answer into one traceable event.</h2><p>Build a client-specific Lead or Schedule endpoint, install it on the intended page, and verify what Meta receives.</p></div>
-          <a className="button primary" href="/register">Create your endpoint <ArrowRight /></a>
+          <div><span>Simple CAPI workspace</span><h2>Turn the answer into a working Meta event.</h2><p>Choose Lead or Schedule, paste one protected script on the intended page, and verify what Meta receives.</p></div>
+          <a className="button primary" href="/register">Create your script <ArrowRight /></a>
         </section>
       </main>
       <ArticleFooter />
