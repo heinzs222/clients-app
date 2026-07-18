@@ -1,0 +1,23 @@
+.brand.brandImageOnly {
+  gap: 0;
+}
+
+.brandLogo {
+  width: auto;
+  height: 34px;
+  max-width: 182px;
+  display: block;
+  object-fit: contain;
+}
+
+.brand.brandImageOnly.compact .brandLogo {
+  height: 30px;
+  max-width: 156px;
+}
+
+@media (max-width: 680px) {
+  .publicHeader .brand.brandImageOnly.compact .brandLogo {
+    height: 28px;
+    max-width: 145px;
+  }
+}
