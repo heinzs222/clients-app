@@ -103,18 +103,28 @@ function addBeginnerHub(hero) {
 }
 
 function applyHomeEnhancements() {
-  if ((window.location.pathname.replace(/\/+$/, "") || "/") !== "/") return false;
+  if ((window.location.pathname.replace(/\/+$/, "") || "/") !== "/") return;
   const hero = document.querySelector(".homeHero");
-  if (!hero) return false;
-  setHomeMetadata();
-  simplifyHero(hero);
+  if (!hero) return;
+
+  if (hero.dataset.simpleCapiEnhanced !== "true") {
+    setHomeMetadata();
+    simplifyHero(hero);
+    hero.dataset.simpleCapiEnhanced = "true";
+  }
   addBeginnerHub(hero);
-  return true;
 }
 
-if (!applyHomeEnhancements()) {
-  const observer = new MutationObserver(() => {
-    if (applyHomeEnhancements()) observer.disconnect();
+let scheduled = false;
+function scheduleEnhancement() {
+  if (scheduled) return;
+  scheduled = true;
+  requestAnimationFrame(() => {
+    scheduled = false;
+    applyHomeEnhancements();
   });
-  observer.observe(document.documentElement, { childList: true, subtree: true });
 }
+
+scheduleEnhancement();
+const observer = new MutationObserver(scheduleEnhancement);
+observer.observe(document.documentElement, { childList: true, subtree: true });
