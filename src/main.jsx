@@ -7,6 +7,7 @@ import SeoPage, { SEO_PATHS } from "./components/SeoPages.jsx";
 import { ALL_BLOG_PATHS } from "./content/blogPosts.js";
 import { initializeAnalytics } from "./lib/analytics.js";
 import "./styles.css";
+import "./full-logo.css";
 import "./home-beginner-seo.css";
 import "./seo-pages.css";
 import "./blog-index.css";
