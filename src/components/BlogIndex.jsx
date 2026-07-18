@@ -17,7 +17,7 @@ import {
   UserCheck,
   Workflow
 } from "lucide-react";
-import { GHL_BLOG_SUMMARIES } from "../content/ghlBlogData.js";
+import { ALL_BLOG_SUMMARIES } from "../content/blogPosts.js";
 import { Brand } from "./UI.jsx";
 
 const ROOT = "https://simplecapi.com";
@@ -80,17 +80,17 @@ const foundationalArticles = [
   }
 ];
 
-const ghlArticles = GHL_BLOG_SUMMARIES.map((article) => ({
+const practicalArticles = ALL_BLOG_SUMMARIES.map((article) => ({
   ...article,
   icon: iconMap[article.icon] || Workflow
 }));
 
-const articles = [...ghlArticles, ...foundationalArticles];
+const articles = [...practicalArticles, ...foundationalArticles];
 
 function useMetadata() {
   useEffect(() => {
-    const title = "GoHighLevel Meta CAPI Guides and Answers | Simple CAPI";
-    const description = "Practical GoHighLevel Meta CAPI guides for forms, calendars, workflows, FBCLID, attribution, deduplication, Test Events, and qualified leads.";
+    const title = "How Meta CAPI Works, Setup and GoHighLevel Guides | Simple CAPI";
+    const description = "Simple Meta CAPI guides covering how it works, setup, installation, implementation, testing, access tokens, GoHighLevel forms, calendars, workflows, attribution, and deduplication.";
     const url = `${ROOT}/blogs`;
 
     document.title = title;
@@ -168,9 +168,9 @@ export default function BlogIndex() {
         <section className="blogHero">
           <div className="blogHeroGlow" aria-hidden="true" />
           <div className="blogHeroInner">
-            <span className="blogEyebrow"><BookOpen /> GoHighLevel + Meta CAPI resources</span>
-            <h1>Answers for the GoHighLevel Meta CAPI problems people actually run into.</h1>
-            <p>Clear guides for forms, calendars, workflows, attribution, FBCLID, duplicate events, Test Events, embedded forms, and qualified leads.</p>
+            <span className="blogEyebrow"><BookOpen /> Meta CAPI answers and GoHighLevel guides</span>
+            <h1>Understand Meta CAPI, set it up, and fix it without reading a wall of jargon.</h1>
+            <p>Start with the basics, then move into GoHighLevel forms, bookings, workflows, attribution, duplicate events, testing, and access tokens.</p>
           </div>
         </section>
 
@@ -178,9 +178,9 @@ export default function BlogIndex() {
           <div className="blogSectionHeading">
             <div>
               <span>{articles.length} practical guides</span>
-              <h2 id="latest-guides">Start with the exact problem you are trying to fix.</h2>
+              <h2 id="latest-guides">Choose the exact question you need answered.</h2>
             </div>
-            <p>Each page gives a direct answer, the checks to run, common mistakes, and links to the relevant GoHighLevel or Meta documentation.</p>
+            <p>Each guide gives a direct answer first, followed by the checks, common mistakes, and current platform references.</p>
           </div>
 
           <div className="blogCardGrid">
@@ -201,17 +201,18 @@ export default function BlogIndex() {
         <section className="blogCta">
           <div>
             <span>Simple CAPI workspace</span>
-            <h2>Turn the guide into a working client endpoint.</h2>
-            <p>Create a protected Lead or Schedule setup and keep client credentials outside the page code.</p>
+            <h2>Turn the guide into a working Meta event.</h2>
+            <p>Choose Lead or Schedule, paste one protected script on the intended page, and test what Meta receives.</p>
           </div>
-          <a className="button primary" href="/register">Create your endpoint <ArrowRight /></a>
+          <a className="button primary" href="/register">Create your script <ArrowRight /></a>
         </section>
       </main>
 
       <footer className="blogFooter">
-        <div><Brand compact /><p>Focused Meta Conversions API endpoints and practical GoHighLevel guides.</p></div>
+        <div><Brand compact /><p>Simple Meta Conversions API explanations and practical GoHighLevel guides.</p></div>
         <nav aria-label="Footer navigation">
           <a href="/blogs">Blogs</a>
+          <a href="/how-does-meta-capi-work">Meta CAPI basics</a>
           <a href="/gohighlevel-meta-capi">GHL Meta CAPI</a>
           <a href="/docs">How it works</a>
           <a href="/privacy">Privacy</a>
