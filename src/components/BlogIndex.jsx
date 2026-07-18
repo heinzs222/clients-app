@@ -4,16 +4,38 @@ import {
   BookOpen,
   Braces,
   Building2,
+  CalendarCheck2,
+  ClipboardCheck,
+  FileInput,
   Fingerprint,
+  GitCompareArrows,
   GitMerge,
+  Link2,
+  Network,
   Radar,
+  TestTube2,
+  UserCheck,
   Workflow
 } from "lucide-react";
+import { GHL_BLOG_SUMMARIES } from "../content/ghlBlogData.js";
 import { Brand } from "./UI.jsx";
 
 const ROOT = "https://simplecapi.com";
 
-const articles = [
+const iconMap = {
+  workflow: Workflow,
+  form: FileInput,
+  calendar: CalendarCheck2,
+  link: Link2,
+  merge: GitMerge,
+  test: TestTube2,
+  embed: Network,
+  compare: GitCompareArrows,
+  quality: UserCheck,
+  checklist: ClipboardCheck
+};
+
+const foundationalArticles = [
   {
     href: "/gohighlevel-meta-capi",
     category: "GoHighLevel",
@@ -53,15 +75,22 @@ const articles = [
     href: "/meta-capi-for-agencies",
     category: "Agencies",
     title: "Meta CAPI workflows for agencies",
-    description: "Standardize client endpoints, payloads, testing, credentials, and implementation handoffs.",
+    description: "Standardize client endpoints, event data, testing, credentials, and implementation handoffs.",
     icon: Building2
   }
 ];
 
+const ghlArticles = GHL_BLOG_SUMMARIES.map((article) => ({
+  ...article,
+  icon: iconMap[article.icon] || Workflow
+}));
+
+const articles = [...ghlArticles, ...foundationalArticles];
+
 function useMetadata() {
   useEffect(() => {
-    const title = "Meta CAPI Guides and Resources | Simple CAPI";
-    const description = "Practical Meta Conversions API guides covering GoHighLevel, attribution, event deduplication, Event Match Quality, agencies, and server-side tracking.";
+    const title = "GoHighLevel Meta CAPI Guides and Answers | Simple CAPI";
+    const description = "Practical GoHighLevel Meta CAPI guides for forms, calendars, workflows, FBCLID, attribution, deduplication, Test Events, and qualified leads.";
     const url = `${ROOT}/blogs`;
 
     document.title = title;
@@ -139,19 +168,19 @@ export default function BlogIndex() {
         <section className="blogHero">
           <div className="blogHeroGlow" aria-hidden="true" />
           <div className="blogHeroInner">
-            <span className="blogEyebrow"><BookOpen /> Simple CAPI resources</span>
-            <h1>Practical Meta CAPI guides without the usual tracking fog.</h1>
-            <p>Clear implementation guides for attribution, event matching, deduplication, GoHighLevel, agencies, and focused server-side tracking.</p>
+            <span className="blogEyebrow"><BookOpen /> GoHighLevel + Meta CAPI resources</span>
+            <h1>Answers for the GoHighLevel Meta CAPI problems people actually run into.</h1>
+            <p>Clear guides for forms, calendars, workflows, attribution, FBCLID, duplicate events, Test Events, embedded forms, and qualified leads.</p>
           </div>
         </section>
 
         <section className="blogGridSection" aria-labelledby="latest-guides">
           <div className="blogSectionHeading">
             <div>
-              <span>Technical guides</span>
-              <h2 id="latest-guides">Start with the problem you are trying to fix.</h2>
+              <span>{articles.length} practical guides</span>
+              <h2 id="latest-guides">Start with the exact problem you are trying to fix.</h2>
             </div>
-            <p>Each guide focuses on one exact tracking problem, explains where it breaks, and shows the controlled implementation path.</p>
+            <p>Each page gives a direct answer, the checks to run, common mistakes, and links to the relevant GoHighLevel or Meta documentation.</p>
           </div>
 
           <div className="blogCardGrid">
@@ -180,9 +209,10 @@ export default function BlogIndex() {
       </main>
 
       <footer className="blogFooter">
-        <div><Brand compact /><p>Focused Meta Conversions API endpoints and implementation guides.</p></div>
+        <div><Brand compact /><p>Focused Meta Conversions API endpoints and practical GoHighLevel guides.</p></div>
         <nav aria-label="Footer navigation">
           <a href="/blogs">Blogs</a>
+          <a href="/gohighlevel-meta-capi">GHL Meta CAPI</a>
           <a href="/docs">How it works</a>
           <a href="/privacy">Privacy</a>
           <a href="/terms">Terms</a>
