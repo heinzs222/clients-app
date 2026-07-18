@@ -32,7 +32,7 @@
   "rewrites": [
     {
       "source": "/api/workspace",
-      "destination": "https://capi-tracker-service.netlify.app/.netlify/functions/create-client-capi"
+      "destination": "https://capi-tracker-service.netlify.app/.netlify/functions/workspace-api"
     },
     {
       "source": "/api/bindings",
