@@ -1,3 +1,7 @@
+.principleBand {
+  align-items: end;
+}
+
 .clientBoundaryFigure {
   width: min(100%, 520px);
   margin: 34px 0 0;
