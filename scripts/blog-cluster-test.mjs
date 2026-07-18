@@ -11,7 +11,7 @@ const main = fs.readFileSync(new URL("../src/main.jsx", import.meta.url), "utf8"
 assert(GHL_BLOG_POSTS.length >= 10, "Expected at least ten GoHighLevel Meta CAPI articles.");
 assert(new Set(GHL_BLOG_POSTS.map((post) => post.path)).size === GHL_BLOG_POSTS.length, "Blog paths must be unique.");
 assert(new Set(GHL_BLOG_POSTS.map((post) => post.title)).size === GHL_BLOG_POSTS.length, "Blog titles must be unique.");
-assert(main.includes("GHL_BLOG_PATHS.has(normalizedPath)"), "Main router does not include the GoHighLevel blog routes.");
+assert(main.includes("ALL_BLOG_PATHS.has(normalizedPath)"), "Main router does not include the combined blog routes.");
 
 for (const post of GHL_BLOG_POSTS) {
   assert(post.path.startsWith("/gohighlevel-"), `Unexpected article path: ${post.path}`);
