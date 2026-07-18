@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="520" viewBox="0 0 760 520" fill="none" role="img" aria-labelledby="title desc">
+  <title id="title">Separate client workspaces connected to Simple CAPI</title>
+  <desc id="desc">Four isolated client cards connect to one protected Simple CAPI workspace while keeping datasets and credentials separate.</desc>
+  <defs>
+    <linearGradient id="panel" x1="90" y1="26" x2="648" y2="494" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F9FBFF"/>
+      <stop offset="1" stop-color="#EDF4FF"/>
+    </linearGradient>
+    <linearGradient id="core" x1="304" y1="170" x2="471" y2="353" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0A70F5"/>
+      <stop offset="1" stop-color="#0751BC"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#153A62" flood-opacity="0.14"/>
+    </filter>
+    <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#153A62" flood-opacity="0.09"/>
+    </filter>
+  </defs>
+
+  <rect x="12" y="12" width="736" height="496" rx="30" fill="url(#panel)" stroke="#D4DFEF"/>
+  <path d="M80 112H680M80 408H680" stroke="#DCE6F3" stroke-dasharray="5 8"/>
+  <path d="M170 76V444M590 76V444" stroke="#DCE6F3" stroke-dasharray="5 8"/>
+
+  <path d="M242 154C280 174 294 199 316 228" stroke="#8EBBFA" stroke-width="3" stroke-linecap="round"/>
+  <path d="M518 154C480 174 466 199 444 228" stroke="#8EBBFA" stroke-width="3" stroke-linecap="round"/>
+  <path d="M242 366C280 346 294 321 316 292" stroke="#8EBBFA" stroke-width="3" stroke-linecap="round"/>
+  <path d="M518 366C480 346 466 321 444 292" stroke="#8EBBFA" stroke-width="3" stroke-linecap="round"/>
+
+  <g filter="url(#softShadow)">
+    <rect x="76" y="84" width="176" height="112" rx="18" fill="white" stroke="#CAD8EA"/>
+    <rect x="96" y="104" width="42" height="42" rx="12" fill="#E9F2FF"/>
+    <circle cx="117" cy="125" r="9" fill="#0968E6"/>
+    <path d="M108 159H218" stroke="#A6B8CE" stroke-width="8" stroke-linecap="round"/>
+    <path d="M108 178H185" stroke="#D4DFEC" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="226" cy="110" r="6" fill="#17A77C"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <rect x="508" y="84" width="176" height="112" rx="18" fill="white" stroke="#CAD8EA"/>
+    <rect x="528" y="104" width="42" height="42" rx="12" fill="#EAF9F6"/>
+    <rect x="540" y="116" width="18" height="18" rx="5" fill="#0B9B79"/>
+    <path d="M540 159H650" stroke="#A6B8CE" stroke-width="8" stroke-linecap="round"/>
+    <path d="M540 178H617" stroke="#D4DFEC" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="658" cy="110" r="6" fill="#17A77C"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <rect x="76" y="324" width="176" height="112" rx="18" fill="white" stroke="#CAD8EA"/>
+    <rect x="96" y="344" width="42" height="42" rx="12" fill="#FFF4DA"/>
+    <path d="M108 371L117 357L126 371H108Z" fill="#C98100"/>
+    <path d="M108 399H218" stroke="#A6B8CE" stroke-width="8" stroke-linecap="round"/>
+    <path d="M108 418H185" stroke="#D4DFEC" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="226" cy="350" r="6" fill="#17A77C"/>
+  </g>
+
+  <g filter="url(#softShadow)">
+    <rect x="508" y="324" width="176" height="112" rx="18" fill="white" stroke="#CAD8EA"/>
+    <rect x="528" y="344" width="42" height="42" rx="12" fill="#F1ECFF"/>
+    <path d="M540 358H558V376H540V358Z" fill="#7556D9"/>
+    <path d="M540 399H650" stroke="#A6B8CE" stroke-width="8" stroke-linecap="round"/>
+    <path d="M540 418H617" stroke="#D4DFEC" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="658" cy="350" r="6" fill="#17A77C"/>
+  </g>
+
+  <g filter="url(#shadow)">
+    <rect x="282" y="174" width="196" height="172" rx="26" fill="url(#core)"/>
+    <rect x="303" y="196" width="154" height="34" rx="11" fill="white" fill-opacity="0.14"/>
+    <path d="M326 207H354" stroke="white" stroke-width="8" stroke-linecap="round"/>
+    <path d="M365 207H432" stroke="white" stroke-opacity="0.76" stroke-width="7" stroke-linecap="round"/>
+    <rect x="310" y="246" width="140" height="74" rx="16" fill="white"/>
+    <path d="M335 271H425" stroke="#A9BDD7" stroke-width="7" stroke-linecap="round"/>
+    <path d="M335 292H398" stroke="#D5E0ED" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="423" cy="292" r="8" fill="#13A27A"/>
+  </g>
+
+  <g transform="translate(353 134)">
+    <path d="M27 0L48 8V27C48 42 39 54 27 60C15 54 6 42 6 27V8L27 0Z" fill="#E8F3FF" stroke="#0A65DE" stroke-width="3"/>
+    <path d="M18 28L24 34L37 20" stroke="#0A65DE" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <g fill="#48627E" font-family="Inter, Arial, sans-serif" font-size="13" font-weight="700">
+    <text x="104" y="129">CLIENT A</text>
+    <text x="536" y="129">CLIENT B</text>
+    <text x="104" y="369">CLIENT C</text>
+    <text x="536" y="369">CLIENT D</text>
+  </g>
+
+  <g fill="white" font-family="Inter, Arial, sans-serif" text-anchor="middle">
+    <text x="380" y="224" font-size="15" font-weight="800">SIMPLE CAPI</text>
+  </g>
+
+  <g font-family="Inter, Arial, sans-serif" text-anchor="middle">
+    <rect x="291" y="454" width="178" height="32" rx="16" fill="#E7F8F2" stroke="#BCE7D8"/>
+    <circle cx="314" cy="470" r="5" fill="#0B9B79"/>
+    <text x="390" y="475" fill="#176B58" font-size="12" font-weight="800">CLIENT DATA STAYS SEPARATE</text>
+  </g>
+</svg>

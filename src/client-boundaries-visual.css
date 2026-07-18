@@ -1,0 +1,24 @@
+.clientBoundaryFigure {
+  width: min(100%, 520px);
+  margin: 34px 0 0;
+}
+
+.clientBoundaryFigure img {
+  width: 100%;
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 20px 42px rgba(21, 58, 98, 0.08));
+}
+
+@media (max-width: 960px) {
+  .clientBoundaryFigure {
+    width: min(100%, 620px);
+    margin-top: 28px;
+  }
+}
+
+@media (max-width: 680px) {
+  .clientBoundaryFigure {
+    margin-top: 24px;
+  }
+}

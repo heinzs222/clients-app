@@ -82,6 +82,26 @@ function simplifyHero(hero) {
   if (footer) footer.innerHTML = "<i></i> Meta event ready";
 }
 
+function addClientBoundaryVisual() {
+  if (document.querySelector(".clientBoundaryFigure")) return;
+  const intro = document.querySelector(".principleBand > div:first-child");
+  if (!intro) return;
+
+  const figure = document.createElement("figure");
+  figure.className = "clientBoundaryFigure";
+
+  const image = document.createElement("img");
+  image.src = "/client-workspace-boundaries.svg";
+  image.alt = "Four separate client setups connected to one protected Simple CAPI workspace.";
+  image.width = 760;
+  image.height = 520;
+  image.loading = "lazy";
+  image.decoding = "async";
+
+  figure.appendChild(image);
+  intro.appendChild(figure);
+}
+
 function addBeginnerHub() {
   if (document.querySelector(".beginnerGuideBand")) return;
   const pageFooter = document.querySelector(".publicFooter");
@@ -116,6 +136,7 @@ function applyHomeEnhancements() {
     simplifyHero(hero);
     hero.dataset.simpleCapiEnhanced = "true";
   }
+  addClientBoundaryVisual();
   addBeginnerHub();
 }
 

@@ -10,6 +10,7 @@ import { initializeAnalytics } from "./lib/analytics.js";
 import "./styles.css";
 import "./full-logo.css";
 import "./home-beginner-seo.css";
+import "./client-boundaries-visual.css";
 import "./seo-pages.css";
 import "./seo-public-shell.css";
 import "./blog-index.css";
