@@ -22,12 +22,14 @@ const publicHrefs = {
 };
 
 function RouteLink({ route, navigate, className = "", children, ariaLabel }) {
+  const requiresPageLoad = route === "blogs";
+
   return (
     <a
       className={className}
       href={publicHrefs[route] || "/"}
       aria-label={ariaLabel}
-      onClick={navigate ? (event) => { event.preventDefault(); navigate(route); } : undefined}
+      onClick={navigate && !requiresPageLoad ? (event) => { event.preventDefault(); navigate(route); } : undefined}
     >
       {children}
     </a>
