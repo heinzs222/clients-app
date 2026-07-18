@@ -12,11 +12,17 @@ const ui = read("../src/components/UI.jsx");
 const blogIndex = read("../src/components/BlogIndex.jsx");
 const blogArticle = read("../src/components/GhlBlogPage.jsx");
 const homeEnhancements = read("../src/lib/home-enhancements.js");
+const fullLogoStyles = read("../src/full-logo.css");
 
 assert(ui.includes('blogs: "/blogs"'), "Shared public navigation is missing the blogs route.");
 assert(ui.includes('route === "blogs" ? "active"'), "Shared public header cannot mark Blogs as active.");
 assert(ui.includes('const requiresPageLoad = route === "blogs"'), "Blog navigation is not marked as a full page route.");
 assert(ui.includes('navigate && !requiresPageLoad'), "Blog links can still be intercepted by the product SPA router.");
+assert(ui.includes('src="/capi-tracker-logo.png"'), "The shared brand is not using the full logo image.");
+assert(ui.includes('alt="Simple CAPI"'), "The full logo image needs an accessible name.");
+assert(!ui.includes('className="brandName"'), "The shared brand still renders separate text beside the logo image.");
+assert(!ui.includes('src="/capi-tracker-mark.png"'), "The shared brand still uses the icon-only mark.");
+assert(fullLogoStyles.includes(".brandLogo"), "Full logo sizing styles are missing.");
 
 for (const [name, source] of [["blog index", blogIndex], ["blog article", blogArticle]]) {
   assert(source.includes('import { PublicFooter, PublicHeader } from "./UI.jsx";'), `${name} does not import the homepage header and footer.`);
@@ -30,4 +36,4 @@ assert(homeEnhancements.includes('pageFooter.insertAdjacentElement("beforebegin"
 assert(!homeEnhancements.includes('hero.insertAdjacentElement("afterend", section)'), "Beginner guide section is still placed below the hero.");
 assert(homeEnhancements.includes("New to Meta CAPI?"), "Beginner guide section copy is missing.");
 
-console.log("Validated native blog navigation, shared public layout, and homepage beginner-section placement.");
+console.log("Validated full-image branding, native blog navigation, shared public layout, and homepage beginner-section placement.");
