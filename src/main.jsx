@@ -13,6 +13,7 @@ import "./blog-index.css";
 import "./ghl-blog-pages.css";
 import "./mobile-navigation-fixes.css";
 import "./lib/public-copy.js";
+import "./lib/home-enhancements.js";
 
 initializeAnalytics();
 
