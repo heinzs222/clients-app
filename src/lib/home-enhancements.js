@@ -81,8 +81,11 @@ function simplifyHero(hero) {
   if (footer) footer.innerHTML = "<i></i> Meta event ready";
 }
 
-function addBeginnerHub(hero) {
+function addBeginnerHub() {
   if (document.querySelector(".beginnerGuideBand")) return;
+  const pageFooter = document.querySelector(".publicFooter");
+  if (!pageFooter) return;
+
   const section = document.createElement("section");
   section.className = "beginnerGuideBand";
   section.setAttribute("aria-labelledby", "meta-capi-beginner-guides");
@@ -99,7 +102,7 @@ function addBeginnerHub(hero) {
   beginnerGuides.forEach((guide) => grid.appendChild(guideCard(guide)));
 
   section.append(intro, grid);
-  hero.insertAdjacentElement("afterend", section);
+  pageFooter.insertAdjacentElement("beforebegin", section);
 }
 
 function applyHomeEnhancements() {
@@ -112,7 +115,7 @@ function applyHomeEnhancements() {
     simplifyHero(hero);
     hero.dataset.simpleCapiEnhanced = "true";
   }
-  addBeginnerHub(hero);
+  addBeginnerHub();
 }
 
 let scheduled = false;

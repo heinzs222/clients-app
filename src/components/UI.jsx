@@ -13,6 +13,7 @@ const publicHrefs = {
   home: "/",
   guide: "/emq-guide",
   docs: "/docs",
+  blogs: "/blogs",
   privacy: "/privacy",
   terms: "/terms",
   status: "/status",
@@ -26,7 +27,7 @@ function RouteLink({ route, navigate, className = "", children, ariaLabel }) {
       className={className}
       href={publicHrefs[route] || "/"}
       aria-label={ariaLabel}
-      onClick={(event) => { event.preventDefault(); navigate(route); }}
+      onClick={navigate ? (event) => { event.preventDefault(); navigate(route); } : undefined}
     >
       {children}
     </a>
@@ -52,7 +53,7 @@ export function PublicHeader({ route, navigate, user }) {
         <nav className="publicNav" aria-label="Main navigation">
           <RouteLink className={route === "home" ? "active" : ""} route="home" navigate={navigate}>Home</RouteLink>
           <RouteLink className={route === "docs" ? "active" : ""} route="docs" navigate={navigate}>How it works</RouteLink>
-          <a href="/blogs">Blogs</a>
+          <RouteLink className={route === "blogs" ? "active" : ""} route="blogs" navigate={navigate}>Blogs</RouteLink>
           <RouteLink className={route === "status" ? "active" : ""} route="status" navigate={navigate}>Status</RouteLink>
         </nav>
         <div className="publicActions">
@@ -82,7 +83,7 @@ export function PublicFooter({ navigate }) {
           <RouteLink route="privacy" navigate={navigate}>Privacy Policy</RouteLink>
           <RouteLink route="terms" navigate={navigate}>Terms of Service</RouteLink>
           <RouteLink route="docs" navigate={navigate}>Product overview</RouteLink>
-          <a href="/blogs">Blogs</a>
+          <RouteLink route="blogs" navigate={navigate}>Blogs</RouteLink>
           <RouteLink route="status" navigate={navigate}>Status</RouteLink>
         </nav>
       </div>

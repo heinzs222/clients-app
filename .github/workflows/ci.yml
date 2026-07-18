@@ -41,5 +41,7 @@ jobs:
         run: node scripts/blog-cluster-test.mjs
       - name: Beginner SEO checks
         run: node scripts/meta-beginner-seo-test.mjs
+      - name: Shared public layout checks
+        run: node scripts/public-layout-test.mjs
       - name: Generated endpoint contracts
         run: npm run test:generated
