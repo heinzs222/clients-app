@@ -2,6 +2,7 @@ import { refreshSession } from "@netlify/identity";
 
 const API_PATH = "/api/workspace";
 const BINDING_PATH = "/api/bindings";
+const PROVIDER_PATH = "/api/providers";
 const DEVICE_KEY = "simple-capi-device";
 
 function deviceToken() {
@@ -81,6 +82,10 @@ async function bindingForEndpoint(endpoint) {
     if (error.status === 404) return { ...endpoint, binding: null, binding_error: "" };
     return { ...endpoint, binding: null, binding_error: error.message };
   }
+}
+
+export async function providerRequest(action, { method = "GET", body } = {}) {
+  return parsedRequest(PROVIDER_PATH, action, { method, body });
 }
 
 export async function capiRequest(action, { method = "GET", body } = {}) {
