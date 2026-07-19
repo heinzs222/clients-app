@@ -20,9 +20,10 @@ const boundaryStyles = read("../src/client-boundaries-visual.css");
 const boundaryIllustration = read("../public/client-workspace-boundaries.svg");
 
 assert(ui.includes('blogs: "/blogs"'), "Shared public navigation is missing the blogs route.");
+assert(ui.includes('services: "/meta-capi-setup-service"'), "Shared public navigation is missing the setup service route.");
 assert(ui.includes('route === "blogs" ? "active"'), "Shared public header cannot mark Blogs as active.");
-assert(ui.includes('const requiresPageLoad = route === "blogs"'), "Blog navigation is not marked as a full page route.");
-assert(ui.includes('navigate && !requiresPageLoad'), "Blog links can still be intercepted by the product SPA router.");
+assert(ui.includes('["blogs", "services"].includes(route)'), "Public content routes are not marked as full page loads.");
+assert(ui.includes('navigate && !requiresPageLoad'), "Public page links can still be intercepted by the product SPA router.");
 assert(ui.includes('src="/capi-tracker-logo.png"'), "The shared brand is not using the full logo image.");
 assert(ui.includes('alt="Simple CAPI"'), "The full logo image needs an accessible name.");
 assert(!ui.includes('className="brandName"'), "The shared brand still renders separate text beside the logo image.");
