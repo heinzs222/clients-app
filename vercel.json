@@ -35,6 +35,18 @@
       "destination": "https://capi-tracker-service.netlify.app/.netlify/functions/service-lead"
     },
     {
+      "source": "/api/providers",
+      "destination": "https://capi-tracker-service.netlify.app/.netlify/functions/provider-workspace"
+    },
+    {
+      "source": "/p/:route/tracker.js",
+      "destination": "https://capi-tracker-service.netlify.app/.netlify/functions/provider-gateway?route=:route&asset=tracker"
+    },
+    {
+      "source": "/p/:route/events",
+      "destination": "https://capi-tracker-service.netlify.app/.netlify/functions/provider-gateway?route=:route"
+    },
+    {
       "source": "/api/workspace",
       "destination": "https://capi-tracker-service.netlify.app/.netlify/functions/workspace-api"
     },
