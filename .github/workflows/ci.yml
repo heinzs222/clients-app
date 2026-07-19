@@ -31,6 +31,9 @@ jobs:
           node --check netlify/functions/client-gateway.mjs
           node --check netlify/functions/script-binding.mjs
           node --check netlify/functions/identity-signup.mjs
+          node --check netlify/functions/service-lead.mjs
+          node --check netlify/functions/provider-workspace.mjs
+          node --check netlify/functions/provider-gateway.mjs
       - name: Authentication checks
         run: |
           node scripts/auth-error-test.mjs
@@ -43,5 +46,9 @@ jobs:
         run: node scripts/meta-beginner-seo-test.mjs
       - name: Shared public layout checks
         run: node scripts/public-layout-test.mjs
+      - name: Revenue offer checks
+        run: node scripts/revenue-offers-test.mjs
+      - name: Provider compatibility checks
+        run: node scripts/provider-contract-test.mjs
       - name: Generated endpoint contracts
         run: npm run test:generated
