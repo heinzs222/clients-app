@@ -21,8 +21,10 @@ const boundaryIllustration = read("../public/client-workspace-boundaries.svg");
 
 assert(ui.includes('blogs: "/blogs"'), "Shared public navigation is missing the blogs route.");
 assert(ui.includes('services: "/meta-capi-setup-service"'), "Shared public navigation is missing the setup service route.");
+assert(ui.includes('platforms: "/platforms"'), "Shared public navigation is missing the TikTok and Google route.");
 assert(ui.includes('route === "blogs" ? "active"'), "Shared public header cannot mark Blogs as active.");
-assert(ui.includes('["blogs", "services"].includes(route)'), "Public content routes are not marked as full page loads.");
+assert(ui.includes('route === "platforms" ? "active"'), "Shared public header cannot mark TikTok and Google as active.");
+assert(ui.includes('["blogs", "services", "platforms"].includes(route)'), "Public content routes are not marked as full page loads.");
 assert(ui.includes('navigate && !requiresPageLoad'), "Public page links can still be intercepted by the product SPA router.");
 assert(ui.includes('src="/capi-tracker-logo.png"'), "The shared brand is not using the full logo image.");
 assert(ui.includes('alt="Simple CAPI"'), "The full logo image needs an accessible name.");
@@ -54,4 +56,4 @@ assert(main.includes('import "./client-boundaries-visual.css";'), "Client bounda
 assert(boundaryStyles.includes(".clientBoundaryFigure"), "Client boundaries illustration sizing is missing.");
 assert(boundaryIllustration.includes("CLIENT DATA STAYS SEPARATE"), "Client boundaries illustration does not communicate the section message.");
 
-console.log("Validated shared public layout, homepage guide placement, and the client boundaries illustration.");
+console.log("Validated shared public layout, homepage guide placement, provider navigation, and the client boundaries illustration.");
