@@ -31,6 +31,10 @@
   ],
   "rewrites": [
     {
+      "source": "/api/service-lead",
+      "destination": "https://capi-tracker-service.netlify.app/.netlify/functions/service-lead"
+    },
+    {
       "source": "/api/workspace",
       "destination": "https://capi-tracker-service.netlify.app/.netlify/functions/workspace-api"
     },
