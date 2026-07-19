@@ -13,6 +13,7 @@ const publicHrefs = {
   home: "/",
   guide: "/emq-guide",
   docs: "/docs",
+  services: "/meta-capi-setup-service",
   blogs: "/blogs",
   privacy: "/privacy",
   terms: "/terms",
@@ -22,7 +23,7 @@ const publicHrefs = {
 };
 
 function RouteLink({ route, navigate, className = "", children, ariaLabel }) {
-  const requiresPageLoad = route === "blogs";
+  const requiresPageLoad = ["blogs", "services"].includes(route);
 
   return (
     <a
@@ -60,6 +61,7 @@ export function PublicHeader({ route, navigate, user }) {
         <nav className="publicNav" aria-label="Main navigation">
           <RouteLink className={route === "home" ? "active" : ""} route="home" navigate={navigate}>Home</RouteLink>
           <RouteLink className={route === "docs" ? "active" : ""} route="docs" navigate={navigate}>How it works</RouteLink>
+          <RouteLink className={route === "services" ? "active" : ""} route="services" navigate={navigate}>Done-for-you</RouteLink>
           <RouteLink className={route === "blogs" ? "active" : ""} route="blogs" navigate={navigate}>Blogs</RouteLink>
           <RouteLink className={route === "status" ? "active" : ""} route="status" navigate={navigate}>Status</RouteLink>
         </nav>
@@ -90,6 +92,7 @@ export function PublicFooter({ navigate }) {
           <RouteLink route="privacy" navigate={navigate}>Privacy Policy</RouteLink>
           <RouteLink route="terms" navigate={navigate}>Terms of Service</RouteLink>
           <RouteLink route="docs" navigate={navigate}>Product overview</RouteLink>
+          <RouteLink route="services" navigate={navigate}>Done-for-you setup</RouteLink>
           <RouteLink route="blogs" navigate={navigate}>Blogs</RouteLink>
           <RouteLink route="status" navigate={navigate}>Status</RouteLink>
         </nav>
