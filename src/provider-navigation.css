@@ -1,0 +1,36 @@
+.sideNavLinks .providerWorkspaceNavLink {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 13px;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: #aebdd0;
+  background: transparent;
+  border: 0;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.sideNavLinks .providerWorkspaceNavLink:hover,
+.sideNavLinks .providerWorkspaceNavLink:focus-visible {
+  color: #fff;
+  background: #1d3550;
+  outline: none;
+}
+
+.sideNavLinks .providerWorkspaceNavLink span {
+  width: 19px;
+  display: inline-grid;
+  place-items: center;
+  color: #7ed7ff;
+  font-size: 17px;
+}
+
+@media (max-width: 760px) {
+  .sideNavLinks .providerWorkspaceNavLink {
+    min-height: 46px;
+  }
+}
