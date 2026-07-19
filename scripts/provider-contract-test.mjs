@@ -38,18 +38,25 @@ assert(gateway.includes('business-api.tiktok.com/open_api/v1.3/event/track/'), "
 assert(gateway.includes('"Access-Token": config.tiktok.accessToken'), "TikTok API authentication is missing.");
 assert(gateway.includes('ttclid') && gateway.includes('ttp:'), "TikTok attribution is incomplete.");
 assert(gateway.includes('event_id: eventId'), "TikTok event deduplication is missing.");
-assert(gateway.includes('sha256(email)') && gateway.includes('sha256(phone)'), "TikTok identifier hashing is missing.");
+assert(gateway.includes('email: email ? [sha256(email)]') && gateway.includes('phone: phone ? [sha256(phone)]'), "TikTok identifier arrays are missing.");
+assert(gateway.includes('test_event_code: config.tiktok.testEventCode'), "TikTok test code is not request-level.");
 assert(gateway.includes('analytics.tiktok.com/i18n/pixel/events.js'), "TikTok Pixel is missing.");
 assert(workspace.includes('"Schedule" : "SubmitForm"'), "TikTok standard event mapping is missing.");
 
 // Google tag, enhanced conversions and optional Ads API upload.
 assert(gateway.includes('www.googletagmanager.com/gtag/js?id='), "Google tag is missing.");
+assert(gateway.includes('script[src*="googletagmanager.com/gtag/js?id="]'), "Existing Google tags are not reused.");
 assert(gateway.includes('w.gtag("set","user_data"'), "Google enhanced conversion data is missing.");
 assert(gateway.includes('transaction_id:p.event_id'), "Google duplicate protection is missing.");
 assert(gateway.includes(':uploadClickConversions'), "Google Ads API upload is missing.");
 assert(gateway.includes('gclid') && gateway.includes('wbraid') && gateway.includes('gbraid'), "Google click identifiers are incomplete.");
 assert(gateway.includes('hashedEmail') && gateway.includes('hashedPhoneNumber'), "Google identifier hashing is missing.");
+assert(gateway.includes('SimpleCAPIConsent') && !gateway.includes('? "DENIED" : "GRANTED"'), "Google consent is being assumed instead of supplied explicitly.");
 assert(workspace.includes('Complete every Google Ads API field'), "Google API configuration validation is missing.");
+
+// Browser event guards.
+assert(gateway.includes('simple-capi:page-event:') && gateway.includes('300000'), "Schedule reload protection is missing.");
+assert(gateway.includes('HTMLFormElement.prototype.submit'), "Programmatic form submission capture is missing.");
 
 // Additive routes and navigation.
 assert(api.includes('const PROVIDER_PATH = "/api/providers"'), "Provider API client is missing.");
