@@ -14,6 +14,7 @@ const publicHrefs = {
   guide: "/emq-guide",
   docs: "/docs",
   services: "/meta-capi-setup-service",
+  platforms: "/platforms",
   blogs: "/blogs",
   privacy: "/privacy",
   terms: "/terms",
@@ -23,7 +24,7 @@ const publicHrefs = {
 };
 
 function RouteLink({ route, navigate, className = "", children, ariaLabel }) {
-  const requiresPageLoad = ["blogs", "services"].includes(route);
+  const requiresPageLoad = ["blogs", "services", "platforms"].includes(route);
 
   return (
     <a
@@ -61,13 +62,18 @@ export function PublicHeader({ route, navigate, user }) {
         <nav className="publicNav" aria-label="Main navigation">
           <RouteLink className={route === "home" ? "active" : ""} route="home" navigate={navigate}>Home</RouteLink>
           <RouteLink className={route === "docs" ? "active" : ""} route="docs" navigate={navigate}>How it works</RouteLink>
+          <RouteLink className={route === "platforms" ? "active" : ""} route="platforms" navigate={navigate}>TikTok & Google</RouteLink>
           <RouteLink className={route === "services" ? "active" : ""} route="services" navigate={navigate}>Done-for-you</RouteLink>
           <RouteLink className={route === "blogs" ? "active" : ""} route="blogs" navigate={navigate}>Blogs</RouteLink>
           <RouteLink className={route === "status" ? "active" : ""} route="status" navigate={navigate}>Status</RouteLink>
         </nav>
         <div className="publicActions">
           {user ? (
-            <button className="button primary small" type="button" onClick={() => navigate("dashboard")}>Open dashboard</button>
+            navigate ? (
+              <button className="button primary small" type="button" onClick={() => navigate("dashboard")}>Open dashboard</button>
+            ) : (
+              <a className="button primary small" href="/?view=dashboard">Open dashboard</a>
+            )
           ) : (
             <>
               <RouteLink className="button ghost small" route="login" navigate={navigate}>Log in</RouteLink>
@@ -92,6 +98,7 @@ export function PublicFooter({ navigate }) {
           <RouteLink route="privacy" navigate={navigate}>Privacy Policy</RouteLink>
           <RouteLink route="terms" navigate={navigate}>Terms of Service</RouteLink>
           <RouteLink route="docs" navigate={navigate}>Product overview</RouteLink>
+          <RouteLink route="platforms" navigate={navigate}>TikTok & Google</RouteLink>
           <RouteLink route="services" navigate={navigate}>Done-for-you setup</RouteLink>
           <RouteLink route="blogs" navigate={navigate}>Blogs</RouteLink>
           <RouteLink route="status" navigate={navigate}>Status</RouteLink>

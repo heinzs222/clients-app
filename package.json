@@ -8,12 +8,13 @@
     "dev:local": "npm run build && node scripts/local-server.mjs",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "check": "npm run build && node --check netlify/functions/create-client-capi.mjs && node --check netlify/functions/workspace-api.mjs && node --check netlify/functions/client-gateway.mjs && node --check netlify/functions/script-binding.mjs && node --check netlify/functions/identity-signup.mjs && node --check netlify/functions/service-lead.mjs && node scripts/auth-error-test.mjs && node scripts/authenticator-disabled-test.mjs && node scripts/binding-test.mjs && node scripts/blog-cluster-test.mjs && node scripts/meta-beginner-seo-test.mjs && node scripts/public-layout-test.mjs && node scripts/revenue-offers-test.mjs",
+    "check": "npm run build && node --check netlify/functions/create-client-capi.mjs && node --check netlify/functions/workspace-api.mjs && node --check netlify/functions/client-gateway.mjs && node --check netlify/functions/script-binding.mjs && node --check netlify/functions/identity-signup.mjs && node --check netlify/functions/service-lead.mjs && node --check netlify/functions/provider-workspace.mjs && node --check netlify/functions/provider-gateway.mjs && node scripts/auth-error-test.mjs && node scripts/authenticator-disabled-test.mjs && node scripts/binding-test.mjs && node scripts/blog-cluster-test.mjs && node scripts/meta-beginner-seo-test.mjs && node scripts/public-layout-test.mjs && node scripts/revenue-offers-test.mjs && node scripts/provider-contract-test.mjs",
     "test:smoke": "node scripts/smoke-test.mjs",
     "test:generated": "CAPI_BINDING_ENFORCEMENT=false node scripts/generated-artifacts-test.mjs",
     "test:binding": "node scripts/binding-test.mjs",
     "test:blog": "node scripts/blog-cluster-test.mjs && node scripts/meta-beginner-seo-test.mjs && node scripts/public-layout-test.mjs",
     "test:revenue": "node --check netlify/functions/service-lead.mjs && node scripts/revenue-offers-test.mjs",
+    "test:providers": "node --check netlify/functions/provider-workspace.mjs && node --check netlify/functions/provider-gateway.mjs && node scripts/provider-contract-test.mjs",
     "test:live": "node scripts/live-audit.mjs"
   },
   "engines": {
