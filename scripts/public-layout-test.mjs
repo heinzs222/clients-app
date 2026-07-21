@@ -49,9 +49,9 @@ assert(main.includes('<SeoPublicShell path={normalizedPath} />'), "SEO routes by
 assert(!main.includes('<SeoPage path={normalizedPath} />'), "SEO routes still render their legacy page chrome directly.");
 assert(seoShellStyles.includes(".seoHeader") && seoShellStyles.includes(".seoFooter") && seoShellStyles.includes("display: none !important"), "Legacy SEO chrome is not suppressed inside the shared shell.");
 
-const expectedHomeTitle = "See Which Ads Bring You Leads | Simple CAPI";
-const expectedHomeDescription = "Track leads and bookings from Meta, Google Ads, and TikTok without complicated setup. Create your first protected tracking script free.";
-assert(index.includes(`<title>${expectedHomeTitle}</title>`), "Static homepage title is not benefit-focused.");
+const expectedHomeTitle = "See Which Ads Bring Leads | First Script Free | Simple CAPI";
+const expectedHomeDescription = "Track leads and bookings from Meta, Google Ads, and TikTok without complicated setup. Create your first protected tracking script for free.";
+assert(index.includes(`<title>${expectedHomeTitle}</title>`), "Static homepage title does not emphasize the free first script.");
 assert(index.includes(`name="description" content="${expectedHomeDescription}"`), "Static homepage description is inconsistent.");
 assert(main.includes('import "./lib/homepage-search-metadata.js";'), "Homepage metadata protection is not loaded.");
 assert(homepageMetadata.includes(expectedHomeTitle) && homepageMetadata.includes(expectedHomeDescription), "Rendered homepage metadata does not match the static HTML.");
@@ -66,4 +66,4 @@ assert(main.includes('import "./client-boundaries-visual.css";'), "Client bounda
 assert(boundaryStyles.includes(".clientBoundaryFigure"), "Client boundaries illustration sizing is missing.");
 assert(boundaryIllustration.includes("CLIENT DATA STAYS SEPARATE"), "Client boundaries illustration does not communicate the section message.");
 
-console.log("Validated shared public layout, clickable homepage metadata, provider navigation, and the client boundaries illustration.");
+console.log("Validated shared public layout, free-first-script homepage metadata, provider navigation, and the client boundaries illustration.");
