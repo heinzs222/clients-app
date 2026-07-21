@@ -26,6 +26,7 @@ import "./lib/public-copy.js";
 import "./lib/home-enhancements.js";
 import "./lib/revenue-offers.js";
 import "./lib/provider-navigation.js";
+import "./lib/homepage-search-metadata.js";
 
 initializeAnalytics();
 
