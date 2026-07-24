@@ -51,8 +51,8 @@ export function Brand({ compact = false, headerArtwork = false }) {
           className="headerBrandArtworkImage"
           src="/capi-tracker-header.png"
           alt="Simple CAPI"
-          width="1024"
-          height="1024"
+          width="628"
+          height="413"
         />
       </span>
     );

@@ -615,7 +615,7 @@ button:disabled {
   display: block;
   width: 120px;
   height: 58px;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
 }
 
