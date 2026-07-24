@@ -3,6 +3,7 @@ import http from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import provisioner from "../netlify/functions/create-client-capi.mjs";
+import providerWorkspace from "../netlify/functions/provider-workspace.mjs";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const dist = path.join(root, "dist");
@@ -56,7 +57,7 @@ function requestBody(req) {
   });
 }
 
-async function runFunction(req, res) {
+async function runFunction(req, res, handler) {
   const body = ["GET", "HEAD"].includes(req.method) ? undefined : await requestBody(req);
   const request = new Request(`http://127.0.0.1:${port}${req.url}`, {
     method: req.method,
@@ -64,7 +65,7 @@ async function runFunction(req, res) {
     body: body?.length ? body : undefined,
     duplex: body?.length ? "half" : undefined
   });
-  const result = await provisioner(request, {});
+  const result = await handler(request, {});
   res.statusCode = result.status;
   result.headers.forEach((value, key) => res.setHeader(key, value));
   const output = Buffer.from(await result.arrayBuffer());
@@ -91,7 +92,11 @@ function serveFile(req, res) {
 const server = http.createServer(async (req, res) => {
   try {
     if (new URL(req.url, `http://127.0.0.1:${port}`).pathname === "/api/workspace") {
-      await runFunction(req, res);
+      await runFunction(req, res, provisioner);
+      return;
+    }
+    if (new URL(req.url, `http://127.0.0.1:${port}`).pathname === "/api/providers") {
+      await runFunction(req, res, providerWorkspace);
       return;
     }
     serveFile(req, res);

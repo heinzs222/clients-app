@@ -565,3 +565,41 @@
     flex-direction: column;
   }
 }
+.providerWorkspaceMain {
+  max-width: none;
+}
+
+.providerWorkspaceMain .providerExisting,
+.providerWorkspaceMain .providerCreate {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.providerPaymentGate {
+  align-items: center;
+  background: #fff;
+  border: 1px solid var(--line, #cbd5e1);
+  display: flex;
+  gap: 24px;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding: 20px 24px;
+}
+
+.providerPaymentGate strong,
+.providerPaymentGate p {
+  display: block;
+  margin: 0;
+}
+
+.providerPaymentGate p {
+  color: var(--muted, #526079);
+  margin-top: 4px;
+}
+
+@media (max-width: 700px) {
+  .providerPaymentGate {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}

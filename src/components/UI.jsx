@@ -24,7 +24,7 @@ const publicHrefs = {
 };
 
 function RouteLink({ route, navigate, className = "", children, ariaLabel }) {
-  const requiresPageLoad = ["blogs", "services", "platforms"].includes(route);
+  const requiresPageLoad = ["blogs", "services"].includes(route);
 
   return (
     <a

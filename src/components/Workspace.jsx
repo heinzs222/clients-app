@@ -61,11 +61,13 @@ import {
   Spinner,
   StatusPill
 } from "./UI.jsx";
+import PlatformsPage from "./PlatformsPage.jsx";
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "endpoints", label: "Endpoints", icon: Database },
   { id: "setup", label: "Setup Wizard", icon: CircleGauge },
+  { id: "platforms", label: "TikTok & Google", icon: Route },
   { id: "billing", label: "Billing", icon: CreditCard },
   { id: "tracking", label: "Tracking", icon: Route }
 ];
@@ -275,6 +277,7 @@ function PaymentStep({ billing, onCheckout, refreshBilling, onCancel }) {
             <li><CheckCircle2 size={18} /><span>Locked to one exact page and form</span></li>
             <li><CheckCircle2 size={18} /><span>Secure credential handling and endpoint management</span></li>
           </ul>
+          <p className="paymentRule">Need both events? Buy two scripts: $5 for Lead plus $5 for Schedule.</p>
           {billing.mode === "test" ? <Notice tone="warning" title="Lemon Squeezy test mode">Use Lemon Squeezy's test checkout. No real charge will be made.</Notice> : null}
           {!billing.configured ? <Notice tone="error" title="Payments unavailable">Lemon Squeezy has not been configured by the administrator.</Notice> : null}
           {billing.message ? <Notice tone={billing.status === "error" ? "error" : "info"}>{billing.message}</Notice> : null}
@@ -370,7 +373,7 @@ function SetupWizard({ backend, billing, createState, onCreate, onCheckout, refr
   const pageValid = isValidPageUrl(form.allowedPageUrl);
   const selectorValid = form.eventName === "Schedule" || isExactFormSelector(form.formSelector);
   const valid = form.clientName.trim().length >= 2 && isValidDatasetId(form.datasetId) && isValidAccessToken(form.accessToken) && pageValid && selectorValid;
-  const hasCredit = billing.exempt || !billing.required || Number(billing.available_credits) > 0;
+  const hasCredit = billing.exempt || !billing.required || billing.free_script_available || Number(billing.available_credits) > 0;
 
   if (!hasCredit) {
     return <PaymentStep billing={billing} onCheckout={onCheckout} refreshBilling={refreshBilling} onCancel={onCancel} />;
@@ -698,6 +701,8 @@ export default function Workspace({
     page = <EndpointsPage endpoints={endpoints} loading={endpointsState.status === "loading"} error={endpointsState.error} onNew={onNew} onOpen={open} onManage={manage} onDelete={requestDelete} busyId={deleteState.id} refresh={refreshEndpoints} />;
   } else if (route === "setup") {
     page = <SetupWizard backend={backend} billing={billing} createState={createState} onCreate={onCreate} onCheckout={onCheckout} refreshBilling={refreshBilling} onCancel={() => navigate("dashboard")} />;
+  } else if (route === "platforms") {
+    page = <PlatformsPage billing={billing} onCheckout={onCheckout} refreshBilling={refreshBilling} />;
   } else if (route === "billing") {
     page = <BillingPage billing={billing} onCheckout={onCheckout} refreshBilling={refreshBilling} navigate={navigate} />;
   } else if ((route === "tracking" || route === "endpoint-settings") && selectedEndpoint) {

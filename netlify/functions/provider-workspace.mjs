@@ -1,8 +1,14 @@
 import crypto from "node:crypto";
 import { getStore } from "@netlify/blobs";
 import { getUser } from "@netlify/identity";
+import {
+  paymentExemption,
+  releasePaymentReservation,
+  verifyAndReservePayment
+} from "./_payment-credit.mjs";
 
 const STORE_NAME = "simple-capi-provider-configs";
+const SECURITY_STORE = "simple-capi-security";
 const PUBLIC_ORIGIN = "https://simplecapi.com";
 const PROVIDERS = new Set(["tiktok", "google"]);
 const EVENTS = new Set(["Lead", "Schedule"]);
@@ -60,6 +66,10 @@ function store() {
   return getStore({ name: STORE_NAME, consistency: "strong" });
 }
 
+function securityStore() {
+  return getStore({ name: SECURITY_STORE, consistency: "strong" });
+}
+
 function secretKey() {
   const secret = cleanString(process.env.CAPI_PROVIDER_SECRET) ||
     cleanString(process.env.CAPI_GATEWAY_SECRET) ||
@@ -84,6 +94,73 @@ function ownerKey(user) {
 
 function ownerIndexKey(user) {
   return `owners/${ownerKey(user)}`;
+}
+
+function deviceToken(request) {
+  const value = cleanString(request.headers.get("x-capi-device"), 200);
+  return /^[A-Za-z0-9_-]{16,128}$/.test(value) ? value : "";
+}
+
+function verificationKey() {
+  const secret = cleanString(process.env.CAPI_VERIFICATION_SECRET) ||
+    cleanString(process.env.CAPI_GATEWAY_SECRET) ||
+    cleanString(process.env.NETLIFY_AUTH_TOKEN);
+  if (secret.length < 20) {
+    throw Object.assign(new Error("Account verification is not configured."), { statusCode: 503 });
+  }
+  return crypto.createHash("sha256").update(`simple-capi-verification-v1:${secret}`).digest();
+}
+
+function freeClaimHash(type, value) {
+  return crypto.createHmac("sha256", verificationKey()).update(`${type}:${value}`).digest("hex");
+}
+
+async function freeClaimOwner(key) {
+  const value = await securityStore().get(key, { type: "json", consistency: "strong" });
+  return cleanString(value?.owner_key);
+}
+
+async function freeEndpointAvailable(user, request, existingEndpoints) {
+  if (paymentExemption(user, request) || existingEndpoints.length) return false;
+  const owner = ownerKey(user);
+  if (await freeClaimOwner(`free/accounts/${owner}`)) return false;
+  const ip = sourceIp(request);
+  const device = deviceToken(request);
+  if (!ip || !device) return false;
+  const networkOwner = await freeClaimOwner(`free/networks/${freeClaimHash("network", ip)}`);
+  const deviceOwner = await freeClaimOwner(`free/devices/${freeClaimHash("device", device)}`);
+  return (!networkOwner || networkOwner === owner) && (!deviceOwner || deviceOwner === owner);
+}
+
+async function reserveFreeEndpoint(user, request) {
+  const owner = ownerKey(user);
+  const ip = sourceIp(request);
+  const device = deviceToken(request);
+  if (!ip || !device) {
+    throw Object.assign(new Error("This browser could not be verified for a free script."), { statusCode: 403 });
+  }
+  const keys = [
+    `free/accounts/${owner}`,
+    `free/networks/${freeClaimHash("network", ip)}`,
+    `free/devices/${freeClaimHash("device", device)}`
+  ];
+  const reserved = [];
+  try {
+    for (const key of keys) {
+      const created = await securityStore().setJSON(key, {
+        owner_key: owner,
+        claimed_at: new Date().toISOString()
+      }, { onlyIfNew: true });
+      if (!created.modified) {
+        throw Object.assign(new Error("A free script has already been claimed by this account, network, or device."), { statusCode: 409 });
+      }
+      if (created.modified) reserved.push(key);
+    }
+    return reserved;
+  } catch (error) {
+    await Promise.all(reserved.map((key) => securityStore().delete(key)));
+    throw error;
+  }
 }
 
 function configKey(route) {
@@ -175,7 +252,7 @@ function normalizeEvent(value) {
 }
 
 function tiktokEvent(eventName) {
-  return eventName === "Schedule" ? "Schedule" : "SubmitForm";
+  return eventName === "Schedule" ? "Schedule" : "Lead";
 }
 
 function publicOrigin() {
@@ -201,6 +278,7 @@ function publicRecord(config) {
     status: "ready",
     server_mode: config.provider === "tiktok" ? true : Boolean(config.google?.apiEnabled),
     browser_mode: true,
+    billing: config.billing,
     credential_summary: config.provider === "tiktok"
       ? { pixel_code: config.tiktok.pixelCode }
       : {
@@ -308,6 +386,7 @@ function validateInput(input) {
     clientName,
     allowedPageUrl,
     formSelector,
+    country: /^[A-Z]{2}$/.test(cleanString(input.country, 2).toUpperCase()) ? cleanString(input.country, 2).toUpperCase() : "US",
     currency: cleanString(input.currency, 3).toUpperCase() || "USD",
     value: Number.isFinite(Number(input.value)) ? Number(input.value) : (eventName === "Schedule" ? 150 : 1),
     source: cleanString(input.source, 120) || (eventName === "Schedule" ? "Appointment Booking" : "Website Form"),
@@ -331,19 +410,49 @@ async function createEndpoint(user, input, request) {
   const id = crypto.randomUUID();
   const route = crypto.randomBytes(18).toString("base64url");
   const now = new Date().toISOString();
+  const exempt = Boolean(paymentExemption(user, request));
+  const free = !exempt && await freeEndpointAvailable(user, request, current);
+  let payment = null;
+  let freeClaims = [];
+  let paymentReserved = false;
+  if (!exempt && !free) {
+    payment = await verifyAndReservePayment(user, request, input.checkoutOrderId, id);
+    paymentReserved = true;
+  }
+  const billing = payment ? {
+    provider: "lemonsqueezy",
+    order_id: payment.orderId,
+    amount: payment.amount,
+    currency: payment.currency,
+    paid_at: payment.paidAt
+  } : free ? {
+    provider: "free",
+    amount: 0,
+    currency: "USD",
+    paid_at: now
+  } : undefined;
   const config = {
     id,
     route,
     ownerKey: ownerKey(user),
     ...validated,
+    billing,
     createdAt: now,
     updatedAt: now,
     createdIp: sourceIp(request)
   };
-  await saveConfig(config);
-  const record = publicRecord(config);
-  await writeIndex(user, (items) => [record, ...items.filter((item) => item.id !== id)]);
-  return record;
+  try {
+    freeClaims = free ? await reserveFreeEndpoint(user, request) : [];
+    await saveConfig(config);
+    const record = publicRecord(config);
+    await writeIndex(user, (items) => [record, ...items.filter((item) => item.id !== id)]);
+    return record;
+  } catch (error) {
+    await store().delete(configKey(route));
+    await Promise.all(freeClaims.map((key) => securityStore().delete(key)));
+    if (paymentReserved) await releasePaymentReservation(payment.orderId, id);
+    throw error;
+  }
 }
 
 async function updateEndpoint(user, input, request) {
@@ -361,6 +470,7 @@ async function updateEndpoint(user, input, request) {
     route: record.route,
     ownerKey: ownerKey(user),
     ...validated,
+    billing: record.billing,
     createdAt: record.created_at,
     updatedAt: new Date().toISOString(),
     createdIp: ""
@@ -437,3 +547,7 @@ export const config = {
     aggregateBy: ["ip", "domain"]
   }
 };
+
+export async function providerRecordsForUser(user) {
+  return readIndex(user);
+}

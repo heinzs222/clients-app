@@ -1,6 +1,6 @@
 # TikTok and Google provider setup
 
-The existing Meta workspace and generated Meta endpoints remain unchanged. TikTok and Google configurations use the separate `/platforms` workspace.
+Meta, TikTok, and Google are managed from the same authenticated Simple CAPI workspace. Each Lead or Schedule setup consumes its own conversion credit and keeps its credentials isolated.
 
 ## TikTok
 

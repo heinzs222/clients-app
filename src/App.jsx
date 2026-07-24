@@ -31,7 +31,7 @@ const StatusPage = lazy(() => import("./components/PublicPages.jsx").then((modul
 const PUBLIC_ROUTES = new Set(["home", "docs", "privacy", "terms", "status"]);
 const PURCHASED_ROUTES = new Set(["guide"]);
 const AUTH_ROUTES = new Set(["login", "register", "forgot", "reset"]);
-const WORKSPACE_ROUTES = new Set(["dashboard", "endpoints", "setup", "billing", "tracking", "endpoint-settings"]);
+const WORKSPACE_ROUTES = new Set(["dashboard", "endpoints", "setup", "platforms", "billing", "tracking", "endpoint-settings"]);
 const ALL_ROUTES = new Set([...PUBLIC_ROUTES, ...PURCHASED_ROUTES, ...AUTH_ROUTES, ...WORKSPACE_ROUTES]);
 const ROUTE_PATHS = Object.freeze({
   home: "/",
@@ -43,7 +43,8 @@ const ROUTE_PATHS = Object.freeze({
   login: "/login",
   register: "/register",
   forgot: "/forgot-password",
-  reset: "/reset-password"
+  reset: "/reset-password",
+  platforms: "/platforms"
 });
 const PATH_ROUTES = Object.freeze(Object.fromEntries(Object.entries(ROUTE_PATHS).map(([route, path]) => [path, route])));
 function routeFromUrl() {
@@ -69,6 +70,7 @@ function pageTitle(route) {
     dashboard: "Dashboard - Simple CAPI",
     endpoints: "Endpoints - Simple CAPI",
     setup: "New endpoint - Simple CAPI",
+    platforms: "TikTok and Google Ads - Simple CAPI",
     billing: "Billing - Simple CAPI",
     tracking: "Tracking - Simple CAPI",
     "endpoint-settings": "Endpoint settings - Simple CAPI",
@@ -341,7 +343,7 @@ function ProductApp() {
   }, [effectiveUser, security.complete, billing.status, loadBilling]);
 
   useEffect(() => {
-    if (!effectiveUser || route !== "setup") return;
+    if (!effectiveUser || !["setup", "platforms"].includes(route)) return;
     const url = new URL(window.location.href);
     const checkout = url.searchParams.get("checkout");
     const orderId = url.searchParams.get("order_id") || "";
@@ -375,13 +377,8 @@ function ProductApp() {
   }, [effectiveUser, route, authStatus, navigate]);
 
   useEffect(() => {
-    if (!effectiveUser || route !== "guide" || endpointsState.status !== "success") return;
-    if (!endpoints.length) navigate("setup", { replace: true });
-  }, [effectiveUser, route, endpointsState.status, endpoints.length, navigate]);
-
-  useEffect(() => {
-    if (effectiveUser && route === "guide" && endpoints.length && guideState.status === "idle") loadGuide();
-  }, [effectiveUser, route, endpoints.length, guideState.status, loadGuide]);
+    if (effectiveUser && route === "guide" && guideState.status === "idle") loadGuide();
+  }, [effectiveUser, route, guideState.status, loadGuide]);
 
   useEffect(() => {
     if (effectiveUser && AUTH_ROUTES.has(route) && route !== "reset" && authStatus === "ready") {
@@ -600,7 +597,10 @@ function ProductApp() {
   async function beginCheckout() {
     setBilling((current) => ({ ...current, status: "checkout", error: "", message: "Opening secure Lemon Squeezy Checkout..." }));
     try {
-      const data = await capiRequest("checkout", { method: "POST", body: {} });
+      const data = await capiRequest("checkout", {
+        method: "POST",
+        body: { returnView: route === "platforms" ? "platforms" : "setup" }
+      });
       if (!data.checkout?.url) throw new Error("Lemon Squeezy did not return a checkout link.");
       window.location.assign(data.checkout.url);
     } catch (error) {
@@ -714,7 +714,7 @@ function ProductApp() {
     return <AccountSecurity user={effectiveUser} security={security} onStart={startAuthenticator} onVerify={verifyAuthenticator} onLogout={submitLogout} busy={authBusy || security.status === "loading"} />;
   }
 
-  if (route === "guide" && endpointsState.status === "success" && endpoints.length) {
+  if (route === "guide") {
     return <EmqGuidePage navigate={navigate} user={effectiveUser} guideState={guideState} onRetry={loadGuide} />;
   }
 

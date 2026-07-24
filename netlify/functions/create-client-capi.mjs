@@ -3,6 +3,12 @@ import { getStore } from "@netlify/blobs";
 import JSZip from "jszip";
 import { getUser } from "@netlify/identity";
 import { minify } from "terser";
+import {
+  claimedEndpointForOrder,
+  releasePaymentReservation,
+  verifyAndReservePayment
+} from "./_payment-credit.mjs";
+import { providerRecordsForUser } from "./provider-workspace.mjs";
 
 const API_BASE = "https://api.netlify.com/api/v1";
 const LEMON_API_BASE = "https://api.lemonsqueezy.com/v1";
@@ -521,8 +527,9 @@ function checkoutOrderId(value) {
   return /^\d{1,20}$/.test(id) ? id : "";
 }
 
-async function createLemonCheckout(request, user) {
+async function createLemonCheckout(request, user, returnView = "setup") {
   const origin = trustedAppOrigin(request);
+  const redirectPath = returnView === "platforms" ? "/platforms" : "/?view=setup";
   const owner = ownerKey(user);
   const price = endpointPriceCents();
   const storeId = lemonStoreId();
@@ -537,7 +544,7 @@ async function createLemonCheckout(request, user) {
           product_options: {
             name: "Simple CAPI event-specific script",
             description: "Creates exactly one Lead or one Schedule conversion script. Tracking both events requires two separate purchases.",
-            redirect_url: `${origin}/?view=setup&checkout=success&order_id=[order_id]`,
+            redirect_url: `${origin}${redirectPath}${redirectPath.includes("?") ? "&" : "?"}checkout=success&order_id=[order_id]`,
             receipt_button_text: "Create your conversion",
             receipt_link_url: `${origin}/?view=billing`,
             enabled_variants: [variantId]
@@ -619,6 +626,8 @@ function validateLemonOrder(order, user, { allowRedeemed = false, redeemedSiteId
 }
 
 async function redeemedSiteForOrder(accountSlug, user, orderId) {
+  const claimedEndpoint = await claimedEndpointForOrder(orderId);
+  if (claimedEndpoint) return claimedEndpoint;
   const endpoints = await listOwnedSites(accountSlug, user);
   return endpoints.find((endpoint) => cleanString(endpoint.billing?.order_id) === cleanString(orderId))?.id || "";
 }
@@ -639,14 +648,16 @@ async function billingStatus(accountSlug, user, request) {
     return { ...config, exempt: true, exemption, free_script_available: false, free_script_blocked_reason: "", available_credits: null, payments: [] };
   }
   const endpoints = await listOwnedSites(accountSlug, user);
-  const free = await freeScriptStatus(user, request, endpoints);
+  const providerEndpoints = await providerRecordsForUser(user);
+  const allEndpoints = [...endpoints, ...providerEndpoints];
+  const free = await freeScriptStatus(user, request, allEndpoints);
   if (!config.configured) {
     return { ...config, ...free, exempt: false, available_credits: 0, payments: [] };
   }
 
   const params = lemonOrderSearchParams(user);
   const orders = await lemonFetch(`/orders?${params}`);
-  const redeemed = new Map(endpoints
+  const redeemed = new Map(allEndpoints
     .filter((endpoint) => endpoint.billing?.order_id)
     .map((endpoint) => [cleanString(endpoint.billing.order_id), endpoint.id]));
   const valid = (Array.isArray(orders.data) ? orders.data : []).filter((order) => {
@@ -2049,9 +2060,14 @@ async function createEndpoint(accountSlug, accountId, user, input, request) {
   let freeClaims = [];
   let datasetClaimCreated = false;
   const siteName = endpointSiteName(user, client, payment);
+  let paymentReserved = false;
   let site;
   try {
     freeClaims = free ? await reserveFreeScript(user, request) : [];
+    if (payment) {
+      await verifyAndReservePayment(user, request, payment.orderId, siteName);
+      paymentReserved = true;
+    }
     datasetClaimCreated = await reserveDatasetClaim(user, client.datasetId, allSites);
     site = await netlifyFetch(`/${encodeURIComponent(accountSlug)}/sites`, {
       method: "POST",
@@ -2096,6 +2112,7 @@ async function createEndpoint(accountSlug, accountId, user, input, request) {
     }
     if (datasetClaimCreated) await securityStore().delete(`datasets/${claimHash("dataset", client.datasetId)}`);
     await Promise.all(freeClaims.map((key) => securityStore().delete(key)));
+    if (paymentReserved) await releasePaymentReservation(payment.orderId, siteName);
     throw error;
   }
 }
@@ -2206,7 +2223,8 @@ export default async function handler(request) {
 
     if (request.method === "GET" && action === "guide") {
       const endpoints = await listOwnedSites(accountSlug, user);
-      if (!endpoints.length) {
+      const providerEndpoints = await providerRecordsForUser(user);
+      if (!endpoints.length && !providerEndpoints.length) {
         throw Object.assign(new Error("Create a paid Lead or Schedule script to unlock this guide."), { statusCode: 403 });
       }
       return response(request, 200, { success: true, guide: purchasedGuide() });
@@ -2229,7 +2247,8 @@ export default async function handler(request) {
       if (!config.configured) {
         throw Object.assign(new Error("Lemon Squeezy payments are not configured."), { statusCode: 503 });
       }
-      const checkout = await createLemonCheckout(request, user);
+      const input = await parseJson(request);
+      const checkout = await createLemonCheckout(request, user, cleanString(input.returnView) === "platforms" ? "platforms" : "setup");
       return response(request, 201, { success: true, checkout, billing: config });
     }
 

@@ -46,7 +46,7 @@ function addRevenueOffers() {
         title: "Install and verify it",
         price: "$249 one time",
         description: "Lead and Schedule setup for one GoHighLevel funnel and booking flow.",
-        features: ["Deduplication", "Meta Test Events", "Event Match Quality review"],
+        features: ["Event verification", "Meta Test Events", "Event Match Quality review"],
         href: "/meta-capi-setup-service?offer=done_for_you#request",
         primary: true
       }),

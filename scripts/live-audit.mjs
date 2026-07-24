@@ -41,7 +41,7 @@ try {
     await page.locator("h1").waitFor({ state: "visible" });
 
     const pageState = await page.evaluate(() => {
-      const logo = document.querySelector('img[src="/capi-tracker-mark.png"]');
+      const logo = document.querySelector('img[src="/capi-tracker-logo.png"]');
       const canonical = document.querySelector('link[rel="canonical"]');
       return {
         title: document.title,
@@ -59,7 +59,7 @@ try {
     });
 
     assert(pageState.title.includes("Simple CAPI"), `${viewport.name} title is incorrect.`);
-    assert(pageState.h1 === "Launch reliable Meta tracking in minutes.", `${viewport.name} H1 is incorrect.`);
+    assert(pageState.h1 === "Send better lead data to Meta with one simple script.", `${viewport.name} H1 is incorrect.`);
     assert(pageState.chromeCount === 2, `${viewport.name} public navigation is incomplete.`);
     assert(pageState.interactiveCount > 0, `${viewport.name} public calls to action are missing.`);
     assert(pageState.internalLinks.includes("/login"), `${viewport.name} login link is missing.`);

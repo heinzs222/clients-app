@@ -1,24 +1,17 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { getUser } from "@netlify/identity";
 import {
-  ArrowLeft,
   CalendarCheck2,
-  Check,
   CheckCircle2,
-  Clipboard,
-  Database,
   Eye,
   EyeOff,
   FileInput,
-  KeyRound,
   LoaderCircle,
   Plus,
   RefreshCw,
-  ShieldCheck,
   Trash2
 } from "lucide-react";
 import { providerRequest } from "../lib/api.js";
-import { CopyButton, Notice, PublicFooter, PublicHeader, Spinner } from "./UI.jsx";
+import { CopyButton, Notice, Spinner } from "./UI.jsx";
 
 const emptyForm = {
   provider: "tiktok",
@@ -26,6 +19,7 @@ const emptyForm = {
   eventName: "Lead",
   allowedPageUrl: "",
   formSelector: "",
+  country: "US",
   currency: "USD",
   value: "1.00",
   source: "Website Form",
@@ -49,12 +43,20 @@ function providerName(value) {
 }
 
 function eventHint(form) {
-  if (form.provider === "tiktok") return form.eventName === "Schedule" ? "TikTok Schedule" : "TikTok SubmitForm";
+  if (form.provider === "tiktok") return form.eventName === "Schedule" ? "TikTok Schedule" : "TikTok Lead";
   return form.eventName === "Schedule" ? "Google Ads booking conversion" : "Google Ads lead conversion";
 }
 
 function installationTag(endpoint) {
   return endpoint?.tracker_url ? `<script src="${endpoint.tracker_url}" defer></script>` : "";
+}
+
+function providerErrorMessage(error, fallback) {
+  const message = String(error?.message || "").trim();
+  if (!message || /netlify|blob|siteid|internal server|stack|token required/i.test(message)) {
+    return fallback;
+  }
+  return message;
 }
 
 function EndpointCard({ endpoint, onVerify, onDelete, busy }) {
@@ -66,15 +68,14 @@ function EndpointCard({ endpoint, onVerify, onDelete, busy }) {
         <div>
           <span className="providerBadge">{endpoint.provider_label}</span>
           <h3>{endpoint.client_name}</h3>
-          <p>{endpoint.event_name} · {endpoint.provider_event_name}</p>
+          <p>{endpoint.event_name} / {endpoint.provider_event_name}</p>
         </div>
         <span className="providerReady"><i /> Ready</span>
       </header>
       <dl>
         <div><dt>Locked page</dt><dd>{endpoint.allowed_page_url}</dd></div>
         {endpoint.form_selector ? <div><dt>Locked form</dt><dd><code>{endpoint.form_selector}</code></dd></div> : null}
-        <div><dt>Browser tracking</dt><dd>Enabled</dd></div>
-        <div><dt>Server tracking</dt><dd>{endpoint.server_mode ? "Enabled" : "Browser mode only"}</dd></div>
+        <div><dt>Delivery</dt><dd>Ready</dd></div>
       </dl>
       <div className="providerCardActions">
         <button className="button secondary small" type="button" onClick={() => setExpanded((value) => !value)}>{expanded ? "Hide install code" : "Install code"}</button>
@@ -92,8 +93,7 @@ function EndpointCard({ endpoint, onVerify, onDelete, busy }) {
   );
 }
 
-export default function PlatformsPage() {
-  const [user, setUser] = useState(undefined);
+export default function PlatformsPage({ billing, onCheckout, refreshBilling }) {
   const [endpoints, setEndpoints] = useState([]);
   const [listState, setListState] = useState({ status: "idle", error: "" });
   const [form, setForm] = useState(emptyForm);
@@ -112,12 +112,6 @@ export default function PlatformsPage() {
     form.refreshToken
   ].every((value) => value.trim()), [form]);
 
-  useEffect(() => {
-    document.title = "TikTok and Google Conversion Tracking - Simple CAPI";
-    document.querySelector('meta[name="robots"]')?.setAttribute("content", "noindex, nofollow");
-    getUser().then(setUser).catch(() => setUser(null));
-  }, []);
-
   async function load() {
     setListState({ status: "loading", error: "" });
     try {
@@ -125,13 +119,14 @@ export default function PlatformsPage() {
       setEndpoints(Array.isArray(data.endpoints) ? data.endpoints : []);
       setListState({ status: "success", error: "" });
     } catch (error) {
-      setListState({ status: "error", error: error.message });
+      setListState({
+        status: "error",
+        error: providerErrorMessage(error, "Tracking setups are temporarily unavailable. Please refresh and try again.")
+      });
     }
   }
 
-  useEffect(() => {
-    if (user) load();
-  }, [user]);
+  useEffect(() => { load(); }, []);
 
   function patch(name, value) {
     setForm((current) => {
@@ -157,8 +152,13 @@ export default function PlatformsPage() {
     setCreateState({ status: "loading", error: "" });
     setNotice("");
     try {
+      const requiresCredit = billing.required && !billing.exempt && !billing.free_script_available;
+      if (requiresCredit && !billing.available_order_id) {
+        throw new Error("Purchase a $5 conversion credit before creating this endpoint.");
+      }
       const payload = {
         ...form,
+        checkoutOrderId: requiresCredit ? billing.available_order_id : undefined,
         value: Number(form.value),
         formSelector: form.eventName === "Schedule" ? "" : form.formSelector,
         customerId: showGoogleApi ? form.customerId : "",
@@ -182,9 +182,13 @@ export default function PlatformsPage() {
       setShowSecrets(false);
       setCreateState({ status: "success", error: "" });
       setNotice(`${providerName(data.endpoint.provider)} ${data.endpoint.event_name} tracking was created.`);
+      await refreshBilling();
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
-      setCreateState({ status: "error", error: error.message });
+      setCreateState({
+        status: "error",
+        error: providerErrorMessage(error, "The tracking setup could not be created. Check the details and try again.")
+      });
     }
   }
 
@@ -197,7 +201,7 @@ export default function PlatformsPage() {
         ? `${endpoint.provider_label} configuration is healthy. Browser tracking is enabled${data.server_mode ? " and server tracking is enabled" : ""}.`
         : `${endpoint.provider_label} configuration could not be verified.`);
     } catch (error) {
-      setNotice(error.message);
+      setNotice(providerErrorMessage(error, "The tracking setup could not be verified. Please try again."));
     } finally {
       setBusyId("");
     }
@@ -212,57 +216,32 @@ export default function PlatformsPage() {
       setEndpoints((current) => current.filter((item) => item.id !== endpoint.id));
       setNotice(`${endpoint.provider_label} tracking was deleted.`);
     } catch (error) {
-      setNotice(error.message);
+      setNotice(providerErrorMessage(error, "The tracking setup could not be deleted. Please try again."));
     } finally {
       setBusyId("");
     }
   }
 
-  if (user === undefined) {
-    return <div className="providerBoot"><LoaderCircle className="spin" size={24} /> Loading provider workspace</div>;
-  }
-
-  if (!user) {
-    return (
-      <div className="publicPage providerPage">
-        <PublicHeader route="platforms" />
-        <main className="providerSignedOut">
-          <ShieldCheck size={38} />
-          <h1>Log in to configure TikTok and Google tracking.</h1>
-          <p>The provider workspace uses the same Simple CAPI account and keeps every credential server-side.</p>
-          <a className="button primary" href="/login">Log in</a>
-        </main>
-        <PublicFooter />
-      </div>
-    );
-  }
-
   return (
-    <div className="publicPage providerPage">
-      <PublicHeader route="platforms" user={user} />
-      <main>
-        <section className="providerHero">
-          <div>
-            <a className="providerBack" href="/?view=dashboard"><ArrowLeft size={16} /> Back to Meta workspace</a>
-            <span className="eyebrow">Additional ad platforms</span>
-            <h1>Run Meta, TikTok and Google without mixing their credentials.</h1>
-            <p>Your existing Meta workspace remains untouched. TikTok and Google use isolated configurations, their own payloads and the same permanent page/form protection.</p>
-            <div className="providerTrust">
-              <span><Check size={16} /> TikTok Pixel + Events API</span>
-              <span><Check size={16} /> Google tag + enhanced conversions</span>
-              <span><Check size={16} /> Optional Google Ads API upload</span>
-            </div>
-          </div>
-          <aside>
-            <strong>Meta remains unchanged</strong>
-            <p>Every existing Meta endpoint, script, token, billing rule and installation stays on its original code path.</p>
-            <a className="button secondary full" href="/?view=setup">Create a Meta endpoint</a>
-          </aside>
+    <main className="workspaceMain providerPage providerWorkspaceMain">
+      <header className="workspaceHeader">
+        <div>
+          <h1>TikTok & Google Ads</h1>
+          <p>Create protected Lead or Schedule tracking with the same $5-per-event pricing.</p>
+        </div>
+      </header>
+      {!billing.exempt && billing.required && !billing.free_script_available && !Number(billing.available_credits) ? (
+        <section className="providerPaymentGate">
+          <div><strong>One conversion credit required</strong><p>Each Lead or Schedule script is a separate one-time $5 purchase.</p></div>
+          <button className="button primary" type="button" onClick={onCheckout} disabled={["checkout", "verifying"].includes(billing.status)}>
+            {billing.status === "checkout" ? <Spinner label="Opening checkout" /> : "Buy one $5 credit"}
+          </button>
         </section>
+      ) : null}
 
-        <section className="providerExisting">
+        {listState.status !== "success" || endpoints.length ? <section className="providerExisting">
           <header>
-            <div><span className="eyebrow">Provider endpoints</span><h2>TikTok and Google configurations</h2><p>Each setup is locked to one exact page and one Lead form or Schedule confirmation.</p></div>
+            <div><span className="eyebrow">Your endpoints</span><h2>TikTok and Google tracking</h2><p>Each setup is locked to one exact page and one Lead form or Schedule confirmation.</p></div>
             <button className="button ghost" type="button" onClick={load} disabled={listState.status === "loading"}><RefreshCw className={listState.status === "loading" ? "spin" : ""} size={17} /> Refresh</button>
           </header>
           {notice ? <Notice tone={/deleted|created|healthy|enabled/i.test(notice) ? "success" : "info"}>{notice}</Notice> : null}
@@ -271,11 +250,10 @@ export default function PlatformsPage() {
           {listState.status !== "loading" && endpoints.length ? (
             <div className="providerEndpointGrid">{endpoints.map((endpoint) => <EndpointCard key={endpoint.id} endpoint={endpoint} onVerify={verify} onDelete={remove} busy={busyId === endpoint.id} />)}</div>
           ) : null}
-          {listState.status === "success" && !endpoints.length ? <div className="providerEmpty"><Database size={25} /><strong>No TikTok or Google endpoint yet</strong><span>Create one below. Meta endpoints remain in the original workspace.</span></div> : null}
-        </section>
+        </section> : null}
 
         <section className="providerCreate" id="create-provider">
-          <header><span className="eyebrow">Create provider tracking</span><h2>Choose the platform, conversion and exact page.</h2><p>Credentials are encrypted before storage and never appear in the installation script.</p></header>
+          <header><span className="eyebrow">New endpoint</span><h2>Choose the platform, conversion and exact page.</h2><p>Credentials are encrypted before storage and never appear in the installation script.</p></header>
           <form onSubmit={create}>
             <fieldset className="providerSelector">
               <legend>Platform</legend>
@@ -303,7 +281,7 @@ export default function PlatformsPage() {
                   <label><span>Events API access token</span><input required type={showSecrets ? "text" : "password"} value={form.accessToken} onChange={(event) => patch("accessToken", event.target.value.trim())} placeholder="Paste the TikTok access token" autoComplete="off" /></label>
                 </div>
                 <label><span>Test event code <small>Optional</small></span><input value={form.testEventCode} onChange={(event) => patch("testEventCode", event.target.value.trim())} placeholder="Temporary TikTok test code" /></label>
-                <Notice tone="info" title="Full TikTok setup">The generated script loads or reuses the Pixel, sends the matching Events API event, passes TTCLID and _ttp, hashes first-party identifiers and uses one event ID for deduplication.</Notice>
+                <Notice tone="info" title="Complete TikTok tracking">The generated script is configured to send the selected conversion with the matching and campaign data available on the page.</Notice>
               </section>
             ) : (
               <section className="providerCredentialBox google">
@@ -312,8 +290,8 @@ export default function PlatformsPage() {
                   <label><span>Conversion ID</span><input required value={form.conversionId} onChange={(event) => patch("conversionId", event.target.value.trim())} placeholder="AW-123456789" /></label>
                   <label><span>Conversion label</span><input required value={form.conversionLabel} onChange={(event) => patch("conversionLabel", event.target.value.trim())} placeholder="AbC-D_efG-h12_34" /></label>
                 </div>
-                <Notice tone="info" title="Enhanced conversion browser mode">The generated script loads or reuses the Google tag, sends user-provided conversion data, includes value and currency, and uses the event ID as the transaction ID.</Notice>
-                <label className="providerApiToggle"><input type="checkbox" checked={showGoogleApi} onChange={(event) => setShowGoogleApi(event.target.checked)} /><span><strong>Add Google Ads API server upload</strong><small>Optional. This sends a second, server-side conversion using GCLID, WBRAID or GBRAID and hashed identifiers.</small></span></label>
+                <Notice tone="info" title="Complete Google Ads tracking">The generated script is configured with your conversion action, value, currency, and available customer matching data.</Notice>
+                <label className="providerApiToggle"><input type="checkbox" checked={showGoogleApi} onChange={(event) => setShowGoogleApi(event.target.checked)} /><span><strong>Advanced Google Ads connection</strong><small>Optional. Use this only when your Google Ads API access is already configured.</small></span></label>
                 {showGoogleApi ? (
                   <div className="googleApiFields">
                     <div className="providerFormGrid">
@@ -334,6 +312,7 @@ export default function PlatformsPage() {
             )}
 
             <div className="providerFormGrid compact">
+              <label><span>Country</span><select value={form.country} onChange={(event) => patch("country", event.target.value)}><option value="US">United States</option><option value="CA">Canada</option><option value="GB">United Kingdom</option><option value="AU">Australia</option><option value="NZ">New Zealand</option><option value="IE">Ireland</option></select></label>
               <label><span>Currency</span><select value={form.currency} onChange={(event) => patch("currency", event.target.value)}><option>USD</option><option>CAD</option><option>EUR</option><option>GBP</option><option>AUD</option><option>NZD</option></select></label>
               <label><span>Conversion value</span><input type="number" min="0" step="0.01" value={form.value} onChange={(event) => patch("value", event.target.value)} /></label>
             </div>
@@ -342,11 +321,9 @@ export default function PlatformsPage() {
 
             {createState.error ? <Notice tone="error" title="Provider endpoint was not created">{createState.error}</Notice> : null}
             <Notice tone="warning" title="The page and form lock is permanent">A different page, form, conversion or provider should use a separate endpoint.</Notice>
-            <button className="button primary full providerCreateButton" type="submit" disabled={createState.status === "loading"}>{createState.status === "loading" ? <><LoaderCircle className="spin" size={18} /> Creating protected endpoint</> : <><Plus size={18} /> Create {providerName(form.provider)} endpoint</>}</button>
+            <button className="button primary full providerCreateButton" type="submit" disabled={createState.status === "loading" || (!billing.exempt && billing.required && !billing.free_script_available && !Number(billing.available_credits))}>{createState.status === "loading" ? <><LoaderCircle className="spin" size={18} /> Creating protected endpoint</> : <><Plus size={18} /> Create {providerName(form.provider)} endpoint</>}</button>
           </form>
         </section>
-      </main>
-      <PublicFooter />
-    </div>
+    </main>
   );
 }
