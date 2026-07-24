@@ -177,7 +177,9 @@ try {
   await customFormPage.close();
 
   await page.goto(`${baseUrl}/`, { waitUntil: "networkidle" });
-  assert(await page.getByRole("heading", { name: "Send better lead data to Meta with one simple script." }).isVisible(), "Product home page did not render.");
+  assert(await page.getByRole("heading", { name: "Track Meta, TikTok, and Google Ads with one simple script." }).isVisible(), "Product home page did not render.");
+  assert(await page.getByRole("heading", { name: "Meta, TikTok, and Google are all ready." }).isVisible(), "Platform discovery is missing from the homepage.");
+  assert(await page.getByRole("heading", { name: "9.3+ Meta Event Match Quality across every tested setup." }).isVisible(), "The tested 9.3+ result is missing.");
   assert(await page.getByRole("button", { name: /Create my free script/ }).isVisible(), "Homepage primary action did not render.");
   assert(await page.getByRole("button", { name: "Unlock with a script" }).isVisible(), "Homepage paid-guide action did not render.");
   assert(await page.getByRole("link", { name: "Log in" }).isVisible(), "Homepage login action did not render.");
@@ -405,8 +407,8 @@ try {
   await page.goto(`${baseUrl}/?preview=1&view=dashboard`, { waitUntil: "networkidle" });
   await page.getByRole("button", { name: "Log out" }).click();
   await page.waitForURL(`${baseUrl}/`);
-  await page.getByRole("heading", { name: "Send better lead data to Meta with one simple script." }).waitFor({ state: "visible" });
-  assert(await page.getByRole("heading", { name: "Send better lead data to Meta with one simple script." }).isVisible(), "Logout did not return to the public home page.");
+  await page.getByRole("heading", { name: "Track Meta, TikTok, and Google Ads with one simple script." }).waitFor({ state: "visible" });
+  assert(await page.getByRole("heading", { name: "Track Meta, TikTok, and Google Ads with one simple script." }).isVisible(), "Logout did not return to the public home page.");
 
   assert(runtimeErrors.length === 0, runtimeErrors.join("\n"));
   process.stdout.write("Smoke test passed: tracker, simplified product UI, payment gate, dashboard, mobile, auth, and status.\n");

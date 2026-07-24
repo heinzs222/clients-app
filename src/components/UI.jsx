@@ -11,6 +11,9 @@ import { copyText } from "../lib/capi.js";
 
 const publicHrefs = {
   home: "/",
+  meta: "/how-to-set-up-meta-capi",
+  tiktok: "/how-to-set-up-tiktok-events-api",
+  google: "/how-to-set-up-google-ads-enhanced-conversions",
   guide: "/emq-guide",
   docs: "/docs",
   services: "/meta-capi-setup-service",
@@ -24,7 +27,7 @@ const publicHrefs = {
 };
 
 function RouteLink({ route, navigate, className = "", children, ariaLabel }) {
-  const requiresPageLoad = ["blogs", "services"].includes(route);
+  const requiresPageLoad = ["blogs", "services", "meta", "tiktok", "google"].includes(route);
 
   return (
     <a
@@ -60,12 +63,11 @@ export function PublicHeader({ route, navigate, user }) {
           <Brand compact />
         </RouteLink>
         <nav className="publicNav" aria-label="Main navigation">
-          <RouteLink className={route === "home" ? "active" : ""} route="home" navigate={navigate}>Home</RouteLink>
-          <RouteLink className={route === "docs" ? "active" : ""} route="docs" navigate={navigate}>How it works</RouteLink>
-          <RouteLink className={route === "platforms" ? "active" : ""} route="platforms" navigate={navigate}>TikTok & Google</RouteLink>
+          <RouteLink route="meta" navigate={navigate}>Meta CAPI</RouteLink>
+          <RouteLink route="tiktok" navigate={navigate}>TikTok</RouteLink>
+          <RouteLink route="google" navigate={navigate}>Google Ads</RouteLink>
+          <RouteLink className={route === "blogs" ? "active" : ""} route="blogs" navigate={navigate}>Guides</RouteLink>
           <RouteLink className={route === "services" ? "active" : ""} route="services" navigate={navigate}>Done-for-you</RouteLink>
-          <RouteLink className={route === "blogs" ? "active" : ""} route="blogs" navigate={navigate}>Blogs</RouteLink>
-          <RouteLink className={route === "status" ? "active" : ""} route="status" navigate={navigate}>Status</RouteLink>
         </nav>
         <div className="publicActions">
           {user ? (
@@ -95,12 +97,14 @@ export function PublicFooter({ navigate }) {
           <p>&copy; 2026 Simple CAPI. All rights reserved.</p>
         </div>
         <nav aria-label="Legal navigation">
+          <RouteLink route="meta" navigate={navigate}>Easy Meta CAPI setup</RouteLink>
+          <RouteLink route="tiktok" navigate={navigate}>TikTok Events API</RouteLink>
+          <RouteLink route="google" navigate={navigate}>Google enhanced conversions</RouteLink>
+          <RouteLink route="blogs" navigate={navigate}>Tracking guides</RouteLink>
           <RouteLink route="privacy" navigate={navigate}>Privacy Policy</RouteLink>
           <RouteLink route="terms" navigate={navigate}>Terms of Service</RouteLink>
           <RouteLink route="docs" navigate={navigate}>Product overview</RouteLink>
-          <RouteLink route="platforms" navigate={navigate}>TikTok & Google</RouteLink>
           <RouteLink route="services" navigate={navigate}>Done-for-you setup</RouteLink>
-          <RouteLink route="blogs" navigate={navigate}>Blogs</RouteLink>
           <RouteLink route="status" navigate={navigate}>Status</RouteLink>
         </nav>
       </div>

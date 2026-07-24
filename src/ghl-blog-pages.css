@@ -107,6 +107,16 @@
   font-weight: 700;
 }
 
+.articleTags {
+  margin-top: 20px;
+}
+
+.articleTags span {
+  color: #dcecff;
+  background: #173652;
+  border-color: #3f607e;
+}
+
 .ghlArticleMeta i {
   width: 4px;
   height: 4px;

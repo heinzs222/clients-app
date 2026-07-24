@@ -15,6 +15,7 @@ import "./client-boundaries-visual.css";
 import "./revenue-offers.css";
 import "./services-page.css";
 import "./platforms-page.css";
+import "./platform-discovery.css";
 import "./seo-pages.css";
 import "./seo-public-shell.css";
 import "./blog-index.css";

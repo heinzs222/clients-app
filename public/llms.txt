@@ -1,15 +1,19 @@
 # Simple CAPI
 
-> Simple CAPI is self-service Meta conversion tracking software for agencies and businesses.
+> Simple CAPI is self-service conversion tracking software for Meta, TikTok, and Google Ads.
 
 ## Product
 
-- Creates a ready-to-install Lead or Schedule conversion setup.
+- Creates a ready-to-install Meta CAPI, TikTok Events API, or Google enhanced conversion setup.
 - Provides one hosted installation script.
-- Keeps sensitive Meta credentials out of page code.
+- Keeps sensitive platform credentials out of page code.
 - Costs $5 USD per conversion setup as a one-time payment.
 - Lead and Schedule are purchased separately; enabling both costs $10 USD.
+- The tested Meta setup reached at least 9.3 Event Match Quality across more than 25 client implementations.
 
 ## Canonical site
 
 - [Simple CAPI](https://simplecapi.com/): Official product homepage.
+- [Easy Meta CAPI setup](https://simplecapi.com/how-to-set-up-meta-capi): Meta setup guide.
+- [TikTok Events API setup](https://simplecapi.com/how-to-set-up-tiktok-events-api): TikTok setup guide.
+- [Google enhanced conversions setup](https://simplecapi.com/how-to-set-up-google-ads-enhanced-conversions): Google Ads setup guide.

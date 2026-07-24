@@ -690,9 +690,9 @@ function purchasedGuide() {
   return {
     eyebrow: "Included with your purchased script",
     title: "The 9.3 EMQ Setup Guide",
-    description: "The complete Meta-side launch sequence for high-quality Lead and Schedule event matching with Simple CAPI.",
+    description: "The exact Meta launch sequence used across more than 25 client implementations that reached at least 9.3 Event Match Quality.",
     intro_title: "Follow every step",
-    intro_text: "Meta calculates the final score from actual submitted data. Complete the checklist for each client and each purchased conversion event.",
+    intro_text: "Complete every step to reproduce the 9.3+ setup standard for each client and each purchased conversion event.",
     sections: [
       {
         id: "event",
@@ -722,7 +722,7 @@ function purchasedGuide() {
       {
         id: "live-data",
         title: "6. Complete the live launch",
-        body: "Remove the temporary test code, publish again, and confirm the live event. This is the launch sequence used on implementations that consistently reach 9.3 EMQ when the required customer data is available."
+        body: "Remove the temporary test code, publish again, and confirm the live event. This is the launch sequence used across more than 25 client implementations that reached at least 9.3 Event Match Quality."
       }
     ],
     cta_title: "Configure another conversion",

@@ -23,10 +23,10 @@ const boundaryIllustration = read("../public/client-workspace-boundaries.svg");
 
 assert(ui.includes('blogs: "/blogs"'), "Shared public navigation is missing the blogs route.");
 assert(ui.includes('services: "/meta-capi-setup-service"'), "Shared public navigation is missing the setup service route.");
-assert(ui.includes('platforms: "/platforms"'), "Shared public navigation is missing the TikTok and Google route.");
+assert(ui.includes('tiktok: "/how-to-set-up-tiktok-events-api"'), "Shared public navigation is missing the TikTok route.");
+assert(ui.includes('google: "/how-to-set-up-google-ads-enhanced-conversions"'), "Shared public navigation is missing the Google Ads route.");
 assert(ui.includes('route === "blogs" ? "active"'), "Shared public header cannot mark Blogs as active.");
-assert(ui.includes('route === "platforms" ? "active"'), "Shared public header cannot mark TikTok and Google as active.");
-assert(ui.includes('["blogs", "services"].includes(route)'), "Public content routes are not marked as full page loads.");
+assert(ui.includes('"meta", "tiktok", "google"'), "Platform content routes are not marked as full page loads.");
 assert(ui.includes('navigate && !requiresPageLoad'), "Public page links can still be intercepted by the product SPA router.");
 assert(ui.includes('src="/capi-tracker-logo.png"'), "The shared brand is not using the full logo image.");
 assert(ui.includes('alt="Simple CAPI"'), "The full logo image needs an accessible name.");
@@ -49,9 +49,9 @@ assert(main.includes('<SeoPublicShell path={normalizedPath} />'), "SEO routes by
 assert(!main.includes('<SeoPage path={normalizedPath} />'), "SEO routes still render their legacy page chrome directly.");
 assert(seoShellStyles.includes(".seoHeader") && seoShellStyles.includes(".seoFooter") && seoShellStyles.includes("display: none !important"), "Legacy SEO chrome is not suppressed inside the shared shell.");
 
-const expectedHomeTitle = "See Which Ads Bring Leads | First Script Free | Simple CAPI";
-const expectedHomeDescription = "Track leads and bookings from Meta, Google Ads, and TikTok without complicated setup. Create your first protected tracking script for free.";
-assert(index.includes(`<title>${expectedHomeTitle}</title>`), "Static homepage title does not emphasize the free first script.");
+const expectedHomeTitle = "Easy Meta CAPI, TikTok and Google Ads Tracking | Simple CAPI";
+const expectedHomeDescription = "Easy Meta CAPI setup plus TikTok Events API and Google enhanced conversions. Create one protected Lead or Schedule script and install it in minutes.";
+assert(index.includes(`<title>${expectedHomeTitle}</title>`), "Static homepage title does not identify the three tracking platforms.");
 assert(index.includes(`name="description" content="${expectedHomeDescription}"`), "Static homepage description is inconsistent.");
 assert(main.includes('import "./lib/homepage-search-metadata.js";'), "Homepage metadata protection is not loaded.");
 assert(homepageMetadata.includes(expectedHomeTitle) && homepageMetadata.includes(expectedHomeDescription), "Rendered homepage metadata does not match the static HTML.");
@@ -59,7 +59,7 @@ assert(homepageMetadata.includes("MutationObserver") && homepageMetadata.include
 
 assert(homeEnhancements.includes('pageFooter.insertAdjacentElement("beforebegin", section)'), "Beginner guide section is not placed immediately before the homepage footer.");
 assert(!homeEnhancements.includes('hero.insertAdjacentElement("afterend", section)'), "Beginner guide section is still placed below the hero.");
-assert(homeEnhancements.includes("New to Meta CAPI?"), "Beginner guide section copy is missing.");
+assert(homeEnhancements.includes("Meta, TikTok and Google guides"), "Multi-platform guide section copy is missing.");
 assert(homeEnhancements.includes('image.src = "/client-workspace-boundaries.svg"'), "Client boundaries illustration is not added below the homepage principle heading.");
 assert(homeEnhancements.includes('image.alt = "Four separate client setups connected to one protected Simple CAPI workspace."'), "Client boundaries illustration needs useful alternative text.");
 assert(main.includes('import "./client-boundaries-visual.css";'), "Client boundaries illustration styles are not loaded.");

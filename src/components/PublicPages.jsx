@@ -42,9 +42,9 @@ export function HomePage({ navigate, user }) {
       <main>
         <section className="homeHero">
           <div className="homeHeroCopy">
-            <span className="eyebrow"><i /> Meta conversion tracking, simplified</span>
-            <h1>Launch reliable Meta tracking in minutes.</h1>
-            <p>Add the client, choose the conversion, and paste one generated script. Simple CAPI handles everything else.</p>
+            <span className="eyebrow"><i /> Easy conversion tracking for every ad platform</span>
+            <h1>Track Meta, TikTok, and Google Ads with one simple script.</h1>
+            <p>Choose the ad platform and conversion, paste the generated script on the exact page, and start sending better lead and booking data in minutes.</p>
             <div className="heroActions">
               <button className="button primary" type="button" onClick={() => navigate(user ? "setup" : "register")}>
                 {user ? "Create an endpoint" : "Launch your first endpoint"}<ArrowRight size={18} />
@@ -52,9 +52,9 @@ export function HomePage({ navigate, user }) {
               <button className="button secondary" type="button" onClick={() => navigate("guide")}>Unlock the 9.3 guide</button>
             </div>
             <div className="heroTrust">
-              <span><Check size={16} /> One script to install</span>
-              <span><Check size={16} /> Credentials stay protected</span>
-              <span><Check size={16} /> $5 per event-specific script</span>
+              <span><Check size={16} /> First eligible script free</span>
+              <span><Check size={16} /> 25+ client setups tested</span>
+              <span><Check size={16} /> $5 per Lead or Schedule script</span>
             </div>
           </div>
 
@@ -76,11 +76,56 @@ export function HomePage({ navigate, user }) {
           </div>
         </section>
 
+        <section className="platformDiscovery" aria-labelledby="choose-platform">
+          <header>
+            <span className="eyebrow">Choose your ad platform</span>
+            <h2 id="choose-platform">Meta, TikTok, and Google are all ready.</h2>
+            <p>Each platform has its own guided setup, protected connection, and installation script.</p>
+          </header>
+          <div className="platformDiscoveryGrid">
+            <article className="meta">
+              <span className="platformWordmark">META</span>
+              <h3>Easy Meta CAPI setup</h3>
+              <p>Send Lead or Schedule events with the matching data used across 25+ successful client implementations.</p>
+              <div className="platformTags"><span>Meta CAPI</span><span>9.3+ EMQ</span><span>Lead</span><span>Schedule</span></div>
+              <a href="/how-to-set-up-meta-capi">Explore Meta CAPI <ArrowRight size={17} /></a>
+            </article>
+            <article className="tiktok">
+              <span className="platformWordmark">TIKTOK</span>
+              <h3>TikTok Pixel + Events API</h3>
+              <p>Connect browser and server conversions with one event ID and the campaign details available on the page.</p>
+              <div className="platformTags"><span>Events API</span><span>Pixel</span><span>Lead</span><span>Schedule</span></div>
+              <a href="/how-to-set-up-tiktok-events-api">Explore TikTok tracking <ArrowRight size={17} /></a>
+            </article>
+            <article className="google">
+              <span className="platformWordmark">GOOGLE ADS</span>
+              <h3>Google enhanced conversions</h3>
+              <p>Send the conversion, value, click details, and customer-provided data through one focused setup.</p>
+              <div className="platformTags"><span>Google tag</span><span>Enhanced conversions</span><span>Lead</span></div>
+              <a href="/how-to-set-up-google-ads-enhanced-conversions">Explore Google Ads tracking <ArrowRight size={17} /></a>
+            </article>
+          </div>
+          <a className="button primary platformDiscoveryCta" href="/register">Create my first script <ArrowRight size={18} /></a>
+        </section>
+
+        <section className="resultsProof" aria-labelledby="results-proof-title">
+          <div>
+            <span className="eyebrow light">Proven on real client funnels</span>
+            <h2 id="results-proof-title">9.3+ Meta Event Match Quality across every tested setup.</h2>
+            <p>Our team has used this exact setup method with more than 25 clients. Every configured Lead and Schedule event reached at least 9.3 Event Match Quality.</p>
+          </div>
+          <dl>
+            <div><dt>25+</dt><dd>client implementations</dd></div>
+            <div><dt>9.3+</dt><dd>minimum tested EMQ</dd></div>
+            <div><dt>1</dt><dd>script to install</dd></div>
+          </dl>
+        </section>
+
         <section className="featureBand">
           <div className="sectionHeading">
             <span className="eyebrow">Simple by design</span>
-            <h2>Everything you need, without a complicated setup.</h2>
-            <p>Launch tracking for each client from one focused workspace and move from credentials to a working installation in minutes.</p>
+            <h2>Easy tracking setup without the usual technical work.</h2>
+            <p>Create Meta CAPI, TikTok Events API, or Google enhanced conversion tracking from one focused workspace.</p>
           </div>
           <div className="featureGrid">
             <article>
@@ -90,8 +135,8 @@ export function HomePage({ navigate, user }) {
             </article>
             <article>
               <span><Activity size={22} /></span>
-              <h3>Lead and Schedule</h3>
-              <p>Purchase either conversion separately and maximize the matching data available for that event.</p>
+              <h3>Meta, TikTok, and Google</h3>
+              <p>Choose the platform first, then create the exact Lead or Schedule conversion you need.</p>
             </article>
             <article>
               <span><Database size={22} /></span>
@@ -119,8 +164,8 @@ export function HomePage({ navigate, user }) {
           <div>
             <span className="guideIcon"><FileCheck2 size={24} /></span>
             <span className="eyebrow">Included with every script</span>
-            <h2>Get the complete 9.3 EMQ setup guide.</h2>
-            <p>Purchase one $5 Lead or Schedule script to unlock the private Meta configuration, installation, launch, and verification playbook.</p>
+            <h2>Use the same 9.3+ Meta setup method.</h2>
+            <p>Every Meta script includes the private configuration, installation, and verification guide used across our 25+ tested client implementations.</p>
           </div>
           <button className="button primary" type="button" onClick={() => navigate("guide")}>Unlock with a script <ArrowRight size={18} /></button>
         </section>
@@ -132,7 +177,7 @@ export function HomePage({ navigate, user }) {
           </div>
           <ul>
             <li><Activity size={20} /><span><strong>Fast launch</strong> Go from client credentials to installation code in a few steps.</span></li>
-            <li><ShieldCheck size={20} /><span><strong>High-quality matching</strong> Built to maximize Event Match Quality from the customer data available.</span></li>
+            <li><ShieldCheck size={20} /><span><strong>9.3+ Meta result</strong> Follow the tested setup used successfully across more than 25 client implementations.</span></li>
             <li><Code2 size={20} /><span><strong>Simple handoff</strong> Give the installer one script, not a technical workflow.</span></li>
             <li><LockKeyhole size={20} /><span><strong>Private by default</strong> Client credentials stay out of page code.</span></li>
           </ul>

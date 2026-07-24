@@ -38,7 +38,7 @@ export const META_DEFINITION_POSTS = [
         title: "What does Meta CAPI do?",
         paragraphs: [
           "Meta CAPI delivers structured event information to a Meta dataset. A Lead event can include the event time, source URL, a unique event ID, and permitted customer or browser information that helps Meta connect the conversion to the correct person or ad interaction.",
-          "CAPI does not create the lead, replace the CRM, or guarantee attribution. It provides a controlled server delivery path so Meta can receive the conversion and use the available signals for reporting and campaign optimization."
+          "CAPI gives Meta a controlled server delivery path for the conversion and the matching data connected to it. Simple CAPI combines that delivery with the setup method our team used across more than 25 client implementations that reached at least 9.3 Event Match Quality."
         ],
         bullets: [
           "Reports leads, bookings, purchases, and other real conversions",
@@ -101,7 +101,7 @@ export const META_DEFINITION_POSTS = [
       "Matching browser and server events need the same event name and event ID",
       "A CAPI gateway protects credentials and delivers the event",
       "Accurate data matters more than sending every possible field",
-      "Meta controls the final matching and attribution decision"
+      "The tested Simple CAPI setup has reached 9.3+ Event Match Quality across 25+ client implementations"
     ],
     faq: [
       ["What is Meta CAPI?", "Meta CAPI is Meta's Conversions API, a server-to-server method for sending conversion events such as leads, bookings, and purchases to a Meta dataset."],

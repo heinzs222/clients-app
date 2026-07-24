@@ -11,8 +11,10 @@ import {
   GitCompareArrows,
   GitMerge,
   Link2,
+  Music2,
   Network,
   Radar,
+  Search,
   TestTube2,
   UserCheck,
   Workflow
@@ -32,7 +34,9 @@ const iconMap = {
   embed: Network,
   compare: GitCompareArrows,
   quality: UserCheck,
-  checklist: ClipboardCheck
+  checklist: ClipboardCheck,
+  tiktok: Music2,
+  google: Search
 };
 
 const foundationalArticles = [
@@ -89,8 +93,8 @@ const articles = [...practicalArticles, ...foundationalArticles];
 
 function useMetadata() {
   useEffect(() => {
-    const title = "How Meta CAPI Works, Setup and GoHighLevel Guides | Simple CAPI";
-    const description = "Simple Meta CAPI guides covering how it works, setup, installation, implementation, testing, access tokens, GoHighLevel forms, calendars, workflows, attribution, and deduplication.";
+    const title = "Meta CAPI, TikTok and Google Ads Tracking Guides | Simple CAPI";
+    const description = "Easy Meta CAPI setup, TikTok Events API, and Google Ads enhanced conversion guides covering what each tool is, how it works, and how to set it up.";
     const url = `${ROOT}/blogs`;
 
     document.title = title;
@@ -154,9 +158,9 @@ export default function BlogIndex() {
         <section className="blogHero">
           <div className="blogHeroGlow" aria-hidden="true" />
           <div className="blogHeroInner">
-            <span className="blogEyebrow"><BookOpen /> Meta CAPI answers and GoHighLevel guides</span>
-            <h1>Understand Meta CAPI, set it up, and fix it without reading a wall of jargon.</h1>
-            <p>Start with the basics, then move into GoHighLevel forms, bookings, workflows, attribution, duplicate events, testing, and access tokens.</p>
+            <span className="blogEyebrow"><BookOpen /> Meta, TikTok and Google Ads guides</span>
+            <h1>Understand conversion tracking and set it up without a wall of jargon.</h1>
+            <p>Choose Meta CAPI, TikTok Events API, or Google enhanced conversions. Start with what it is, see how it works, and follow the setup guide.</p>
           </div>
         </section>
 
@@ -170,7 +174,7 @@ export default function BlogIndex() {
           </div>
 
           <div className="blogCardGrid">
-            {articles.map(({ href, category, title, description, icon: Icon }) => (
+            {articles.map(({ href, category, title, description, tags = [], icon: Icon }) => (
               <article className="blogCard" key={href}>
                 <div className="blogCardTop">
                   <span><Icon /></span>
@@ -178,6 +182,7 @@ export default function BlogIndex() {
                 </div>
                 <h2><a href={href}>{title}</a></h2>
                 <p>{description}</p>
+                {tags.length ? <div className="blogTags" aria-label="Topics">{tags.map((tag) => <span key={tag}>{tag}</span>)}</div> : null}
                 <a className="blogReadLink" href={href}>Read guide <ArrowRight /></a>
               </article>
             ))}
@@ -187,8 +192,8 @@ export default function BlogIndex() {
         <section className="blogCta">
           <div>
             <span>Simple CAPI workspace</span>
-            <h2>Turn the guide into a working Meta event.</h2>
-            <p>Choose Lead or Schedule, paste one protected script on the intended page, and test what Meta receives.</p>
+            <h2>Turn the guide into a working conversion.</h2>
+            <p>Choose Meta, TikTok, or Google Ads, create Lead or Schedule, and paste one protected script on the intended page.</p>
           </div>
           <a className="button primary" href="/register">Create your script <ArrowRight /></a>
         </section>

@@ -6,7 +6,13 @@ const beginnerGuides = [
   ["How to implement Meta CAPI", "/how-to-implement-meta-capi", "Plan the event, keep the data connected, and send it securely."],
   ["How to use Meta CAPI", "/how-to-use-meta-capi", "Use Lead, Schedule, Purchase, and later-stage events correctly."],
   ["How to test Meta CAPI", "/how-to-test-meta-capi", "Run a real conversion and inspect it in Meta Events Manager."],
-  ["How to get a Meta CAPI access token", "/how-to-get-meta-capi-access-token", "Generate the token and keep it out of public page code."]
+  ["How to get a Meta CAPI access token", "/how-to-get-meta-capi-access-token", "Generate the token and keep it out of public page code."],
+  ["What is TikTok Events API?", "/what-is-tiktok-events-api", "Understand TikTok's server connection and how it works with the Pixel."],
+  ["How does TikTok Events API work?", "/how-does-tiktok-events-api-work", "See how a Lead or Schedule conversion reaches TikTok."],
+  ["How to set up TikTok Events API", "/how-to-set-up-tiktok-events-api", "Connect the Pixel, access token, event, page, and form."],
+  ["What are Google enhanced conversions?", "/what-are-google-ads-enhanced-conversions", "Learn how Google uses customer-provided conversion data."],
+  ["How do Google enhanced conversions work?", "/how-do-google-ads-enhanced-conversions-work", "See how the Google tag connects a conversion to the ad click."],
+  ["How to set up Google enhanced conversions", "/how-to-set-up-google-ads-enhanced-conversions", "Create the conversion action and install it on the exact page."]
 ];
 
 function guideCard([title, href, description]) {
@@ -17,8 +23,8 @@ function guideCard([title, href, description]) {
 }
 
 function setHomeMetadata() {
-  document.title = "How to Set Up Meta CAPI for GoHighLevel | Simple CAPI";
-  const description = "Learn how Meta CAPI works and set it up for GoHighLevel forms or bookings. Create one protected script, install it on the intended page, and test the event in Meta.";
+  document.title = "Easy Meta CAPI, TikTok and Google Ads Tracking | Simple CAPI";
+  const description = "Easy Meta CAPI setup plus TikTok Events API and Google enhanced conversions. Create one protected Lead or Schedule script and install it in minutes.";
   const descriptionMeta = document.head.querySelector('meta[name="description"]');
   if (descriptionMeta) descriptionMeta.content = description;
   for (const selector of ['meta[property="og:title"]', 'meta[name="twitter:title"]']) {
@@ -41,9 +47,9 @@ function simplifyHero(hero) {
   const actions = copy.querySelector(".heroActions");
   const trust = copy.querySelector(".heroTrust");
 
-  if (eyebrow) eyebrow.innerHTML = "<i></i> Meta CAPI without the technical headache";
-  if (title) title.textContent = "Send better lead data to Meta with one simple script.";
-  if (intro) intro.textContent = "Choose what you want to track, paste the script on your form or booking page, and Simple CAPI sends the conversion securely. No complicated server build.";
+  if (eyebrow) eyebrow.innerHTML = "<i></i> Easy Meta CAPI, TikTok and Google Ads tracking";
+  if (title) title.textContent = "Track Meta, TikTok, and Google Ads with one simple script.";
+  if (intro) intro.textContent = "Choose the platform and conversion, paste the script on the exact form or booking page, and start sending better conversion data in minutes.";
 
   if (actions) {
     const primary = actions.querySelector(".button.primary");
@@ -64,8 +70,8 @@ function simplifyHero(hero) {
   if (trust) {
     trust.innerHTML = [
       "First eligible script is free",
-      "Works with forms and bookings",
-      "Your Meta token stays private"
+      "25+ client setups tested",
+      "Meta setups reached 9.3+ EMQ"
     ].map((item) => `<span><b aria-hidden="true">✓</b>${item}</span>`).join("");
   }
 
@@ -79,7 +85,7 @@ function simplifyHero(hero) {
     if (nodeLabels[index]) nodeLabels[index].textContent = label;
   });
   const footer = hero.querySelector(".pipelineVisual > footer");
-  if (footer) footer.innerHTML = "<i></i> Meta event ready";
+  if (footer) footer.innerHTML = "<i></i> Conversion tracking ready";
 }
 
 function addClientBoundaryVisual() {
@@ -114,9 +120,9 @@ function addBeginnerHub() {
   const intro = document.createElement("div");
   intro.className = "beginnerGuideIntro";
   intro.innerHTML = `
-    <span class="eyebrow">New to Meta CAPI?</span>
+    <span class="eyebrow">Meta, TikTok and Google guides</span>
     <h2 id="meta-capi-beginner-guides">Start with the exact question you searched.</h2>
-    <p>These guides explain Meta CAPI in normal language, from the first setup to testing it with GoHighLevel forms and bookings.</p>`;
+    <p>Learn what each conversion system does, how it works, and how to set it up without a wall of technical language.</p>`;
 
   const grid = document.createElement("div");
   grid.className = "beginnerGuideGrid";

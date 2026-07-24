@@ -12,7 +12,9 @@ import {
   Link2,
   ListChecks,
   MessageSquareWarning,
+  Music2,
   Network,
+  Search,
   ShieldCheck,
   TestTube2,
   Workflow
@@ -21,7 +23,7 @@ import { PublicFooter, PublicHeader } from "./UI.jsx";
 import { ALL_BLOG_POSTS, getBlogPost } from "../content/blogPosts.js";
 
 const ROOT = "https://simplecapi.com";
-const PUBLISHED = "2026-07-18";
+const PUBLISHED = "2026-07-24";
 
 const iconMap = {
   workflow: Workflow,
@@ -33,7 +35,9 @@ const iconMap = {
   embed: Network,
   compare: MessageSquareWarning,
   quality: CheckCircle2,
-  checklist: ClipboardCheck
+  checklist: ClipboardCheck,
+  tiktok: Music2,
+  google: Search
 };
 
 const fallbackRelated = {
@@ -80,7 +84,7 @@ function useArticleMetadata(post) {
     }
     canonical.href = url;
 
-    const schemaId = "simplecapi-meta-blog-schema";
+    const schemaId = "simplecapi-conversion-blog-schema";
     let schema = document.getElementById(schemaId);
     if (!schema) {
       schema = document.createElement("script");
@@ -127,7 +131,8 @@ function useArticleMetadata(post) {
 export default function GhlBlogPage({ path }) {
   const post = getBlogPost(path);
   const Icon = iconMap[post.icon] || BookOpen;
-  const eyebrow = post.eyebrow || "GoHighLevel + Meta CAPI";
+  const eyebrow = post.eyebrow || "Conversion tracking guide";
+  const platform = post.platform || "Meta";
   useArticleMetadata(post);
 
   return (
@@ -144,6 +149,7 @@ export default function GhlBlogPage({ path }) {
             <h1>{post.h1}</h1>
             <p>{post.intro}</p>
             <div className="ghlArticleMeta"><span>Updated July 2026</span><i /> <span>{post.readTime}</span><i /> <span>Practical setup guide</span></div>
+            {post.tags?.length ? <div className="articleTags" aria-label="Article topics">{post.tags.map((tag) => <span key={tag}>{tag}</span>)}</div> : null}
           </div>
         </section>
 
@@ -179,7 +185,7 @@ export default function GhlBlogPage({ path }) {
 
             <section className="ghlSources" id="sources">
               <h2>Official references</h2>
-              <p>Platform screens and behavior change. These references are useful when checking the current GoHighLevel and Meta setup.</p>
+              <p>Use these official references when checking the current {platform} setup and account screens.</p>
               <div>{post.sources.map(([label, href]) => <a href={href} target="_blank" rel="noreferrer" key={href}>{label}<ExternalLink /></a>)}</div>
             </section>
           </article>
@@ -203,14 +209,14 @@ export default function GhlBlogPage({ path }) {
         </div>
 
         <section className="ghlRelated">
-          <div><span className="ghlSectionLabel">Keep learning</span><h2>Related Meta CAPI guides</h2></div>
+          <div><span className="ghlSectionLabel">Keep learning</span><h2>Related conversion tracking guides</h2></div>
           <div className="ghlRelatedGrid">
             {post.related.map((href) => <a href={href} key={href}><span><BookOpen /></span><strong>{relatedTitle(href)}</strong><small>Read guide</small><ArrowRight /></a>)}
           </div>
         </section>
 
         <section className="blogCta ghlArticleCta">
-          <div><span>Simple CAPI workspace</span><h2>Turn the answer into a working Meta event.</h2><p>Choose Lead or Schedule, paste one protected script on the intended page, and verify what Meta receives.</p></div>
+          <div><span>Simple CAPI workspace</span><h2>Turn the answer into a working {platform} conversion.</h2><p>Choose Lead or Schedule, paste one protected script on the intended page, and verify the real conversion.</p></div>
           <a className="button primary" href="/register">Create your script <ArrowRight /></a>
         </section>
       </main>

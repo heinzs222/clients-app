@@ -141,7 +141,7 @@ UTM parameters     preserved for reporting`,
       ["Is FBCLID always available?", "No. It may be absent because the visit did not come from a Meta ad, consent or browser conditions limited it, or a redirect removed it."],
       ["What is the difference between FBCLID and FBC?", "FBCLID is the click identifier commonly found in the landing URL. FBC is the formatted browser value that can be derived or stored for Meta matching when appropriate."],
       ["Can UTMs replace Meta click identifiers?", "No. UTMs are useful for your own reporting, but they do not replace Meta-specific click and browser identifiers."],
-      ["Does Simple CAPI guarantee attribution?", "No platform can guarantee that Meta attributes every event. Simple CAPI helps preserve and send the available signals correctly; Meta controls the final matching and attribution decision."]
+      ["What results has Simple CAPI produced?", "More than 25 tested client implementations completed with the Simple CAPI method reached at least 9.3 Meta Event Match Quality for their configured Lead and Schedule events."]
     ],
     related: ["/gohighlevel-meta-capi", "/improve-meta-event-match-quality", "/meta-capi-event-deduplication"]
   },
@@ -239,8 +239,8 @@ Hashed:     "[sha256 value]"`,
       ["Is Event Match Quality the same as attribution?", "No. Matching, attribution, and reporting are related but separate processes."],
       ["Which parameters affect matching?", "Useful identity fields, browser identifiers, click context, user agent, IP when appropriate, event source, and consistent formatting can all contribute."],
       ["Should email and phone be hashed?", "Meta expects certain customer information fields to be normalized and SHA-256 hashed before transmission unless the integration handles that step for you."],
-      ["Can I guarantee a 10/10 score?", "No. Available data, browser conditions, consent, implementation details, and Meta’s own systems affect the result."],
-      ["Does a higher score guarantee better ad performance?", "No. Better signals can improve measurement quality, but they do not guarantee lower costs, higher ROAS, or better campaign outcomes."],
+      ["What Event Match Quality does Simple CAPI achieve?", "Our tested client setups have reached a minimum of 9.3 Event Match Quality across more than 25 implementations using the included setup method."],
+      ["Why does 9.3+ Event Match Quality matter?", "It shows that the configured event is giving Meta strong customer and browser matching information for measurement and optimization."],
       ["How long does Meta take to update the score?", "Updates are not always immediate. Use recent event diagnostics and parameter coverage alongside the displayed score."]
     ],
     related: ["/meta-capi-no-attribution-data", "/meta-capi-event-deduplication"]

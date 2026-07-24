@@ -276,8 +276,8 @@ const phraseReplacements = [
 
 const metadataByPath = {
   "/": {
-    title: "Simple CAPI | Easy Meta Conversion Tracking",
-    description: "Create Meta CAPI tracking for leads and bookings with one script. Keep each client separate and their Meta access details private."
+    title: "Easy Meta CAPI, TikTok and Google Ads Tracking | Simple CAPI",
+    description: "Easy Meta CAPI setup plus TikTok Events API and Google enhanced conversions. Create one protected Lead or Schedule script and install it in minutes."
   },
   "/blogs": {
     title: "Clear Meta CAPI Guides | Simple CAPI",

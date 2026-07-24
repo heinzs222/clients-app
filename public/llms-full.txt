@@ -1,10 +1,14 @@
 # Simple CAPI
 
-Simple CAPI is a self-service web application that helps agencies, freelancers, and businesses launch Meta Lead and Schedule conversion tracking without a complicated setup.
+Simple CAPI is a self-service web application that helps agencies, freelancers, and businesses launch Meta CAPI, TikTok Events API, and Google Ads enhanced conversion tracking without a complicated setup.
 
 ## Product
 
-A customer creates a client endpoint, chooses one conversion type, and receives a hosted installation script. Each endpoint belongs to one client, one Meta dataset, and one purchased conversion type. It can be reused across that client's compatible pages.
+A customer chooses Meta, TikTok, or Google Ads, selects Lead or Schedule, and receives one installation script for the exact conversion page. Each setup belongs to one client, one advertising account connection, and one conversion type.
+
+## Tested Meta result
+
+The Simple CAPI Meta setup method has been used across more than 25 client implementations. Every tested Lead and Schedule setup reached at least 9.3 Meta Event Match Quality.
 
 ## Pricing
 
@@ -13,8 +17,11 @@ A customer creates a client endpoint, chooses one conversion type, and receives 
 - Lead and Schedule for the same client: $10 USD total.
 - No recurring subscription.
 
-Sensitive Meta credentials are handled securely and do not appear in the installation script. Actual Event Match Quality and advertising performance depend on the customer data available and are not guaranteed.
+Sensitive advertising platform credentials are handled securely and do not appear in the installation script.
 
 ## Canonical page
 
 - [Simple CAPI](https://simplecapi.com/): Official product homepage.
+- [Meta CAPI setup](https://simplecapi.com/how-to-set-up-meta-capi): Easy Meta CAPI guide.
+- [TikTok Events API setup](https://simplecapi.com/how-to-set-up-tiktok-events-api): TikTok Pixel and Events API guide.
+- [Google Ads enhanced conversions](https://simplecapi.com/how-to-set-up-google-ads-enhanced-conversions): Google conversion setup guide.

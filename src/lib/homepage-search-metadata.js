@@ -1,5 +1,5 @@
-const HOME_TITLE = "See Which Ads Bring Leads | First Script Free | Simple CAPI";
-const HOME_DESCRIPTION = "Track leads and bookings from Meta, Google Ads, and TikTok without complicated setup. Create your first protected tracking script for free.";
+const HOME_TITLE = "Easy Meta CAPI, TikTok and Google Ads Tracking | Simple CAPI";
+const HOME_DESCRIPTION = "Easy Meta CAPI setup plus TikTok Events API and Google enhanced conversions. Create one protected Lead or Schedule script and install it in minutes.";
 
 function isHomepage() {
   const path = window.location.pathname.replace(/\/+$/, "") || "/";
