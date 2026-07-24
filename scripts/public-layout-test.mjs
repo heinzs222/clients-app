@@ -12,7 +12,7 @@ const ui = read("../src/components/UI.jsx");
 const blogIndex = read("../src/components/BlogIndex.jsx");
 const blogArticle = read("../src/components/GhlBlogPage.jsx");
 const seoShell = read("../src/components/SeoPublicShell.jsx");
-const seoShellStyles = read("../src/seo-public-shell.css");
+const seoPages = read("../src/components/SeoPages.jsx");
 const main = read("../src/main.jsx");
 const index = read("../index.html");
 const homepageMetadata = read("../src/lib/homepage-search-metadata.js");
@@ -47,7 +47,8 @@ assert(seoShell.includes('<PublicHeader route="blogs" />'), "SEO guides do not r
 assert(seoShell.includes('<PublicFooter />'), "SEO guides do not render the shared homepage footer.");
 assert(main.includes('<SeoPublicShell path={normalizedPath} />'), "SEO routes bypass the shared public shell.");
 assert(!main.includes('<SeoPage path={normalizedPath} />'), "SEO routes still render their legacy page chrome directly.");
-assert(seoShellStyles.includes(".seoHeader") && seoShellStyles.includes(".seoFooter") && seoShellStyles.includes("display: none !important"), "Legacy SEO chrome is not suppressed inside the shared shell.");
+assert(!seoPages.includes("function SiteHeader") && !seoPages.includes("function PageFooter"), "SEO pages still contain duplicate public chrome.");
+assert(!seoPages.includes('href="/login"') && !seoPages.includes('href="/register">Start free'), "SEO pages still contain hardcoded account actions.");
 
 const expectedHomeTitle = "Easy Meta CAPI, TikTok and Google Ads Tracking | Simple CAPI";
 const expectedHomeDescription = "Easy Meta CAPI setup plus TikTok Events API and Google enhanced conversions. Create one protected Lead or Schedule script and install it in minutes.";

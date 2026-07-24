@@ -502,9 +502,18 @@ button:disabled {
 
 .publicActions {
   margin-left: auto;
+  min-width: 170px;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 8px;
+}
+
+.publicSessionPlaceholder {
+  width: 126px;
+  height: 36px;
+  border-radius: 6px;
+  background: #e7ebf4;
 }
 
 .publicFooter {
@@ -3548,6 +3557,16 @@ button:disabled {
     padding: 20px 0 0;
     border-top: 1px solid #f2bcb5;
     border-left: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .publicHeader .brand.brandImageOnly.compact .brandLogo {
+    max-width: 124px;
+  }
+
+  .publicActions {
+    min-width: 128px;
   }
 }
 

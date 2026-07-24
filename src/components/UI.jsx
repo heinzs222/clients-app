@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { getUser, onAuthChange } from "@netlify/identity";
 import {
   AlertCircle,
   Check,
@@ -8,6 +9,7 @@ import {
   X
 } from "lucide-react";
 import { copyText } from "../lib/capi.js";
+import { hasPublicSessionHint, setPublicSessionHint } from "../lib/public-session.mjs";
 
 const publicHrefs = {
   home: "/",
@@ -55,7 +57,52 @@ export function Brand({ compact = false }) {
   );
 }
 
+function usePublicSession(suppliedUser) {
+  const hasSuppliedUser = suppliedUser !== undefined;
+  const [session, setSession] = useState({
+    status: hasSuppliedUser || hasPublicSessionHint() ? "ready" : "checking",
+    authenticated: hasSuppliedUser ? Boolean(suppliedUser) : hasPublicSessionHint()
+  });
+
+  useEffect(() => {
+    if (hasSuppliedUser) {
+      setSession({ status: "ready", authenticated: Boolean(suppliedUser) });
+      return undefined;
+    }
+
+    let active = true;
+    getUser()
+      .then((currentUser) => {
+        if (!active) return;
+        setPublicSessionHint(Boolean(currentUser));
+        setSession({ status: "ready", authenticated: Boolean(currentUser) });
+      })
+      .catch(() => {
+        if (active && !hasPublicSessionHint()) {
+          setSession({ status: "ready", authenticated: false });
+        }
+      });
+
+    const unsubscribe = onAuthChange((_event, currentUser) => {
+      if (!active) return;
+      setPublicSessionHint(Boolean(currentUser));
+      setSession({ status: "ready", authenticated: Boolean(currentUser) });
+    });
+
+    return () => {
+      active = false;
+      unsubscribe();
+    };
+  }, [hasSuppliedUser, suppliedUser]);
+
+  return hasSuppliedUser
+    ? { status: "ready", authenticated: Boolean(suppliedUser) }
+    : session;
+}
+
 export function PublicHeader({ route, navigate, user }) {
+  const session = usePublicSession(user);
+
   return (
     <header className="publicHeader">
       <div className="publicHeaderInner">
@@ -69,12 +116,14 @@ export function PublicHeader({ route, navigate, user }) {
           <RouteLink className={route === "blogs" ? "active" : ""} route="blogs" navigate={navigate}>Guides</RouteLink>
           <RouteLink className={route === "services" ? "active" : ""} route="services" navigate={navigate}>Done-for-you</RouteLink>
         </nav>
-        <div className="publicActions">
-          {user ? (
+        <div className={`publicActions ${session.status === "checking" ? "checking" : ""}`}>
+          {session.status === "checking" ? (
+            <span className="publicSessionPlaceholder" aria-hidden="true" />
+          ) : session.authenticated ? (
             navigate ? (
-              <button className="button primary small" type="button" onClick={() => navigate("dashboard")}>Open dashboard</button>
+              <button className="button primary small" type="button" onClick={() => navigate("dashboard")}>Dashboard</button>
             ) : (
-              <a className="button primary small" href="/?view=dashboard">Open dashboard</a>
+              <a className="button primary small" href="/?view=dashboard">Dashboard</a>
             )
           ) : (
             <>

@@ -196,6 +196,84 @@ try {
   assert(!browserBundles.includes("Verify the paired event"), "The paid guide is compiled into public browser assets.");
   await page.screenshot({ path: path.join(os.tmpdir(), "capi-launcher-home.png"), fullPage: true });
 
+  const publicSessionPage = await context.newPage();
+  publicSessionPage.on("pageerror", (error) => runtimeErrors.push(`public session pageerror: ${error.message}`));
+  await publicSessionPage.route("**/api/auth/user", (route) => route.fulfill({
+    status: 200,
+    contentType: "application/json",
+    body: JSON.stringify({
+      id: "public-header-test",
+      email: "header@example.com",
+      role: "authenticated",
+      app_metadata: { provider: "email", roles: [] },
+      user_metadata: { full_name: "Header Test" },
+      created_at: "2026-07-24T12:00:00.000Z",
+      updated_at: "2026-07-24T12:00:00.000Z"
+    })
+  }));
+  await publicSessionPage.goto(`${baseUrl}/blogs`, { waitUntil: "domcontentloaded" });
+  await publicSessionPage.evaluate(() => {
+    const encode = (value) => window.btoa(JSON.stringify(value))
+      .replace(/=/g, "")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_");
+    const now = Math.floor(Date.now() / 1000);
+    const jwt = `${encode({ alg: "HS256", typ: "JWT" })}.${encode({
+      sub: "public-header-test",
+      email: "header@example.com",
+      exp: now + 3600,
+      aud: "authenticated",
+      role: "authenticated"
+    })}.signature`;
+    window.localStorage.setItem("simple-capi-session-active", "1");
+    document.cookie = `nf_jwt=${jwt}; Path=/; SameSite=Lax`;
+  });
+  await publicSessionPage.setViewportSize({ width: 320, height: 800 });
+  for (const pathName of [
+    "/blogs",
+    "/what-is-meta-capi",
+    "/what-is-tiktok-events-api",
+    "/what-are-google-ads-enhanced-conversions",
+    "/meta-capi-setup-service"
+  ]) {
+    await publicSessionPage.goto(`${baseUrl}${pathName}`, { waitUntil: "networkidle" });
+    assert(
+      await publicSessionPage.getByRole("link", { name: "Dashboard", exact: true }).isVisible(),
+      `Authenticated header reverted on ${pathName}.`
+    );
+    assert(
+      await publicSessionPage.getByRole("link", { name: "Log in", exact: true }).count() === 0,
+      `Authenticated header shows Log in on ${pathName}.`
+    );
+    assert(
+      await publicSessionPage.getByRole("link", { name: "Register", exact: true }).count() === 0,
+      `Authenticated header shows Register on ${pathName}.`
+    );
+    const headerOverflow = await publicSessionPage.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth
+    );
+    assert(headerOverflow <= 1, `${pathName} has ${headerOverflow}px horizontal overflow at 320px.`);
+  }
+  await publicSessionPage.evaluate(() => {
+    window.localStorage.removeItem("simple-capi-session-active");
+    window.localStorage.removeItem("gotrue.user");
+    document.cookie = "nf_jwt=; Path=/; Max-Age=0; SameSite=Lax";
+    window.dispatchEvent(new StorageEvent("storage", {
+      key: "gotrue.user",
+      oldValue: "{}",
+      newValue: null
+    }));
+  });
+  assert(
+    await publicSessionPage.getByRole("link", { name: "Log in", exact: true }).isVisible(),
+    "Public header did not return to the logged-out state."
+  );
+  assert(
+    await publicSessionPage.getByRole("link", { name: "Register", exact: true }).isVisible(),
+    "Public header did not restore the registration action after logout."
+  );
+  await publicSessionPage.close();
+
   await page.getByRole("button", { name: "Unlock with a script" }).click();
   await page.waitForURL(`${baseUrl}/login`);
   assert(await page.getByRole("heading", { name: "Welcome back" }).isVisible(), "The paid guide is accessible without login.");

@@ -26,7 +26,6 @@ import {
   Users2,
   Workflow
 } from "lucide-react";
-import { Brand } from "./UI.jsx";
 
 const ROOT = "https://simplecapi.com";
 
@@ -421,25 +420,6 @@ function useSeoMetadata(page, path) {
   }, [page, path]);
 }
 
-function SiteHeader() {
-  return (
-    <header className="seoHeader">
-      <div className="seoHeaderInner">
-        <a className="seoBrand" href="/" aria-label="Simple CAPI home"><Brand compact /></a>
-        <nav className="seoNav" aria-label="SEO resources">
-          <a href="/gohighlevel-meta-capi">GoHighLevel</a>
-          <a href="/improve-meta-event-match-quality">Match quality</a>
-          <a href="/meta-capi-for-agencies">Agencies</a>
-        </nav>
-        <div className="seoHeaderActions">
-          <a className="button ghost small" href="/login">Log in</a>
-          <a className="button primary small" href="/register">Start free</a>
-        </div>
-      </div>
-    </header>
-  );
-}
-
 function FlowVisual() {
   return (
     <div className="heroVisual flowVisual" aria-label="GoHighLevel to Meta event flow">
@@ -539,27 +519,12 @@ function HeroVisual({ theme }) {
 
 const problemIcons = [CircleAlert, Link2, Layers3, RefreshCw, Route, Network];
 
-function PageFooter() {
-  return (
-    <footer className="seoFooter">
-      <div className="seoFooterTop">
-        <div><Brand compact /><p>Focused Meta Conversions API endpoints for client work.</p></div>
-        <div><strong>Resources</strong><a href="/gohighlevel-meta-capi">GoHighLevel Meta CAPI</a><a href="/meta-capi-no-attribution-data">No attribution data</a><a href="/meta-capi-event-deduplication">Event deduplication</a></div>
-        <div><strong>Use cases</strong><a href="/improve-meta-event-match-quality">Improve match quality</a><a href="/stape-alternative">Stape alternative</a><a href="/meta-capi-for-agencies">For agencies</a></div>
-        <div><strong>Product</strong><a href="/docs">How it works</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div>
-      </div>
-      <div className="seoFooterBottom"><span>© 2026 Simple CAPI.</span><span>Meta is a trademark of Meta Platforms, Inc. Simple CAPI is not affiliated with Meta.</span></div>
-    </footer>
-  );
-}
-
 export default function SeoPage({ path }) {
   const page = pages[path] || pages["/gohighlevel-meta-capi"];
   useSeoMetadata(page, path);
 
   return (
     <div className={`seoPage theme-${page.theme}`}>
-      <SiteHeader />
       <main>
         <section className="seoHero">
           <div className="heroGridGlow" aria-hidden="true" />
@@ -622,7 +587,6 @@ export default function SeoPage({ path }) {
           <div><a className="button primary" href="/register">Create your endpoint <ArrowRight /></a><span><BadgeCheck /> First eligible script is free after account verification.</span></div>
         </section>
       </main>
-      <PageFooter />
     </div>
   );
 }

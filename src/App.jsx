@@ -17,6 +17,7 @@ import { Brand, PublicFooter } from "./components/UI.jsx";
 import { capiRequest } from "./lib/api.js";
 import { friendlyAuthError, isOAuthRedirectSignal } from "./lib/auth-errors.mjs";
 import { clearMalformedAuthSession } from "./lib/auth-session.mjs";
+import { setPublicSessionHint } from "./lib/public-session.mjs";
 
 const AuthScreen = lazy(() => import("./components/AuthScreen.jsx"));
 const AccountSecurity = lazy(() => import("./components/AccountSecurity.jsx"));
@@ -130,6 +131,7 @@ function ProductApp() {
     email: "local-preview@simplecapi.test",
     name: "Local Preview"
   } : null), [authUser, localPreview]);
+  const publicUser = authStatus === "ready" ? effectiveUser : undefined;
 
   const selectedEndpoint = useMemo(
     () => endpoints.find((endpoint) => endpoint.id === selectedId) || null,
@@ -312,6 +314,14 @@ function ProductApp() {
       .then((settings) => setGoogleLoginEnabled(Boolean(settings?.providers?.google)))
       .catch(() => setGoogleLoginEnabled(false));
   }, [checkBackend]);
+
+  useEffect(() => {
+    if (effectiveUser) {
+      setPublicSessionHint(true);
+    } else if (authStatus === "ready") {
+      setPublicSessionHint(false);
+    }
+  }, [effectiveUser, authStatus]);
 
   useEffect(() => {
     const unsubscribe = onAuthChange((event, user) => {
@@ -678,11 +688,11 @@ function ProductApp() {
     );
   }
 
-  if (route === "home") return <HomePage navigate={navigate} user={effectiveUser} />;
-  if (route === "docs") return <DocsPage navigate={navigate} user={effectiveUser} />;
-  if (route === "privacy") return <PrivacyPage navigate={navigate} user={effectiveUser} />;
-  if (route === "terms") return <TermsPage navigate={navigate} user={effectiveUser} />;
-  if (route === "status") return <StatusPage navigate={navigate} user={effectiveUser} backend={backend} />;
+  if (route === "home") return <HomePage navigate={navigate} user={publicUser} />;
+  if (route === "docs") return <DocsPage navigate={navigate} user={publicUser} />;
+  if (route === "privacy") return <PrivacyPage navigate={navigate} user={publicUser} />;
+  if (route === "terms") return <TermsPage navigate={navigate} user={publicUser} />;
+  if (route === "status") return <StatusPage navigate={navigate} user={publicUser} backend={backend} />;
 
   if (!effectiveUser || AUTH_ROUTES.has(route)) {
     return (
