@@ -17,7 +17,7 @@ const main = read("../src/main.jsx");
 const index = read("../index.html");
 const homepageMetadata = read("../src/lib/homepage-search-metadata.js");
 const homeEnhancements = read("../src/lib/home-enhancements.js");
-const fullLogoStyles = read("../src/full-logo.css");
+const publicPages = read("../src/components/PublicPages.jsx");
 const boundaryStyles = read("../src/client-boundaries-visual.css");
 const boundaryIllustration = read("../public/client-workspace-boundaries.svg");
 
@@ -28,11 +28,10 @@ assert(ui.includes('google: "/how-to-set-up-google-ads-enhanced-conversions"'), 
 assert(ui.includes('route === "blogs" ? "active"'), "Shared public header cannot mark Blogs as active.");
 assert(ui.includes('"meta", "tiktok", "google"'), "Platform content routes are not marked as full page loads.");
 assert(ui.includes('navigate && !requiresPageLoad'), "Public page links can still be intercepted by the product SPA router.");
-assert(ui.includes('src="/capi-tracker-logo.png"'), "The shared brand is not using the full logo image.");
-assert(ui.includes('alt="Simple CAPI"'), "The full logo image needs an accessible name.");
-assert(!ui.includes('className="brandName"'), "The shared brand still renders separate text beside the logo image.");
-assert(!ui.includes('src="/capi-tracker-mark.png"'), "The shared brand still uses the icon-only mark.");
-assert(fullLogoStyles.includes(".brandLogo"), "Full logo sizing styles are missing.");
+assert(ui.includes('src="/capi-tracker-mark.png"'), "The shared brand is missing the Simple CAPI mark.");
+assert(ui.includes('className="brandName">Simple CAPI</span>'), "The shared brand is missing its visible name.");
+assert(publicPages.includes('src="/capi-tracker-header.png"'), "The homepage is missing the supplied header image.");
+assert(index.includes('content="https://simplecapi.com/capi-tracker-header.png"'), "Social metadata is missing the supplied header image.");
 
 for (const [name, source] of [["blog index", blogIndex], ["blog article", blogArticle]]) {
   assert(source.includes('import { PublicFooter, PublicHeader } from "./UI.jsx";'), `${name} does not import the homepage header and footer.`);

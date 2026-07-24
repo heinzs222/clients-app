@@ -45,14 +45,15 @@ function RouteLink({ route, navigate, className = "", children, ariaLabel }) {
 
 export function Brand({ compact = false }) {
   return (
-    <span className={`brand brandImageOnly ${compact ? "compact" : ""}`}>
+    <span className={`brand ${compact ? "compact" : ""}`}>
       <img
-        className="brandLogo"
-        src="/capi-tracker-logo.png"
-        alt="Simple CAPI"
-        width="1241"
-        height="239"
+        className="brandMark"
+        src="/capi-tracker-mark.png"
+        alt=""
+        width="254"
+        height="236"
       />
+      <span className="brandName">Simple CAPI</span>
     </span>
   );
 }

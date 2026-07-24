@@ -611,6 +611,23 @@ button:disabled {
   color: var(--green);
 }
 
+.homeHeroImage {
+  width: 100%;
+  max-width: 590px;
+  aspect-ratio: 1;
+  margin: 0;
+  justify-self: end;
+  overflow: hidden;
+  background: #a5a5a5;
+}
+
+.homeHeroImage img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .pipelineVisual {
   min-height: 470px;
   overflow: hidden;
