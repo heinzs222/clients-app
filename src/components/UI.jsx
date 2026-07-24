@@ -43,7 +43,21 @@ function RouteLink({ route, navigate, className = "", children, ariaLabel }) {
   );
 }
 
-export function Brand({ compact = false }) {
+export function Brand({ compact = false, headerArtwork = false }) {
+  if (headerArtwork) {
+    return (
+      <span className="brand headerBrandArtwork">
+        <img
+          className="headerBrandArtworkImage"
+          src="/capi-tracker-header.png"
+          alt="Simple CAPI"
+          width="1024"
+          height="1024"
+        />
+      </span>
+    );
+  }
+
   return (
     <span className={`brand ${compact ? "compact" : ""}`}>
       <img
@@ -108,7 +122,7 @@ export function PublicHeader({ route, navigate, user }) {
     <header className="publicHeader">
       <div className="publicHeaderInner">
         <RouteLink className="brandButton" route="home" navigate={navigate} ariaLabel="Simple CAPI home">
-          <Brand compact />
+          <Brand compact headerArtwork />
         </RouteLink>
         <nav className="publicNav" aria-label="Main navigation">
           <RouteLink route="meta" navigate={navigate}>Meta CAPI</RouteLink>

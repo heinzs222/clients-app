@@ -58,16 +58,22 @@ export function HomePage({ navigate, user }) {
             </div>
           </div>
 
-          <figure className="homeHeroImage">
-            <img
-              src="/capi-tracker-header.png"
-              alt="Simple CAPI conversion tracking"
-              width="1024"
-              height="1024"
-              fetchPriority="high"
-              decoding="async"
-            />
-          </figure>
+          <div className="pipelineVisual" aria-label="Simple CAPI setup complete">
+            <header><i /><i /><i /><code>simplecapi / ready</code></header>
+            <div className="pipelineLog">
+              <p><span>&gt;</span> Client connected</p>
+              <p className="active"><span>&gt;</span> Tracking configured</p>
+              <p><span>&gt;</span> Ready to publish</p>
+            </div>
+            <div className="pipelineNodes">
+              <div><Database size={22} /><span>Connect</span></div>
+              <ArrowRight size={21} />
+              <div className="selected"><Code2 size={22} /><span>Paste</span></div>
+              <ArrowRight size={21} />
+              <div><Check size={22} /><span>Done</span></div>
+            </div>
+            <footer><i /> Tracking ready</footer>
+          </div>
         </section>
 
         <section className="platformDiscovery" aria-labelledby="choose-platform">

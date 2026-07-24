@@ -30,7 +30,9 @@ assert(ui.includes('"meta", "tiktok", "google"'), "Platform content routes are n
 assert(ui.includes('navigate && !requiresPageLoad'), "Public page links can still be intercepted by the product SPA router.");
 assert(ui.includes('src="/capi-tracker-mark.png"'), "The shared brand is missing the Simple CAPI mark.");
 assert(ui.includes('className="brandName">Simple CAPI</span>'), "The shared brand is missing its visible name.");
-assert(publicPages.includes('src="/capi-tracker-header.png"'), "The homepage is missing the supplied header image.");
+assert(ui.includes('src="/capi-tracker-header.png"'), "The public header is missing the supplied header image.");
+assert(ui.includes("<Brand compact headerArtwork />"), "The supplied artwork is not assigned to the public header.");
+assert(!publicPages.includes('src="/capi-tracker-header.png"'), "The supplied header image is still rendered inside the homepage hero.");
 assert(index.includes('content="https://simplecapi.com/capi-tracker-header.png"'), "Social metadata is missing the supplied header image.");
 
 for (const [name, source] of [["blog index", blogIndex], ["blog article", blogArticle]]) {
